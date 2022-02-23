@@ -4,14 +4,14 @@
 #include <fcitx/inputmethodengine.h>
 #include <fcitx/addonfactory.h>
 
-class McBopomofoEngine : public fcitx::InputMethodEngineV2 {
+class McBopomofoEngine : public fcitx::InputMethodEngine {
     void keyEvent(const fcitx::InputMethodEntry & entry, fcitx::KeyEvent & keyEvent) override;
 };
 
 class McBopomofoEngineFactory : public fcitx::AddonFactory {
     fcitx::AddonInstance * create(fcitx::AddonManager * manager) override {
         FCITX_UNUSED(manager);
-        return new MCBOPOMOFOEngine;
+        return new McBopomofoEngine;
     }
 };
 

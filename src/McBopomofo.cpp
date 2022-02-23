@@ -1,4 +1,4 @@
-#include "mcbopomofo.h"
+#include "McBopomofo.h"
 
 void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::KeyEvent& keyEvent)
 {

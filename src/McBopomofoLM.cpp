@@ -37,7 +37,7 @@ McBopomofoLM::~McBopomofoLM()
     m_userPhrases.close();
     m_excludedPhrases.close();
     m_phraseReplacement.close();
-    m_associatedPhrases.close();
+    // m_associatedPhrases.close();
 }
 
 void McBopomofoLM::loadLanguageModel(const char* languageModelDataPath)
@@ -53,18 +53,18 @@ bool McBopomofoLM::isDataModelLoaded()
     return m_languageModel.isLoaded();
 }
 
-void McBopomofoLM::loadAssociatedPhrases(const char* associatedPhrasesPath)
-{
-    if (associatedPhrasesPath) {
-        m_associatedPhrases.close();
-        m_associatedPhrases.open(associatedPhrasesPath);
-    }
-}
+// void McBopomofoLM::loadAssociatedPhrases(const char* associatedPhrasesPath)
+// {
+//     if (associatedPhrasesPath) {
+//         m_associatedPhrases.close();
+//         m_associatedPhrases.open(associatedPhrasesPath);
+//     }
+// }
 
-bool McBopomofoLM::isAssociatedPhrasesLoaded()
-{
-    return m_associatedPhrases.isLoaded();
-}
+// bool McBopomofoLM::isAssociatedPhrasesLoaded()
+// {
+//     return m_associatedPhrases.isLoaded();
+// }
 
 void McBopomofoLM::loadUserPhrases(const char* userPhrasesDataPath,
     const char* excludedPhrasesDataPath)
@@ -204,14 +204,14 @@ const std::vector<Formosa::Gramambular::Unigram> McBopomofoLM::filterAndTransfor
     return results;
 }
 
-const std::vector<std::string> McBopomofoLM::associatedPhrasesForKey(const std::string& key)
-{
-    return m_associatedPhrases.valuesForKey(key);
-}
+// const std::vector<std::string> McBopomofoLM::associatedPhrasesForKey(const std::string& key)
+// {
+//     return m_associatedPhrases.valuesForKey(key);
+// }
 
-bool McBopomofoLM::hasAssociatedPhrasesForKey(const std::string& key)
-{
-    return m_associatedPhrases.hasValuesForKey(key);
-}
+// bool McBopomofoLM::hasAssociatedPhrasesForKey(const std::string& key)
+// {
+//     return m_associatedPhrases.hasValuesForKey(key);
+// }
 
 } // namespace McBopomofo

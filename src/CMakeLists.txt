@@ -1,4 +1,5 @@
-add_library(mcbopomofo SHARED mcbopomofo.cpp KeyValueBlobReader.cpp McBopomofoLM.cpp ParselessLM.cpp ParselessPhraseDB.cpp PhraseReplacementMap.cpp UserOverrideModel.cpp UserPhrasesLM.cpp)
+add_library(mcbopomofo SHARED McBopomofo.cpp KeyValueBlobReader.cpp McBopomofoLM.cpp ParselessLM.cpp ParselessPhraseDB.cpp PhraseReplacementMap.cpp UserOverrideModel.cpp UserPhrasesLM.cpp Mandarin.cpp)
+target_compile_options(mcbopomofo PRIVATE -Wall -Wextra)
 target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core)
 set_target_properties(mcbopomofo PROPERTIES PREFIX "")
 install(TARGETS mcbopomofo DESTINATION "${FCITX_INSTALL_LIBDIR}/fcitx5")
