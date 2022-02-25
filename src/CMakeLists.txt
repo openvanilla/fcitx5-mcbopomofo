@@ -1,15 +1,21 @@
 set(MCBOPOMOFO_SOURCES
  McBopomofo.cpp
- KeyValueBlobReader.cpp 
- McBopomofoLM.cpp
- ParselessLM.cpp
- ParselessPhraseDB.cpp
- PhraseReplacementMap.cpp
- UserOverrideModel.cpp
- UserPhrasesLM.cpp
- Mandarin.cpp
+ Engine/KeyValueBlobReader.cpp 
+ Engine/McBopomofoLM.cpp
+ Engine/ParselessLM.cpp
+ Engine/ParselessPhraseDB.cpp
+ Engine/PhraseReplacementMap.cpp
+ Engine/UserOverrideModel.cpp
+ Engine/UserPhrasesLM.cpp
+ Engine/Mandarin/Mandarin.cpp
 )
+
 add_library(mcbopomofo MODULE ${MCBOPOMOFO_SOURCES})
+
+include_directories(Engine)
+include_directories(Engine/Gramambular)
+include_directories(Engine/Mandarin)
+
 # target_compile_options(mcbopomofo PRIVATE -Wall -Wextra)
 target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core)
 set_target_properties(mcbopomofo PROPERTIES PREFIX "")
