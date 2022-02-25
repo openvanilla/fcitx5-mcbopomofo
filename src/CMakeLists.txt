@@ -1,5 +1,6 @@
 set(MCBOPOMOFO_SOURCES
  McBopomofo.cpp
+ InputState.cpp
  Engine/KeyValueBlobReader.cpp 
  Engine/McBopomofoLM.cpp
  Engine/ParselessLM.cpp
