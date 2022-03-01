@@ -1,6 +1,7 @@
 set(MCBOPOMOFO_SOURCES
  McBopomofo.cpp
  InputState.cpp
+ KeyHandler.cpp
  Engine/KeyValueBlobReader.cpp 
  Engine/McBopomofoLM.cpp
  Engine/ParselessLM.cpp
@@ -19,6 +20,7 @@ include_directories(Engine/Mandarin)
 
 # target_compile_options(mcbopomofo PRIVATE -Wall -Wextra)
 target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core)
+target_include_directories(mcbopomofo PRIVATE Fcitx5::Core)
 set_target_properties(mcbopomofo PROPERTIES PREFIX "")
 install(TARGETS mcbopomofo DESTINATION "${FCITX_INSTALL_LIBDIR}/fcitx5")
 
