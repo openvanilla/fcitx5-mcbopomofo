@@ -112,7 +112,7 @@ void UserPhrasesLM::dump()
     }
 }
 
-const std::vector<Formosa::Gramambular::Bigram> UserPhrasesLM::bigramsForKeys(const std::string& preceedingKey, const std::string& key)
+const std::vector<Formosa::Gramambular::Bigram> UserPhrasesLM::bigramsForKeys(const std::string&, const std::string&)
 {
     return std::vector<Formosa::Gramambular::Bigram>();
 }

@@ -1,5 +1,8 @@
 #include "KeyHandler.h"
 
+// TODO: Remove this after everything is implemented.
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 namespace McBopomofo {
 KeyHandler::KeyHandler() {
   _bpmfReadingBuffer = new Formosa::Mandarin::BopomofoReadingBuffer(
@@ -29,3 +32,5 @@ bool KeyHandler::handle(
 }
 
 } // namespace McBopomofo
+
+#pragma GCC diagnostic pop

@@ -183,7 +183,7 @@ class BopomofoKeyboardLayout {
 
   BopomofoKeyboardLayout(const BopomofoKeyToComponentMap& ktcm,
                          const std::string& name)
-      : m_keyToComponent(ktcm), m_name(name) {
+      : m_name(name), m_keyToComponent(ktcm) {
     for (BopomofoKeyToComponentMap::const_iterator miter =
              m_keyToComponent.begin();
          miter != m_keyToComponent.end(); ++miter)
