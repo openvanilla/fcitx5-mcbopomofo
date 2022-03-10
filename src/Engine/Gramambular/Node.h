@@ -41,7 +41,7 @@ namespace Gramambular {
 
 class Node {
  public:
-  Node();
+  Node() {}
   Node(const std::string& key, const std::vector<Unigram>& unigrams,
        const std::vector<Bigram>& bigrams);
 
@@ -64,15 +64,15 @@ class Node {
   const LanguageModel* m_LM;
 
   std::string m_key;
-  double m_score;
+  double m_score = 0.0;
 
   std::vector<Unigram> m_unigrams;
   std::vector<KeyValuePair> m_candidates;
   std::map<std::string, size_t> m_valueUnigramIndexMap;
   std::map<KeyValuePair, std::vector<Bigram> > m_preceedingGramBigramMap;
 
-  bool m_candidateFixed;
-  size_t m_selectedUnigramIndex;
+  bool m_candidateFixed = false;
+  size_t m_selectedUnigramIndex = 0;
 
   friend std::ostream& operator<<(std::ostream& stream, const Node& node);
 };
@@ -85,16 +85,13 @@ inline std::ostream& operator<<(std::ostream& stream, const Node& node) {
   return stream;
 }
 
-inline Node::Node()
-    : m_candidateFixed(false), m_selectedUnigramIndex(0), m_score(0.0) {}
-
 inline Node::Node(const std::string& key, const std::vector<Unigram>& unigrams,
                   const std::vector<Bigram>& bigrams)
     : m_key(key),
+      m_score(0.0),
       m_unigrams(unigrams),
       m_candidateFixed(false),
-      m_selectedUnigramIndex(0),
-      m_score(0.0) {
+      m_selectedUnigramIndex(0) {
   stable_sort(m_unigrams.begin(), m_unigrams.end(), Unigram::ScoreCompare);
 
   if (m_unigrams.size()) {

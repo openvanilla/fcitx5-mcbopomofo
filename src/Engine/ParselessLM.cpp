@@ -87,7 +87,7 @@ void McBopomofo::ParselessLM::close()
 
 const std::vector<Formosa::Gramambular::Bigram>
 McBopomofo::ParselessLM::bigramsForKeys(
-    const std::string& preceedingKey, const std::string& key)
+    const std::string&, const std::string&)
 {
     return std::vector<Formosa::Gramambular::Bigram>();
 }

@@ -1,5 +1,8 @@
 #include "McBopomofo.h"
 
+// TODO: Remove this after everything is implemented.
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 McBopomofoEngine::McBopomofoEngine() {
   m_state = new McBopomofo::InputStateEmpty();
 }
@@ -60,3 +63,5 @@ void McBopomofoEngine::handleCandidates(
 }
 
 FCITX_ADDON_FACTORY(McBopomofoEngineFactory);
+
+#pragma GCC diagnostic pop

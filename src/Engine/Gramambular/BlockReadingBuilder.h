@@ -68,7 +68,7 @@ class BlockReadingBuilder {
   // 最多使用六個字組成一個詞
   static const size_t MaximumBuildSpanLength = 6;
 
-  size_t m_cursorIndex;
+  size_t m_cursorIndex = 0;
   std::vector<std::string> m_readings;
 
   Grid m_grid;
@@ -77,7 +77,7 @@ class BlockReadingBuilder {
 };
 
 inline BlockReadingBuilder::BlockReadingBuilder(LanguageModel* lm)
-    : m_LM(lm), m_cursorIndex(0) {}
+    : m_LM(lm) {}
 
 inline void BlockReadingBuilder::clear() {
   m_cursorIndex = 0;
