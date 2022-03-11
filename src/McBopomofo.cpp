@@ -1,9 +1,27 @@
 #include "McBopomofo.h"
+#include "ParselessLM.h"
+#include <filesystem>
+#include <fcitx-utils/standardpath.h>
 
 // TODO: Remove this after everything is implemented.
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 McBopomofoEngine::McBopomofoEngine() {
+  std::string path;
+  path = fcitx::StandardPath::global().locate(fcitx::StandardPath::Type::PkgData, "data/mcbopomofo-data.txt");
+
+  if (std::filesystem::exists(path)) {
+    FCITX_INFO() << "found McBopomofo data: " << path;
+
+    McBopomofo::ParselessLM lm;
+    lm.open(path);
+    auto unigrams = lm.unigramsForKey("ㄒㄧㄠˇ");
+    for (const auto& unigram : unigrams) {
+      FCITX_INFO() << unigram;
+    }
+    lm.close();
+  }
+
   m_state = new McBopomofo::InputStateEmpty();
 }
 
