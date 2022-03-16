@@ -10,7 +10,20 @@ In addition to CMake, you'll need the following packages:
 sudo apt install fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev
 ```
 
-## Setting Up fcitx5
+## Initial Config for McBopomofo
+
+Put this in `~/.config/fcitx5/conf/mcbopomofo.conf`:
+
+```
+# Or set to eten
+BopomofoKeyboardLayout=standard
+```
+
+TODO: Take advantage of fcitx5's config UI and enum types.
+
+## Setting Up fcitx5 for Ubuntu 20 LTS.
+
+You don't need this if you are on Ubuntu 21 or later.
 
 Based on Ubuntu 20 LTS. By default there aren't GUI tools and after apt install
 nothing is configured for you. Additional input methods won't be discovered by
@@ -40,6 +53,7 @@ Layout=
 [GroupOrder]
 0=Default
 ```
+
 For Dvorak users, replace all `keyboard-us` instances to `keyboard-us-dvorak`,
 and add `Layout=dvorak` in that US keyboard setting item.
 

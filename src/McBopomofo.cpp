@@ -2,14 +2,18 @@
 #include "ParselessLM.h"
 #include <fcitx-utils/standardpath.h>
 #include <filesystem>
+#include <string_view>
 
 // TODO: Remove this after everything is implemented.
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+static const char* kDataPath = "data/mcbopomofo-data.txt";
+static const char* kConfigPath = "conf/mcbopomofo.conf";
+
 McBopomofoEngine::McBopomofoEngine() {
   std::string path;
   path = fcitx::StandardPath::global().locate(
-      fcitx::StandardPath::Type::PkgData, "data/mcbopomofo-data.txt");
+      fcitx::StandardPath::Type::PkgData, kDataPath);
 
   if (std::filesystem::exists(path)) {
     FCITX_INFO() << "found McBopomofo data: " << path;
@@ -24,11 +28,32 @@ McBopomofoEngine::McBopomofoEngine() {
   }
 
   m_state = new McBopomofo::InputStateEmpty();
+
+  // Required by convention of fcitx5 modules to load config on its own.
+  reloadConfig();
+}
+
+const fcitx::Configuration* McBopomofoEngine::getConfig() const {
+  FCITX_INFO() << "getConfig";
+  return &config_;
+}
+
+void McBopomofoEngine::setConfig(const fcitx::RawConfig& config) {
+  FCITX_INFO() << "setConfig";
+  config_.load(config, true);
+  fcitx::safeSaveAsIni(config_, kConfigPath);
+}
+
+void McBopomofoEngine::reloadConfig() {
+  FCITX_INFO() << "reloadConfig";
+  fcitx::readAsIni(config_, kConfigPath);
 }
 
 void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
                                 fcitx::KeyEvent& keyEvent) {
   FCITX_UNUSED(entry);
+  FCITX_INFO() << "config: " << config_.bopomofoKeyboardLayout.value() << ", "
+               << config_.debugMapDvorakBackToQwerty.value();
   FCITX_INFO() << keyEvent.key() << " isRelease=" << keyEvent.isRelease();
 }
 
