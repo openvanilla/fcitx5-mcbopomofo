@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <memory>
 
+namespace McBopomofo {
+
 // TODO: Remove this after everything is implemented.
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
@@ -82,9 +84,9 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
   FCITX_UNUSED(entry);
 
   if (config_.bopomofoKeyboardLayout.value() == BopomofoKeyboardLayout::Eten) {
-    FCITX_INFO() << "using eten layout";
+    FCITX_INFO() << "using layout: eten";
   } else {
-    FCITX_INFO() << "using standard layout";
+    FCITX_INFO() << "using layout: standard";
   }
 
   FCITX_INFO() << "convert Dvorak to QWERTY: "
@@ -113,7 +115,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
     int idx = keyEvent.key().keyListIndex(selection_keys_);
     if (idx >= 0) {
       if (idx < current_candidate_list->size()) {
-        keyEvent.accept();
+        keyEvent.filterAndAccept();
 
         auto selectedCandidate = current_candidate_list->candidate(idx);
         context->inputPanel().reset();
@@ -126,7 +128,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
     }
 
     if (keyEvent.key().check(FcitxKey_Escape)) {
-      keyEvent.accept();
+      keyEvent.filterAndAccept();
 
       // Reset the panel, then update the preedit again.
       context->inputPanel().reset();
@@ -145,7 +147,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
     }
 
     // Absorb all other keys.
-    keyEvent.accept();
+    keyEvent.filterAndAccept();
     return;
   }
 
@@ -311,3 +313,5 @@ void McBopomofoEngine::handleCandidates(
 FCITX_ADDON_FACTORY(McBopomofoEngineFactory);
 
 #pragma GCC diagnostic pop
+
+}; // namespace McBopomofo

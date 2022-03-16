@@ -10,6 +10,8 @@
 #include <fcitx/inputmethodengine.h>
 #include <optional>
 
+namespace McBopomofo {
+
 enum class BopomofoKeyboardLayout { Standard, Eten };
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(BopomofoKeyboardLayout, N_("standard"),
                                  N_("eten"));
@@ -71,5 +73,7 @@ class McBopomofoEngineFactory : public fcitx::AddonFactory {
     return new McBopomofoEngine();
   }
 };
+
+}; // namespace McBopomofo
 
 #endif // _FCITX5_MCBOPOMOFO_MCBOPOMOFO_H_
