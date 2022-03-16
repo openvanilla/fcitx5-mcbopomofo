@@ -1,25 +1,53 @@
+// Copyright (c) 2022 and onwards The McBopomofo Authors.
+//
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+
 #include "McBopomofo.h"
-#include "ParselessLM.h"
+
 #include <fcitx-utils/standardpath.h>
 #include <fcitx/candidatelist.h>
 #include <fcitx/inputcontext.h>
 #include <fcitx/inputpanel.h>
+
 #include <filesystem>
 #include <memory>
+#include <utility>
+
+#include "ParselessLM.h"
 
 namespace McBopomofo {
 
-// TODO: Remove this after everything is implemented.
+// TODO(unassigned): Remove this after everything is implemented.
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 static const char* kDataPath = "data/mcbopomofo-data.txt";
 static const char* kConfigPath = "conf/mcbopomofo.conf";
 
-// TODO: Remove this once fcitx::DisplayOnlyCandidateWord is available through
-// Ubuntu.
+// TODO(unassigned): Remove this once fcitx::DisplayOnlyCandidateWord is
+// available through Ubuntu.
 class DisplayOnlyCandidateWord : public fcitx::CandidateWord {
-public:
-  DisplayOnlyCandidateWord(fcitx::Text text) : fcitx::CandidateWord(text) {}
+ public:
+  explicit DisplayOnlyCandidateWord(fcitx::Text text)
+      : fcitx::CandidateWord(text) {}
   void select(fcitx::InputContext* inputContext) const override {}
 };
 
@@ -183,8 +211,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
     candidate_list->setSelectionKey(selection_keys_);
     candidate_list->setPageSize(3);
 
-    // TODO: Migrate to the new fcitx5 API using the commented-out code below
-    // once on the latest API.
+    // TODO(unassigned): Migrate to the new fcitx5 API using the commented-out
+    // code below once on the latest API.
     /*
     std::unique_ptr<fcitx::CandidateWord> candidate0 =
     std::make_unique<fcitx::CandidateWord>(fcitx::Text{"hello"});
@@ -314,4 +342,4 @@ FCITX_ADDON_FACTORY(McBopomofoEngineFactory);
 
 #pragma GCC diagnostic pop
 
-}; // namespace McBopomofo
+};  // namespace McBopomofo

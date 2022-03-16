@@ -1,14 +1,39 @@
-#ifndef _FCITX5_MCBOPOMOFO_MCBOPOMOFO_H_
-#define _FCITX5_MCBOPOMOFO_MCBOPOMOFO_H_
+// Copyright (c) 2022 and onwards The McBopomofo Authors.
+//
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
 
-#include "InputState.h"
+#ifndef SRC_MCBOPOMOFO_H_
+#define SRC_MCBOPOMOFO_H_
+
 #include <fcitx-config/configuration.h>
 #include <fcitx-config/enum.h>
 #include <fcitx-config/iniparser.h>
 #include <fcitx-utils/i18n.h>
 #include <fcitx/addonfactory.h>
 #include <fcitx/inputmethodengine.h>
-#include <optional>
+
+#include <string>
+
+#include "InputState.h"
 
 namespace McBopomofo {
 
@@ -28,14 +53,13 @@ FCITX_CONFIGURATION(
     // Whether to map Dvorak characters back to Qwerty layout;
     // this is a workaround of fcitx5/wayland's limitations.
     // See https://bugzilla.gnome.org/show_bug.cgi?id=162726
-    // TODO: Remove this once fcitx5 handles Dvorak better.
+    // TODO(unassigned): Remove this once fcitx5 handles Dvorak better.
     fcitx::Option<bool> debugMapDvorakBackToQwerty{
         this, "DebugMapDvorakBackToQwerty",
         _("Debug Only - Map Dvorak back to Qwerty"), false};);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
-
-public:
+ public:
   McBopomofoEngine();
 
   void reset(const fcitx::InputMethodEntry& entry,
@@ -47,7 +71,7 @@ public:
   void setConfig(const fcitx::RawConfig& config) override;
   void reloadConfig() override;
 
-private:
+ private:
   void handle(McBopomofo::InputState* newState);
   void handleEmpty(McBopomofo::InputStateEmpty* newState,
                    McBopomofo::InputState* state);
@@ -74,6 +98,6 @@ class McBopomofoEngineFactory : public fcitx::AddonFactory {
   }
 };
 
-}; // namespace McBopomofo
+};  // namespace McBopomofo
 
-#endif // _FCITX5_MCBOPOMOFO_MCBOPOMOFO_H_
+#endif  // SRC_MCBOPOMOFO_H_
