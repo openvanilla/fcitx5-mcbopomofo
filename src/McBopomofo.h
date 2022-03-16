@@ -3,25 +3,33 @@
 
 #include "InputState.h"
 #include <fcitx-config/configuration.h>
+#include <fcitx-config/enum.h>
 #include <fcitx-config/iniparser.h>
 #include <fcitx-utils/i18n.h>
 #include <fcitx/addonfactory.h>
 #include <fcitx/inputmethodengine.h>
 #include <optional>
 
-FCITX_CONFIGURATION(McBopomofoConfig,
-                    // Keyboard layout: standard, eten, etc.
-                    // TODO: Use standard fcitx5 "enum"-like config, if such option exists.
-                    fcitx::Option<std::string> bopomofoKeyboardLayout{
-                        this, "BopomofoKeyboardLayout",
-                        _("Bopomofo Keyboard Layout"), "standard"};
-                    // Whether to map Dvorak characters back to Qwerty layout;
-                    // this is a workaround of fcitx5/wayland's limitations.
-                    // See https://bugzilla.gnome.org/show_bug.cgi?id=162726
-                    // TODO: Remove this once fcitx5 handles Dvorak better.
-                    fcitx::Option<bool> debugMapDvorakBackToQwerty{
-                        this, "DebugMapDvorakBackToQwerty",
-                        _("Debug Only - Map Dvorak back to Qwerty"), false};);
+enum class BopomofoKeyboardLayout { Standard, Eten };
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(BopomofoKeyboardLayout, N_("standard"),
+                                 N_("eten"));
+
+FCITX_CONFIGURATION(
+    McBopomofoConfig,
+    // Keyboard layout: standard, eten, etc.
+
+    fcitx::OptionWithAnnotation<BopomofoKeyboardLayout,
+                                BopomofoKeyboardLayoutI18NAnnotation>
+        bopomofoKeyboardLayout{this, "BopomofoKeyboardLayout",
+                               _("Bopomofo Keyboard Layout"),
+                               BopomofoKeyboardLayout::Standard};
+    // Whether to map Dvorak characters back to Qwerty layout;
+    // this is a workaround of fcitx5/wayland's limitations.
+    // See https://bugzilla.gnome.org/show_bug.cgi?id=162726
+    // TODO: Remove this once fcitx5 handles Dvorak better.
+    fcitx::Option<bool> debugMapDvorakBackToQwerty{
+        this, "DebugMapDvorakBackToQwerty",
+        _("Debug Only - Map Dvorak back to Qwerty"), false};);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
 
@@ -50,6 +58,8 @@ private:
 
   McBopomofo::InputState* m_state;
   McBopomofoConfig config_;
+  fcitx::KeyList selection_keys_;
+  std::string foo_buffer_;
 };
 
 class McBopomofoEngineFactory : public fcitx::AddonFactory {
