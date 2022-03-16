@@ -60,6 +60,23 @@ void McBopomofoEngine::reloadConfig() {
   fcitx::readAsIni(config_, kConfigPath);
 }
 
+void McBopomofoEngine::reset(const fcitx::InputMethodEntry& entry,
+                             fcitx::InputContextEvent& keyEvent) {
+  FCITX_INFO() << "reset";
+
+  if (foo_buffer_.empty()) {
+    return;
+  }
+
+  // Commit the dirty preedit buffer.
+  fcitx::InputContext* context = keyEvent.inputContext();
+  context->inputPanel().reset();
+  context->updatePreedit();
+  context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+  context->commitString(foo_buffer_);
+  foo_buffer_ = "";
+}
+
 void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
                                 fcitx::KeyEvent& keyEvent) {
   FCITX_UNUSED(entry);
@@ -72,7 +89,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
 
   FCITX_INFO() << "convert Dvorak to QWERTY: "
                << config_.debugMapDvorakBackToQwerty.value();
-  FCITX_INFO() << keyEvent.key() << " isRelease=" << keyEvent.isRelease();
+  FCITX_INFO() << keyEvent.key() << " isRelease=" << keyEvent.isRelease()
+               << " isInputContextEvent=" << keyEvent.isInputContextEvent();
 
   if (!keyEvent.isInputContextEvent()) {
     return;

@@ -35,6 +35,9 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
 
 public:
   McBopomofoEngine();
+
+  void reset(const fcitx::InputMethodEntry& entry,
+             fcitx::InputContextEvent& keyEvent) override;
   void keyEvent(const fcitx::InputMethodEntry& entry,
                 fcitx::KeyEvent& keyEvent) override;
 
