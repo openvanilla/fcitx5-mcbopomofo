@@ -51,24 +51,39 @@ class DisplayOnlyCandidateWord : public fcitx::CandidateWord {
   void select(fcitx::InputContext* inputContext) const override {}
 };
 
+class EmptyLM : public Formosa::Gramambular::LanguageModel {
+ public:
+  const std::vector<Formosa::Gramambular::Bigram> bigramsForKeys(
+      const std::string&, const std::string&) override {
+    return std::vector<Formosa::Gramambular::Bigram>();
+  }
+  const std::vector<Formosa::Gramambular::Unigram> unigramsForKey(
+      const std::string&) override {
+    return std::vector<Formosa::Gramambular::Unigram>();
+  }
+  bool hasUnigramsForKey(const std::string&) override { return false; }
+};
+
 McBopomofoEngine::McBopomofoEngine() {
   std::string path;
   path = fcitx::StandardPath::global().locate(
       fcitx::StandardPath::Type::PkgData, kDataPath);
 
+  std::unique_ptr<Formosa::Gramambular::LanguageModel> lm =
+      std::make_unique<EmptyLM>();
   if (std::filesystem::exists(path)) {
     FCITX_INFO() << "found McBopomofo data: " << path;
 
-    McBopomofo::ParselessLM lm;
-    lm.open(path);
-    auto unigrams = lm.unigramsForKey("ㄒㄧㄠˇ");
-    for (const auto& unigram : unigrams) {
-      FCITX_INFO() << unigram;
+    std::unique_ptr<ParselessLM> parseless_lm = std::make_unique<ParselessLM>();
+    bool result = parseless_lm->open(path);
+    if (result) {
+      FCITX_INFO() << "language model successfully opened";
+      lm = std::move(parseless_lm);
     }
-    lm.close();
   }
 
-  state_ = std::make_unique<McBopomofo::InputStateEmpty>();
+  key_handler_ = std::make_unique<KeyHandler>(std::move(lm));
+  state_ = std::make_unique<InputStateEmpty>();
 
   // Required by convention of fcitx5 modules to load config on its own.
   reloadConfig();
@@ -289,52 +304,48 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
   }
 }
 
-void McBopomofoEngine::handle(
-    std::unique_ptr<McBopomofo::InputState> newState) {
-  if (auto empty = dynamic_cast<McBopomofo::InputStateEmpty*>(newState.get())) {
+void McBopomofoEngine::handle(std::unique_ptr<InputState> newState) {
+  if (auto empty = dynamic_cast<InputStateEmpty*>(newState.get())) {
     handleEmpty(empty, state_.get());
   } else if (auto emptyIgnoringPrevious =
-                 dynamic_cast<McBopomofo::InputStateEmptyIgnoringPrevious*>(
+                 dynamic_cast<InputStateEmptyIgnoringPrevious*>(
                      newState.get())) {
     handleEmptyIgnoringPrevious(emptyIgnoringPrevious, state_.get());
-  } else if (auto committing = dynamic_cast<McBopomofo::InputStateCommitting*>(
-                 newState.get())) {
+  } else if (auto committing =
+                 dynamic_cast<InputStateCommitting*>(newState.get())) {
     handleCommitting(committing, state_.get());
-  } else if (auto inputting = dynamic_cast<McBopomofo::InputStateInputting*>(
-                 newState.get())) {
+  } else if (auto inputting =
+                 dynamic_cast<InputStateInputting*>(newState.get())) {
     handleInputting(inputting, state_.get());
   } else if (auto candidates =
-                 dynamic_cast<McBopomofo::InputStateChoosingCandidate*>(
-                     newState.get())) {
+                 dynamic_cast<InputStateChoosingCandidate*>(newState.get())) {
     handleCandidates(candidates, state_.get());
   }
   state_ = std::move(newState);
 }
 
-void McBopomofoEngine::handleEmpty(McBopomofo::InputStateEmpty* newState,
-                                   McBopomofo::InputState* state) {
+void McBopomofoEngine::handleEmpty(InputStateEmpty* newState,
+                                   InputState* state) {
   // implement this
 }
 
 void McBopomofoEngine::handleEmptyIgnoringPrevious(
-    McBopomofo::InputStateEmptyIgnoringPrevious* newState,
-    McBopomofo::InputState* state) {
+    InputStateEmptyIgnoringPrevious* newState, InputState* state) {
   // implement this
 }
 
-void McBopomofoEngine::handleCommitting(
-    McBopomofo::InputStateCommitting* newState, McBopomofo::InputState* state) {
+void McBopomofoEngine::handleCommitting(InputStateCommitting* newState,
+                                        InputState* state) {
   // implement this
 }
 
-void McBopomofoEngine::handleInputting(
-    McBopomofo::InputStateInputting* newState, McBopomofo::InputState* state) {
+void McBopomofoEngine::handleInputting(InputStateInputting* newState,
+                                       InputState* state) {
   // implement this
 }
 
-void McBopomofoEngine::handleCandidates(
-    McBopomofo::InputStateChoosingCandidate* newState,
-    McBopomofo::InputState* state) {
+void McBopomofoEngine::handleCandidates(InputStateChoosingCandidate* newState,
+                                        InputState* state) {
   // implement this
 }
 

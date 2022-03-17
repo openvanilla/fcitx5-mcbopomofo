@@ -32,7 +32,8 @@ namespace McBopomofo {
 
 constexpr const char* kJoinSeparator = "-";
 
-KeyHandler::KeyHandler(std::unique_ptr<McBopomofo::McBopomofoLM> language_model)
+KeyHandler::KeyHandler(
+    std::unique_ptr<Formosa::Gramambular::LanguageModel> language_model)
     : bopomofo_reading_buffer_(
           Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {
   language_model_ = std::move(language_model);

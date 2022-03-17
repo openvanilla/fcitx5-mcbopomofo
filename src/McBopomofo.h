@@ -35,6 +35,7 @@
 #include <string>
 
 #include "InputState.h"
+#include "KeyHandler.h"
 
 namespace McBopomofo {
 
@@ -74,22 +75,19 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
 
  private:
   // Handles state transitions.
-  void handle(std::unique_ptr<McBopomofo::InputState> newState);
+  void handle(std::unique_ptr<InputState> newState);
 
   // Methods below handle raw pointers as they don't affect ownership.
-  void handleEmpty(McBopomofo::InputStateEmpty* newState,
-                   McBopomofo::InputState* state);
-  void handleEmptyIgnoringPrevious(
-      McBopomofo::InputStateEmptyIgnoringPrevious* newState,
-      McBopomofo::InputState* state);
-  void handleCommitting(McBopomofo::InputStateCommitting* newState,
-                        McBopomofo::InputState* state);
-  void handleInputting(McBopomofo::InputStateInputting* newState,
-                       McBopomofo::InputState* state);
-  void handleCandidates(McBopomofo::InputStateChoosingCandidate* newState,
-                        McBopomofo::InputState* state);
+  void handleEmpty(InputStateEmpty* newState, InputState* state);
+  void handleEmptyIgnoringPrevious(InputStateEmptyIgnoringPrevious* newState,
+                                   InputState* state);
+  void handleCommitting(InputStateCommitting* newState, InputState* state);
+  void handleInputting(InputStateInputting* newState, InputState* state);
+  void handleCandidates(InputStateChoosingCandidate* newState,
+                        InputState* state);
 
-  std::unique_ptr<McBopomofo::InputState> state_;
+  std::unique_ptr<KeyHandler> key_handler_;
+  std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;
   fcitx::KeyList selection_keys_;
   std::string foo_buffer_;

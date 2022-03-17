@@ -10,6 +10,9 @@ set(MCBOPOMOFO_LIB_SOURCES
  Engine/UserPhrasesLM.cpp
  Engine/Mandarin/Mandarin.cpp)
 
+# https://stackoverflow.com/questions/26549137/shared-library-on-linux-and-fpic-error
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
 add_library(McBopomofoLib STATIC ${MCBOPOMOFO_LIB_SOURCES})
 target_include_directories(McBopomofoLib PRIVATE BEFORE Fcitx5::Core)
 target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Core)
