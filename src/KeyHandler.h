@@ -1,42 +1,68 @@
-#ifndef _FCITX5_MCBOPOMOFO_KEYHANDLER_H_
-#define _FCITX5_MCBOPOMOFO_KEYHANDLER_H_
+// Copyright (c) 2022 and onwards The McBopomofo Authors.
+//
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+
+#ifndef SRC_KEYHANDLER_H_
+#define SRC_KEYHANDLER_H_
+
+#include <fcitx/inputmethodengine.h>
+
+#include <functional>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "Gramambular.h"
 #include "InputState.h"
 #include "Mandarin.h"
 #include "McBopomofoLM.h"
 #include "UserOverrideModel.h"
-#include <fcitx/inputmethodengine.h>
-#include <functional>
-#include <string>
-#include <vector>
 
 namespace McBopomofo {
 class KeyHandler {
+ public:
+  explicit KeyHandler(std::unique_ptr<McBopomofo::McBopomofoLM> language_model);
 
-public:
-  KeyHandler();
-  ~KeyHandler();
-  bool handle(fcitx::KeyEvent &keyEvent, McBopomofo::InputState *state,
-              std::function<void(McBopomofo::InputState)> stateCallback,
+  // Given a fcitx5 KeyEvent and the current state, invokes the stateCallback if
+  // a new state is entered, or errorCallback will be invoked. Returns true if
+  // the key should be absorbed, signaling that the key is accepted and handled,
+  // or false if the event should be let pass through.
+  bool handle(const fcitx::KeyEvent& keyEvent, McBopomofo::InputState* state,
+              std::function<void(std::unique_ptr<McBopomofo::InputState>)>
+                  stateCallback,
               std::function<void(void)> errorCallback);
 
-private:
-  Formosa::Mandarin::BopomofoReadingBuffer *_bpmfReadingBuffer;
+ private:
+  Formosa::Mandarin::BopomofoReadingBuffer bopomofo_reading_buffer_;
 
   // language model
-  McBopomofo::McBopomofoLM *_languageModel;
+  std::unique_ptr<McBopomofo::McBopomofoLM> language_model_;
 
-  // user override model
-  McBopomofo::UserOverrideModel *_userOverrideModel;
-
-  // the grid (lattice) builder for the unigrams (and bigrams)
-  Formosa::Gramambular::BlockReadingBuilder *_builder;
+  std::unique_ptr<Formosa::Gramambular::BlockReadingBuilder> builder_;
 
   // latest walked path (trellis) using the Viterbi algorithm
-  std::vector<Formosa::Gramambular::NodeAnchor> _walkedNodes;
+  std::vector<Formosa::Gramambular::NodeAnchor> walkedNodes_;
 };
 
-} // namespace McBopomofo
+}  // namespace McBopomofo
 
-#endif
+#endif  // SRC_KEYHANDLER_H_

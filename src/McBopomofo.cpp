@@ -68,7 +68,7 @@ McBopomofoEngine::McBopomofoEngine() {
     lm.close();
   }
 
-  m_state = new McBopomofo::InputStateEmpty();
+  state_ = std::make_unique<McBopomofo::InputStateEmpty>();
 
   // Required by convention of fcitx5 modules to load config on its own.
   reloadConfig();
@@ -289,26 +289,26 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
   }
 }
 
-void McBopomofoEngine::handle(McBopomofo::InputState* newState) {
-  auto current = m_state;
-  if (auto empty = dynamic_cast<McBopomofo::InputStateEmpty*>(newState)) {
-    handleEmpty(empty, current);
+void McBopomofoEngine::handle(
+    std::unique_ptr<McBopomofo::InputState> newState) {
+  if (auto empty = dynamic_cast<McBopomofo::InputStateEmpty*>(newState.get())) {
+    handleEmpty(empty, state_.get());
   } else if (auto emptyIgnoringPrevious =
                  dynamic_cast<McBopomofo::InputStateEmptyIgnoringPrevious*>(
-                     newState)) {
-    handleEmptyIgnoringPrevious(emptyIgnoringPrevious, current);
-  } else if (auto committing =
-                 dynamic_cast<McBopomofo::InputStateCommitting*>(newState)) {
-    handleCommitting(committing, current);
-  } else if (auto inputting =
-                 dynamic_cast<McBopomofo::InputStateInputting*>(newState)) {
-    handleInputting(inputting, current);
+                     newState.get())) {
+    handleEmptyIgnoringPrevious(emptyIgnoringPrevious, state_.get());
+  } else if (auto committing = dynamic_cast<McBopomofo::InputStateCommitting*>(
+                 newState.get())) {
+    handleCommitting(committing, state_.get());
+  } else if (auto inputting = dynamic_cast<McBopomofo::InputStateInputting*>(
+                 newState.get())) {
+    handleInputting(inputting, state_.get());
   } else if (auto candidates =
                  dynamic_cast<McBopomofo::InputStateChoosingCandidate*>(
-                     newState)) {
-    handleCandidates(candidates, current);
+                     newState.get())) {
+    handleCandidates(candidates, state_.get());
   }
-  m_state = newState;
+  state_ = std::move(newState);
 }
 
 void McBopomofoEngine::handleEmpty(McBopomofo::InputStateEmpty* newState,

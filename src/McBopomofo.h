@@ -31,6 +31,7 @@
 #include <fcitx/addonfactory.h>
 #include <fcitx/inputmethodengine.h>
 
+#include <memory>
 #include <string>
 
 #include "InputState.h"
@@ -72,7 +73,10 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void reloadConfig() override;
 
  private:
-  void handle(McBopomofo::InputState* newState);
+  // Handles state transitions.
+  void handle(std::unique_ptr<McBopomofo::InputState> newState);
+
+  // Methods below handle raw pointers as they don't affect ownership.
   void handleEmpty(McBopomofo::InputStateEmpty* newState,
                    McBopomofo::InputState* state);
   void handleEmptyIgnoringPrevious(
@@ -85,7 +89,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void handleCandidates(McBopomofo::InputStateChoosingCandidate* newState,
                         McBopomofo::InputState* state);
 
-  McBopomofo::InputState* m_state;
+  std::unique_ptr<McBopomofo::InputState> state_;
   McBopomofoConfig config_;
   fcitx::KeyList selection_keys_;
   std::string foo_buffer_;
