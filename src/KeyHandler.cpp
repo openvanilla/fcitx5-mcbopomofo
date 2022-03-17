@@ -53,4 +53,4 @@ bool KeyHandler::handle(
 
 #pragma GCC diagnostic pop
 
-};  // namespace McBopomofo
+}  // namespace McBopomofo

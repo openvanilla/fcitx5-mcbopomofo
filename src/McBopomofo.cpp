@@ -342,4 +342,4 @@ FCITX_ADDON_FACTORY(McBopomofoEngineFactory);
 
 #pragma GCC diagnostic pop
 
-};  // namespace McBopomofo
+}  // namespace McBopomofo

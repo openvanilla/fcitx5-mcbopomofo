@@ -102,6 +102,6 @@ class McBopomofoEngineFactory : public fcitx::AddonFactory {
   }
 };
 
-};  // namespace McBopomofo
+}  // namespace McBopomofo
 
 #endif  // SRC_MCBOPOMOFO_H_
