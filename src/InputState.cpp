@@ -32,38 +32,38 @@ std::string InputStateEmptyIgnoringPrevious::composingBuffer() const {
 }
 
 void InputStateCommitting::setPoppedText(const std::string& poppedText) {
-  m_poppedText = poppedText;
+  poppedText_ = poppedText;
 }
 
-std::string InputStateCommitting::poppedText() const { return m_poppedText; }
+std::string InputStateCommitting::poppedText() const { return poppedText_; }
 
 void InputStateNotEmpty::setComposingBuffer(
     const std::string& composingBuffer) {
-  m_composingBuffer = composingBuffer;
+  composingBuffer_ = composingBuffer;
 }
 
 std::string InputStateNotEmpty::composingBuffer() const {
-  return m_composingBuffer;
+  return composingBuffer_;
 }
 
-void InputStateNotEmpty::setCursorIndex(size_t index) { m_cursorIndex = index; }
+void InputStateNotEmpty::setCursorIndex(size_t index) { cursorIndex_ = index; }
 
-size_t InputStateNotEmpty::cursorIndex() const { return m_cursorIndex; }
+size_t InputStateNotEmpty::cursorIndex() const { return cursorIndex_; }
 
 void InputStateInputting::setPoppedText(const std::string& poppedText) {
-  m_poppedText = poppedText;
+  poppedText_ = poppedText;
 }
 
-std::string InputStateInputting::poppedText() const { return m_poppedText; }
+std::string InputStateInputting::poppedText() const { return poppedText_; }
 
 void InputStateChoosingCandidate::setCandidates(
     const std::vector<std::string>& candidates) {
-  m_candidates = candidates;
+  candidates_ = candidates;
 }
 
 const std::vector<std::string>& InputStateChoosingCandidate::candidates()
     const {
-  return m_candidates;
+  return candidates_;
 }
 
 }  // namespace McBopomofo

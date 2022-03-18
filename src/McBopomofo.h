@@ -86,11 +86,11 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void handleCandidatesState(InputState* current,
                              InputStateChoosingCandidate* next);
 
-  std::unique_ptr<KeyHandler> key_handler_;
+  std::unique_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;
-  fcitx::KeyList selection_keys_;
-  std::string foo_buffer_;
+  fcitx::KeyList selectionKeys_;
+  std::string fooBuffer_;
 };
 
 class McBopomofoEngineFactory : public fcitx::AddonFactory {

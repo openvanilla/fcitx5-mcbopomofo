@@ -50,7 +50,7 @@ class InputStateCommitting : public InputState {
   std::string poppedText() const;
 
  protected:
-  std::string m_poppedText;
+  std::string poppedText_;
 };
 
 class InputStateNotEmpty : public InputState {
@@ -62,8 +62,8 @@ class InputStateNotEmpty : public InputState {
   size_t cursorIndex() const;
 
  protected:
-  std::string m_composingBuffer;
-  size_t m_cursorIndex;
+  std::string composingBuffer_;
+  size_t cursorIndex_;
 };
 
 class InputStateInputting : public InputStateNotEmpty {
@@ -72,7 +72,7 @@ class InputStateInputting : public InputStateNotEmpty {
   std::string poppedText() const;
 
  protected:
-  std::string m_poppedText;
+  std::string poppedText_;
 };
 
 class InputStateChoosingCandidate : public InputStateNotEmpty {
@@ -81,7 +81,7 @@ class InputStateChoosingCandidate : public InputStateNotEmpty {
   const std::vector<std::string>& candidates() const;
 
  protected:
-  std::vector<std::string> m_candidates;
+  std::vector<std::string> candidates_;
 };
 
 }  // namespace McBopomofo

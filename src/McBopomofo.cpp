@@ -82,7 +82,7 @@ McBopomofoEngine::McBopomofoEngine() {
     }
   }
 
-  key_handler_ = std::make_unique<KeyHandler>(std::move(lm));
+  keyHandler_ = std::make_unique<KeyHandler>(std::move(lm));
   state_ = std::make_unique<InputStateEmpty>();
 
   // Required by convention of fcitx5 modules to load config on its own.
@@ -109,7 +109,7 @@ void McBopomofoEngine::reset(const fcitx::InputMethodEntry& entry,
                              fcitx::InputContextEvent& keyEvent) {
   FCITX_INFO() << "reset";
 
-  if (foo_buffer_.empty()) {
+  if (fooBuffer_.empty()) {
     return;
   }
 
@@ -118,8 +118,8 @@ void McBopomofoEngine::reset(const fcitx::InputMethodEntry& entry,
   context->inputPanel().reset();
   context->updatePreedit();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-  context->commitString(foo_buffer_);
-  foo_buffer_ = "";
+  context->commitString(fooBuffer_);
+  fooBuffer_ = "";
 }
 
 void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
@@ -155,7 +155,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
   // If candidate list is on.
   auto current_candidate_list = context->inputPanel().candidateList();
   if (current_candidate_list != nullptr) {
-    int idx = keyEvent.key().keyListIndex(selection_keys_);
+    int idx = keyEvent.key().keyListIndex(selectionKeys_);
     if (idx >= 0) {
       if (idx < current_candidate_list->size()) {
         keyEvent.filterAndAccept();
@@ -165,7 +165,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
         context->updatePreedit();
         context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
         context->commitString(selectedCandidate->text().toString());
-        foo_buffer_ = "";
+        fooBuffer_ = "";
         return;
       }
     }
@@ -177,8 +177,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
       context->inputPanel().reset();
 
       fcitx::Text preedit;
-      preedit.append(foo_buffer_, format);
-      preedit.setCursor(foo_buffer_.length());
+      preedit.append(fooBuffer_, format);
+      preedit.setCursor(fooBuffer_.length());
       if (use_client_preedit) {
         context->inputPanel().setClientPreedit(preedit);
       } else {
@@ -196,7 +196,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
 
   if (keyEvent.key().check(FcitxKey_Return) ||
       keyEvent.key().check(FcitxKey_KP_Enter)) {
-    if (foo_buffer_.empty()) {
+    if (fooBuffer_.empty()) {
       return;
     }
 
@@ -204,27 +204,27 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
     context->inputPanel().reset();
     context->updatePreedit();
     context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-    context->commitString(foo_buffer_);
-    foo_buffer_ = "";
+    context->commitString(fooBuffer_);
+    fooBuffer_ = "";
     return;
   }
 
   if (keyEvent.key().check(FcitxKey_space)) {
-    if (foo_buffer_.empty()) {
+    if (fooBuffer_.empty()) {
       return;
     }
 
     keyEvent.filterAndAccept();
 
-    std::unique_ptr<fcitx::CommonCandidateList> candidate_list =
+    std::unique_ptr<fcitx::CommonCandidateList> candidateList =
         std::make_unique<fcitx::CommonCandidateList>();
 
-    selection_keys_.clear();
-    selection_keys_.emplace_back(FcitxKey_1);
-    selection_keys_.emplace_back(FcitxKey_2);
-    selection_keys_.emplace_back(FcitxKey_3);
-    candidate_list->setSelectionKey(selection_keys_);
-    candidate_list->setPageSize(3);
+    selectionKeys_.clear();
+    selectionKeys_.emplace_back(FcitxKey_1);
+    selectionKeys_.emplace_back(FcitxKey_2);
+    selectionKeys_.emplace_back(FcitxKey_3);
+    candidateList->setSelectionKey(selectionKeys_);
+    candidateList->setPageSize(3);
 
     // TODO(unassigned): Migrate to the new fcitx5 API using the commented-out
     // code below once on the latest API.
@@ -241,19 +241,19 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
         new DisplayOnlyCandidateWord(fcitx::Text{"hello"});
     fcitx::CandidateWord* candidate_1 =
         new DisplayOnlyCandidateWord(fcitx::Text{"world"});
-    candidate_list->insert(0, candidate_0);
-    candidate_list->insert(1, candidate_1);
-    context->inputPanel().setCandidateList(std::move(candidate_list));
+    candidateList->insert(0, candidate_0);
+    candidateList->insert(1, candidate_1);
+    context->inputPanel().setCandidateList(std::move(candidateList));
     context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
     return;
   }
 
   if (keyEvent.key().check(FcitxKey_Escape)) {
-    if (foo_buffer_.empty()) {
+    if (fooBuffer_.empty()) {
       return;
     }
 
-    foo_buffer_.clear();
+    fooBuffer_.clear();
     keyEvent.filterAndAccept();
     context->inputPanel().reset();
     context->updatePreedit();
@@ -262,16 +262,16 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
   }
 
   if (keyEvent.key().check(FcitxKey_BackSpace)) {
-    if (foo_buffer_.empty()) {
+    if (fooBuffer_.empty()) {
       return;
     }
 
     keyEvent.filterAndAccept();
-    foo_buffer_ = foo_buffer_.substr(0, foo_buffer_.length() - 1);
+    fooBuffer_ = fooBuffer_.substr(0, fooBuffer_.length() - 1);
 
     fcitx::Text preedit;
-    preedit.append(foo_buffer_, format);
-    preedit.setCursor(foo_buffer_.length());
+    preedit.append(fooBuffer_, format);
+    preedit.setCursor(fooBuffer_.length());
     if (use_client_preedit) {
       context->inputPanel().setClientPreedit(preedit);
     } else {
@@ -283,10 +283,10 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
 
   if (keyEvent.key().isLAZ() || keyEvent.key().isDigit()) {
     keyEvent.filterAndAccept();
-    foo_buffer_.append(fcitx::Key::keySymToString(keyEvent.key().sym()));
+    fooBuffer_.append(fcitx::Key::keySymToString(keyEvent.key().sym()));
     fcitx::Text preedit;
-    preedit.append(foo_buffer_, format);
-    preedit.setCursor(foo_buffer_.length());
+    preedit.append(fooBuffer_, format);
+    preedit.setCursor(fooBuffer_.length());
     if (use_client_preedit) {
       context->inputPanel().setClientPreedit(preedit);
     } else {
@@ -298,7 +298,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
   }
 
   // Absorb other keys if buffer is not empty.
-  if (!foo_buffer_.empty()) {
+  if (!fooBuffer_.empty()) {
     keyEvent.filterAndAccept();
     return;
   }
