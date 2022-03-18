@@ -69,12 +69,12 @@ McBopomofoEngine::McBopomofoEngine() {
   path = fcitx::StandardPath::global().locate(
       fcitx::StandardPath::Type::PkgData, kDataPath);
 
-  std::unique_ptr<Formosa::Gramambular::LanguageModel> lm =
-      std::make_unique<EmptyLM>();
+  std::shared_ptr<Formosa::Gramambular::LanguageModel> lm =
+      std::make_shared<EmptyLM>();
   if (std::filesystem::exists(path)) {
     FCITX_INFO() << "found McBopomofo data: " << path;
 
-    std::unique_ptr<ParselessLM> parseless_lm = std::make_unique<ParselessLM>();
+    std::shared_ptr<ParselessLM> parseless_lm = std::make_shared<ParselessLM>();
     bool result = parseless_lm->open(path);
     if (result) {
       FCITX_INFO() << "language model successfully opened";

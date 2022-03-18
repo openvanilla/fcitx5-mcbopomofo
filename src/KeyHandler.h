@@ -41,7 +41,7 @@ namespace McBopomofo {
 class KeyHandler {
  public:
   explicit KeyHandler(
-      std::unique_ptr<Formosa::Gramambular::LanguageModel> languageModel);
+      std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel);
 
   // Given a fcitx5 KeyEvent and the current state, invokes the stateCallback if
   // a new state is entered, or errorCallback will be invoked. Returns true if
@@ -56,7 +56,7 @@ class KeyHandler {
   Formosa::Mandarin::BopomofoReadingBuffer bopomofoReadingBuffer_;
 
   // language model
-  std::unique_ptr<Formosa::Gramambular::LanguageModel> languageModel_;
+  std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel_;
 
   std::unique_ptr<Formosa::Gramambular::BlockReadingBuilder> builder_;
 
