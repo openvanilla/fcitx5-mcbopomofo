@@ -10,3 +10,5 @@ add_subdirectory(src)
 # McBopomofo data
 configure_file(data/data.txt mcbopomofo-data.txt)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-data.txt" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
+
+set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest." FORCE)

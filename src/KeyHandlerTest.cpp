@@ -21,38 +21,33 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
+#include <string>
+
 #include "KeyHandler.h"
-
-#include <utility>
-
-// TODO(unassigned): Remove this after everything is implemented.
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include "gtest/gtest.h"
 
 namespace McBopomofo {
 
-constexpr const char* kJoinSeparator = "-";
+TEST(KeyHandlerTest, Trivial) {
+  fcitx::KeyEvent keyEvent(nullptr, fcitx::Key());
 
-KeyHandler::KeyHandler(
-    std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel)
-    : bopomofoReadingBuffer_(
-          Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {
-  languageModel_ = std::move(languageModel);
-  builder_ = std::make_unique<Formosa::Gramambular::BlockReadingBuilder>(
-      languageModel_.get());
-  builder_->setJoinSeparator(kJoinSeparator);
+  KeyHandler handler(nullptr);
+
+  bool stateCallbackInvoked = false;
+  bool errorCallbackInvoked = false;
+
+  auto emptyState = std::make_unique<InputStates::Empty>();
+
+  bool handled = handler.handle(
+      keyEvent, emptyState.get(),
+      [&stateCallbackInvoked](std::unique_ptr<McBopomofo::InputState>) {
+        stateCallbackInvoked = true;
+      },
+      [&errorCallbackInvoked]() { errorCallbackInvoked = true; });
+
+  EXPECT_FALSE(stateCallbackInvoked);
+  EXPECT_FALSE(errorCallbackInvoked);
+  EXPECT_FALSE(handled);
 }
-
-bool KeyHandler::handle(
-    const fcitx::KeyEvent& keyEvent, McBopomofo::InputState* state,
-    std::function<void(std::unique_ptr<McBopomofo::InputState>)> stateCallback,
-    std::function<void(void)> errorCallback) {
-  if (dynamic_cast<McBopomofo::InputStates::Empty*>(state)) {
-    return false;
-  }
-  return false;
-}
-void KeyHandler::reset() {}
-
-#pragma GCC diagnostic pop
 
 }  // namespace McBopomofo

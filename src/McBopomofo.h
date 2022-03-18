@@ -31,9 +31,11 @@
 #include <fcitx/addonfactory.h>
 #include <fcitx/inputmethodengine.h>
 
+#include <memory>
 #include <string>
 
 #include "InputState.h"
+#include "KeyHandler.h"
 
 namespace McBopomofo {
 
@@ -72,23 +74,35 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void reloadConfig() override;
 
  private:
-  void handle(McBopomofo::InputState* newState);
-  void handleEmpty(McBopomofo::InputStateEmpty* newState,
-                   McBopomofo::InputState* state);
-  void handleEmptyIgnoringPrevious(
-      McBopomofo::InputStateEmptyIgnoringPrevious* newState,
-      McBopomofo::InputState* state);
-  void handleCommitting(McBopomofo::InputStateCommitting* newState,
-                        McBopomofo::InputState* state);
-  void handleInputting(McBopomofo::InputStateInputting* newState,
-                       McBopomofo::InputState* state);
-  void handleCandidates(McBopomofo::InputStateChoosingCandidate* newState,
-                        McBopomofo::InputState* state);
+  // Handles state transitions.
+  void enterNewState(fcitx::InputContext* context,
+                     std::unique_ptr<InputState> newState);
 
-  McBopomofo::InputState* m_state;
+  // Methods below enterNewState raw pointers as they don't affect ownership.
+  void handleEmptyState(fcitx::InputContext* context, InputState* prev,
+                        InputStates::Empty* current);
+  void handleEmptyIgnoringPreviousState(
+      fcitx::InputContext* context, InputState* prev,
+      InputStates::EmptyIgnoringPrevious* current);
+  void handleCommittingState(fcitx::InputContext* context, InputState* prev,
+                             InputStates::Committing* current);
+  void handleInputtingState(fcitx::InputContext* context, InputState* prev,
+                            InputStates::Inputting* current);
+  void handleCandidatesState(fcitx::InputContext* context, InputState* prev,
+                             InputStates::ChoosingCandidate* current);
+
+  // Helpers.
+
+  // Updates the preedit with a not-empty state's composing buffer and cursor
+  // index.
+  void updatePreedit(fcitx::InputContext* context,
+                     InputStates::NotEmpty* state);
+
+  std::unique_ptr<KeyHandler> keyHandler_;
+  std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;
-  fcitx::KeyList selection_keys_;
-  std::string foo_buffer_;
+  fcitx::KeyList selectionKeys_;
+  std::string fooBuffer_;
 };
 
 class McBopomofoEngineFactory : public fcitx::AddonFactory {
@@ -98,6 +112,6 @@ class McBopomofoEngineFactory : public fcitx::AddonFactory {
   }
 };
 
-};  // namespace McBopomofo
+}  // namespace McBopomofo
 
 #endif  // SRC_MCBOPOMOFO_H_

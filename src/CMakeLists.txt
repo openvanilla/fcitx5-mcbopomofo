@@ -1,5 +1,4 @@
-set(MCBOPOMOFO_SOURCES
- McBopomofo.cpp
+set(MCBOPOMOFO_LIB_SOURCES
  InputState.cpp
  KeyHandler.cpp
  Engine/KeyValueBlobReader.cpp 
@@ -9,17 +8,23 @@ set(MCBOPOMOFO_SOURCES
  Engine/PhraseReplacementMap.cpp
  Engine/UserOverrideModel.cpp
  Engine/UserPhrasesLM.cpp
- Engine/Mandarin/Mandarin.cpp
-)
+ Engine/Mandarin/Mandarin.cpp)
 
-add_library(mcbopomofo MODULE ${MCBOPOMOFO_SOURCES})
+# https://stackoverflow.com/questions/26549137/shared-library-on-linux-and-fpic-error
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
+add_library(McBopomofoLib STATIC ${MCBOPOMOFO_LIB_SOURCES})
+target_include_directories(McBopomofoLib PRIVATE BEFORE Fcitx5::Core)
+target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Core)
+set_target_properties(McBopomofoLib PROPERTIES PREFIX "")
 
 include_directories(Engine)
 include_directories(Engine/Gramambular)
 include_directories(Engine/Mandarin)
 
+add_library(mcbopomofo MODULE McBopomofo.cpp)
 # target_compile_options(mcbopomofo PRIVATE -Wall -Wextra)
-target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core)
+target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core McBopomofoLib)
 target_include_directories(mcbopomofo PRIVATE Fcitx5::Core)
 set_target_properties(mcbopomofo PROPERTIES PREFIX "")
 install(TARGETS mcbopomofo DESTINATION "${FCITX_INSTALL_LIBDIR}/fcitx5")
@@ -32,3 +37,32 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-addon.conf" RENAME mcbopom
 # Input Method registration file
 configure_file(mcbopomofo.conf.in mcbopomofo.conf)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo.conf" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/inputmethod")
+
+# Let CMake fetch Google Test for us.
+# https://github.com/google/googletest/tree/main/googletest#incorporating-into-an-existing-cmake-project
+include(FetchContent)
+
+FetchContent_Declare(
+        googletest
+        # Specify the commit you depend on and update it regularly.
+        URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+include(GoogleTest)
+
+# Test target declarations.
+add_executable(McBopomofoTest
+        KeyHandlerTest.cpp)
+target_link_libraries(McBopomofoTest PRIVATE Fcitx5::Core gtest_main McBopomofoLib)
+target_include_directories(McBopomofoTest PRIVATE Fcitx5::Core GoogleTest)
+
+gtest_discover_tests(McBopomofoTest)
+
+add_custom_target(
+        runTest
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/McBopomofoTest
+)
+add_dependencies(runTest McBopomofoTest)
