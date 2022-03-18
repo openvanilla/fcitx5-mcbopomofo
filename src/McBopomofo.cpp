@@ -31,6 +31,7 @@
 #include <filesystem>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "ParselessLM.h"
 
