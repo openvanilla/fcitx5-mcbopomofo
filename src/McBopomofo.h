@@ -75,16 +75,21 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
 
  private:
   // Handles state transitions.
-  void enterNewState(std::unique_ptr<InputState> newState);
+  void enterNewState(fcitx::InputContext* context,
+                     std::unique_ptr<InputState> newState);
 
   // Methods below enterNewState raw pointers as they don't affect ownership.
-  void handleEmptyState(InputState* current, InputStateEmpty* next);
-  void handleEmptyIgnoringPreviousState(InputState* current,
-                                        InputStateEmptyIgnoringPrevious* next);
-  void handleCommittingState(InputState* current, InputStateCommitting* next);
-  void handleInputtingState(InputState* current, InputStateInputting* next);
-  void handleCandidatesState(InputState* current,
-                             InputStateChoosingCandidate* next);
+  void handleEmptyState(fcitx::InputContext* context, InputState* current,
+                        InputStateEmpty* next);
+  void handleEmptyIgnoringPreviousState(
+      fcitx::InputContext* context, InputState* prev,
+      InputStateEmptyIgnoringPrevious* current);
+  void handleCommittingState(fcitx::InputContext* context, InputState* prev,
+                             InputStateCommitting* current);
+  void handleInputtingState(fcitx::InputContext* context, InputState* prev,
+                            InputStateInputting* current);
+  void handleCandidatesState(fcitx::InputContext* context, InputState* prev,
+                             InputStateChoosingCandidate* current);
 
   std::unique_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;

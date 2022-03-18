@@ -304,48 +304,58 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
   }
 }
 
-void McBopomofoEngine::enterNewState(std::unique_ptr<InputState> newState) {
-  if (auto empty = dynamic_cast<InputStateEmpty*>(newState.get())) {
-    handleEmptyState(state_.get(), empty);
-  } else if (auto emptyIgnoringPrevious =
-                 dynamic_cast<InputStateEmptyIgnoringPrevious*>(
-                     newState.get())) {
-    handleEmptyIgnoringPreviousState(state_.get(), emptyIgnoringPrevious);
-  } else if (auto committing =
-                 dynamic_cast<InputStateCommitting*>(newState.get())) {
-    handleCommittingState(state_.get(), committing);
-  } else if (auto inputting =
-                 dynamic_cast<InputStateInputting*>(newState.get())) {
-    handleInputtingState(state_.get(), inputting);
-  } else if (auto candidates =
-                 dynamic_cast<InputStateChoosingCandidate*>(newState.get())) {
-    handleCandidatesState(state_.get(), candidates);
-  }
+void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
+                                     std::unique_ptr<InputState> newState) {
+  // Hold the previous state, and transfer the ownership of newState.
+  std::unique_ptr<InputState> prevState = std::move(state_);
   state_ = std::move(newState);
+
+  InputState* prevPtr = prevState.get();
+  InputState* currentPtr = state_.get();
+
+  if (auto empty = dynamic_cast<InputStateEmpty*>(currentPtr)) {
+    handleEmptyState(context, prevPtr, empty);
+  } else if (auto emptyIgnoringPrevious =
+                 dynamic_cast<InputStateEmptyIgnoringPrevious*>(currentPtr)) {
+    handleEmptyIgnoringPreviousState(context, prevPtr, emptyIgnoringPrevious);
+  } else if (auto committing =
+                 dynamic_cast<InputStateCommitting*>(currentPtr)) {
+    handleCommittingState(context, prevPtr, committing);
+  } else if (auto inputting = dynamic_cast<InputStateInputting*>(currentPtr)) {
+    handleInputtingState(context, prevPtr, inputting);
+  } else if (auto candidates =
+                 dynamic_cast<InputStateChoosingCandidate*>(currentPtr)) {
+    handleCandidatesState(context, prevPtr, candidates);
+  }
 }
 
-void McBopomofoEngine::handleEmptyState(InputState* current,
+void McBopomofoEngine::handleEmptyState(fcitx::InputContext* context,
+                                        InputState* current,
                                         InputStateEmpty* next) {
   // TODO(unassigned): implement this.
 }
 
 void McBopomofoEngine::handleEmptyIgnoringPreviousState(
-    InputState* current, InputStateEmptyIgnoringPrevious* next) {
+    fcitx::InputContext* context, InputState* prev,
+    InputStateEmptyIgnoringPrevious* current) {
   // TODO(unassigned): implement this.
 }
 
-void McBopomofoEngine::handleCommittingState(InputState* current,
-                                             InputStateCommitting* next) {
+void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
+                                             InputState* prev,
+                                             InputStateCommitting* current) {
   // TODO(unassigned): implement this.
 }
 
-void McBopomofoEngine::handleInputtingState(InputState* current,
-                                            InputStateInputting* next) {
+void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
+                                            InputState* prev,
+                                            InputStateInputting* current) {
   // TODO(unassigned): implement this.
 }
 
 void McBopomofoEngine::handleCandidatesState(
-    InputState* current, InputStateChoosingCandidate* next) {
+    fcitx::InputContext* context, InputState* prev,
+    InputStateChoosingCandidate* current) {
   // TODO(unassigned): implement this.
 }
 
