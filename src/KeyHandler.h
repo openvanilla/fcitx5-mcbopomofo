@@ -51,6 +51,7 @@ class KeyHandler {
               std::function<void(std::unique_ptr<McBopomofo::InputState>)>
                   stateCallback,
               std::function<void(void)> errorCallback);
+  void reset();
 
  private:
   Formosa::Mandarin::BopomofoReadingBuffer bopomofoReadingBuffer_;

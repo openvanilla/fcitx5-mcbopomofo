@@ -36,8 +36,6 @@ class InputState {
 
 namespace InputStates {
 
-class Deactivated : public InputState {};
-
 class Empty : public InputState {
  public:
   std::string composingBuffer() const;
@@ -62,6 +60,7 @@ class NotEmpty : public InputState {
   void setComposingBuffer(const std::string& composingBuffer);
   std::string composingBuffer() const;
 
+  // cursorIndex must be *byte-based* per fcitx5 requirement.
   void setCursorIndex(size_t cursorIndex);
   size_t cursorIndex() const;
 

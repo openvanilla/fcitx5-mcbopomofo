@@ -51,6 +51,7 @@ bool KeyHandler::handle(
   }
   return false;
 }
+void KeyHandler::reset() {}
 
 #pragma GCC diagnostic pop
 
