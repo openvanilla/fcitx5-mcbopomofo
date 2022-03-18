@@ -36,7 +36,7 @@ TEST(KeyHandlerTest, Trivial) {
   bool stateCallbackInvoked = false;
   bool errorCallbackInvoked = false;
 
-  auto emptyState = std::make_unique<InputStateEmpty>();
+  auto emptyState = std::make_unique<InputStates::Empty>();
 
   bool handled = handler.handle(
       keyEvent, emptyState.get(),

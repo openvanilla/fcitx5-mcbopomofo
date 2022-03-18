@@ -24,46 +24,42 @@
 #include "InputState.h"
 
 namespace McBopomofo {
+namespace InputStates {
 
-std::string InputStateEmpty::composingBuffer() const { return ""; }
+std::string Empty::composingBuffer() const { return ""; }
 
-std::string InputStateEmptyIgnoringPrevious::composingBuffer() const {
-  return "";
-}
+std::string EmptyIgnoringPrevious::composingBuffer() const { return ""; }
 
-void InputStateCommitting::setPoppedText(const std::string& poppedText) {
+void Committing::setPoppedText(const std::string& poppedText) {
   poppedText_ = poppedText;
 }
 
-std::string InputStateCommitting::poppedText() const { return poppedText_; }
+std::string Committing::poppedText() const { return poppedText_; }
 
-void InputStateNotEmpty::setComposingBuffer(
-    const std::string& composingBuffer) {
+void NotEmpty::setComposingBuffer(const std::string& composingBuffer) {
   composingBuffer_ = composingBuffer;
 }
 
-std::string InputStateNotEmpty::composingBuffer() const {
-  return composingBuffer_;
-}
+std::string NotEmpty::composingBuffer() const { return composingBuffer_; }
 
-void InputStateNotEmpty::setCursorIndex(size_t index) { cursorIndex_ = index; }
+void NotEmpty::setCursorIndex(size_t index) { cursorIndex_ = index; }
 
-size_t InputStateNotEmpty::cursorIndex() const { return cursorIndex_; }
+size_t NotEmpty::cursorIndex() const { return cursorIndex_; }
 
-void InputStateInputting::setPoppedText(const std::string& poppedText) {
+void Inputting::setPoppedText(const std::string& poppedText) {
   poppedText_ = poppedText;
 }
 
-std::string InputStateInputting::poppedText() const { return poppedText_; }
+std::string Inputting::poppedText() const { return poppedText_; }
 
-void InputStateChoosingCandidate::setCandidates(
+void ChoosingCandidate::setCandidates(
     const std::vector<std::string>& candidates) {
   candidates_ = candidates;
 }
 
-const std::vector<std::string>& InputStateChoosingCandidate::candidates()
-    const {
+const std::vector<std::string>& ChoosingCandidate::candidates() const {
   return candidates_;
 }
 
+}  // namespace InputStates
 }  // namespace McBopomofo

@@ -84,7 +84,7 @@ McBopomofoEngine::McBopomofoEngine() {
   }
 
   keyHandler_ = std::make_unique<KeyHandler>(std::move(lm));
-  state_ = std::make_unique<InputStateEmpty>();
+  state_ = std::make_unique<Empty>();
 
   // Required by convention of fcitx5 modules to load config on its own.
   reloadConfig();
@@ -314,49 +314,51 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
   InputState* prevPtr = prevState.get();
   InputState* currentPtr = state_.get();
 
-  if (auto empty = dynamic_cast<InputStateEmpty*>(currentPtr)) {
+  if (auto empty = dynamic_cast<InputStates::Empty*>(currentPtr)) {
     handleEmptyState(context, prevPtr, empty);
   } else if (auto emptyIgnoringPrevious =
-                 dynamic_cast<InputStateEmptyIgnoringPrevious*>(currentPtr)) {
+                 dynamic_cast<InputStates::EmptyIgnoringPrevious*>(
+                     currentPtr)) {
     handleEmptyIgnoringPreviousState(context, prevPtr, emptyIgnoringPrevious);
   } else if (auto committing =
-                 dynamic_cast<InputStateCommitting*>(currentPtr)) {
+                 dynamic_cast<InputStates::Committing*>(currentPtr)) {
     handleCommittingState(context, prevPtr, committing);
-  } else if (auto inputting = dynamic_cast<InputStateInputting*>(currentPtr)) {
+  } else if (auto inputting =
+                 dynamic_cast<InputStates::Inputting*>(currentPtr)) {
     handleInputtingState(context, prevPtr, inputting);
   } else if (auto candidates =
-                 dynamic_cast<InputStateChoosingCandidate*>(currentPtr)) {
+                 dynamic_cast<InputStates::ChoosingCandidate*>(currentPtr)) {
     handleCandidatesState(context, prevPtr, candidates);
   }
 }
 
 void McBopomofoEngine::handleEmptyState(fcitx::InputContext* context,
                                         InputState* current,
-                                        InputStateEmpty* next) {
+                                        InputStates::Empty* next) {
   // TODO(unassigned): implement this.
 }
 
 void McBopomofoEngine::handleEmptyIgnoringPreviousState(
     fcitx::InputContext* context, InputState* prev,
-    InputStateEmptyIgnoringPrevious* current) {
+    InputStates::EmptyIgnoringPrevious* current) {
   // TODO(unassigned): implement this.
 }
 
 void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
                                              InputState* prev,
-                                             InputStateCommitting* current) {
+                                             InputStates::Committing* current) {
   // TODO(unassigned): implement this.
 }
 
 void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
                                             InputState* prev,
-                                            InputStateInputting* current) {
+                                            InputStates::Inputting* current) {
   // TODO(unassigned): implement this.
 }
 
 void McBopomofoEngine::handleCandidatesState(
     fcitx::InputContext* context, InputState* prev,
-    InputStateChoosingCandidate* current) {
+    InputStates::ChoosingCandidate* current) {
   // TODO(unassigned): implement this.
 }
 

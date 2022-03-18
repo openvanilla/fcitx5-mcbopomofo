@@ -46,7 +46,7 @@ bool KeyHandler::handle(
     const fcitx::KeyEvent& keyEvent, McBopomofo::InputState* state,
     std::function<void(std::unique_ptr<McBopomofo::InputState>)> stateCallback,
     std::function<void(void)> errorCallback) {
-  if (dynamic_cast<McBopomofo::InputStateEmpty*>(state)) {
+  if (dynamic_cast<McBopomofo::InputStates::Empty*>(state)) {
     return false;
   }
   return false;

@@ -34,17 +34,21 @@ class InputState {
   virtual ~InputState() = default;
 };
 
-class InputStateEmpty : public InputState {
+namespace InputStates {
+
+class Deactivated : public InputState {};
+
+class Empty : public InputState {
  public:
   std::string composingBuffer() const;
 };
 
-class InputStateEmptyIgnoringPrevious : public InputState {
+class EmptyIgnoringPrevious : public InputState {
  public:
   std::string composingBuffer() const;
 };
 
-class InputStateCommitting : public InputState {
+class Committing : public InputState {
  public:
   void setPoppedText(const std::string& poppedText);
   std::string poppedText() const;
@@ -53,7 +57,7 @@ class InputStateCommitting : public InputState {
   std::string poppedText_;
 };
 
-class InputStateNotEmpty : public InputState {
+class NotEmpty : public InputState {
  public:
   void setComposingBuffer(const std::string& composingBuffer);
   std::string composingBuffer() const;
@@ -66,7 +70,7 @@ class InputStateNotEmpty : public InputState {
   size_t cursorIndex_;
 };
 
-class InputStateInputting : public InputStateNotEmpty {
+class Inputting : public NotEmpty {
  public:
   void setPoppedText(const std::string& poppedText);
   std::string poppedText() const;
@@ -75,7 +79,7 @@ class InputStateInputting : public InputStateNotEmpty {
   std::string poppedText_;
 };
 
-class InputStateChoosingCandidate : public InputStateNotEmpty {
+class ChoosingCandidate : public NotEmpty {
  public:
   void setCandidates(const std::vector<std::string>& candidates);
   const std::vector<std::string>& candidates() const;
@@ -83,6 +87,8 @@ class InputStateChoosingCandidate : public InputStateNotEmpty {
  protected:
   std::vector<std::string> candidates_;
 };
+
+}  // namespace InputStates
 
 }  // namespace McBopomofo
 
