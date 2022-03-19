@@ -42,10 +42,9 @@ KeyHandler::KeyHandler(
   builder_->setJoinSeparator(kJoinSeparator);
 }
 
-bool KeyHandler::handle(
-    const fcitx::KeyEvent& keyEvent, McBopomofo::InputState* state,
-    std::function<void(std::unique_ptr<McBopomofo::InputState>)> stateCallback,
-    std::function<void(void)> errorCallback) {
+bool KeyHandler::handle(const fcitx::Key key, McBopomofo::InputState* state,
+                        StateCallback stateCallback,
+                        ErrorCallback errorCallback) {
   if (dynamic_cast<McBopomofo::InputStates::Empty*>(state)) {
     return false;
   }

@@ -43,14 +43,16 @@ class KeyHandler {
   explicit KeyHandler(
       std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel);
 
+  using StateCallback =
+      std::function<void(std::unique_ptr<McBopomofo::InputState>)>;
+  using ErrorCallback = std::function<void(void)>;
+
   // Given a fcitx5 KeyEvent and the current state, invokes the stateCallback if
   // a new state is entered, or errorCallback will be invoked. Returns true if
   // the key should be absorbed, signaling that the key is accepted and handled,
   // or false if the event should be let pass through.
-  bool handle(const fcitx::KeyEvent& keyEvent, McBopomofo::InputState* state,
-              std::function<void(std::unique_ptr<McBopomofo::InputState>)>
-                  stateCallback,
-              std::function<void(void)> errorCallback);
+  bool handle(const fcitx::Key key, McBopomofo::InputState* state,
+              StateCallback stateCallback, ErrorCallback errorCallback);
   void reset();
 
  private:
