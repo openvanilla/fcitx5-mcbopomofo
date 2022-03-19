@@ -51,29 +51,50 @@ class KeyHandler {
   // a new state is entered, or errorCallback will be invoked. Returns true if
   // the key should be absorbed, signaling that the key is accepted and handled,
   // or false if the event should be let pass through.
-  bool handle(const fcitx::Key key, McBopomofo::InputState* state,
+  bool handle(fcitx::Key key, McBopomofo::InputState* state,
               StateCallback stateCallback, ErrorCallback errorCallback);
+
+  // Candidate selected. Can assume the context is in a candidate state.
+  void candidateSelected(const std::string& candidate,
+                         StateCallback stateCallback);
+  // Candidate panel canceled. Can assume the context is in a candidate state.
+  void candidatePanelCancelled(StateCallback stateCallback);
+
   void reset();
-
-  // Configurations.
-
-  // Whether to convert to Simplified Chinese.
-  void setConvertToSimplifiedChinese(bool shouldConvert);
-
-  // Whether to map Dvorak to QWERTY. This works around the issue where we can't
-  // figure out how to let McBopomofo uses the standard US English (QWERTY)
-  // layout when the user's keyboard layout is Dvorak.
-  void setMapDvorakToQwerty(bool shouldMap);
 
   // Sets the Bopomofo keyboard layout.
   void setKeyboardLayout(
       const Formosa::Mandarin::BopomofoKeyboardLayout* layout);
 
  private:
-  bool convertsToSimplifiedChinese_ = false;
-  bool mapsDvorakToQwerty_ = false;
+  bool handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
+                        StateCallback stateCallback,
+                        ErrorCallback errorCallback);
+  bool handleDeleteKeys(fcitx::Key key, McBopomofo::InputState* state,
+                        StateCallback stateCallback,
+                        ErrorCallback errorCallback);
+  bool handlePunctuation(std::string punctuationUnigramKey,
+                         StateCallback stateCallback,
+                         ErrorCallback errorCallback);
 
-  Formosa::Mandarin::BopomofoReadingBuffer bopomofoReadingBuffer_;
+  std::unique_ptr<InputStates::Inputting> buildInputtingState();
+  std::unique_ptr<InputStates::ChoosingCandidate> bulidChoosingCandidateState(
+      InputStates::NotEmpty* nonEmptyState);
+
+  // Returns the text that needs to be evicted from the walked grid due to the
+  // grid now being overflown with the recently added reading, then walk the
+  // grid.
+  std::string popEvictedTextAndWalk();
+
+  // Compute the actual candidate cursor index.
+  size_t actualCandidateCursorIndex();
+
+  // Pin a node with a fixed unigram value, usually a candidate.
+  void pinNode(const std::string& candidate);
+
+  void walk();
+
+  Formosa::Mandarin::BopomofoReadingBuffer reading_;
 
   // language model
   std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel_;

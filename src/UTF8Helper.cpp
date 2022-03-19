@@ -21,31 +21,21 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#include <string>
+#include "UTF8Helper.h"
 
-#include "KeyHandler.h"
-#include "gtest/gtest.h"
+#include <codecvt>
+#include <locale>
 
 namespace McBopomofo {
 
-TEST(KeyHandlerTest, Trivial) {
-  KeyHandler handler(nullptr);
+std::u32string ToU32(const std::string& s) {
+  std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+  return conv.from_bytes(s);
+}
 
-  bool stateCallbackInvoked = false;
-  bool errorCallbackInvoked = false;
-
-  auto emptyState = std::make_unique<InputStates::Empty>();
-
-  bool handled = handler.handle(
-      fcitx::Key(), emptyState.get(),
-      [&stateCallbackInvoked](std::unique_ptr<McBopomofo::InputState>) {
-        stateCallbackInvoked = true;
-      },
-      [&errorCallbackInvoked]() { errorCallbackInvoked = true; });
-
-  EXPECT_FALSE(stateCallbackInvoked);
-  EXPECT_FALSE(errorCallbackInvoked);
-  EXPECT_FALSE(handled);
+std::string ToU8(const std::u32string& s) {
+  std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+  return conv.to_bytes(s);
 }
 
 }  // namespace McBopomofo

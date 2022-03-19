@@ -29,6 +29,7 @@
 #include <fcitx-config/iniparser.h>
 #include <fcitx-utils/i18n.h>
 #include <fcitx/addonfactory.h>
+#include <fcitx/candidatelist.h>
 #include <fcitx/inputmethodengine.h>
 
 #include <memory>
@@ -78,6 +79,9 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void reloadConfig() override;
 
  private:
+  void handleCandidateKeyEvent(fcitx::InputContext* context, fcitx::Key key,
+                               fcitx::CommonCandidateList* candidateList);
+
   // Handles state transitions.
   void enterNewState(fcitx::InputContext* context,
                      std::unique_ptr<InputState> newState);
@@ -102,11 +106,13 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void updatePreedit(fcitx::InputContext* context,
                      InputStates::NotEmpty* state);
 
+  // Commits the text to the context, applying any conversions along the way.
+  void commitString(fcitx::InputContext* context, std::string text);
+
   std::unique_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;
   fcitx::KeyList selectionKeys_;
-  std::string fooBuffer_;
 };
 
 class McBopomofoEngineFactory : public fcitx::AddonFactory {
