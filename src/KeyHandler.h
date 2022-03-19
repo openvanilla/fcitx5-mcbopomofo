@@ -55,7 +55,24 @@ class KeyHandler {
               StateCallback stateCallback, ErrorCallback errorCallback);
   void reset();
 
+  // Configurations.
+
+  // Whether to convert to Simplified Chinese.
+  void setConvertToSimplifiedChinese(bool shouldConvert);
+
+  // Whether to map Dvorak to QWERTY. This works around the issue where we can't
+  // figure out how to let McBopomofo uses the standard US English (QWERTY)
+  // layout when the user's keyboard layout is Dvorak.
+  void setMapDvorakToQwerty(bool shouldMap);
+
+  // Sets the Bopomofo keyboard layout.
+  void setKeyboardLayout(
+      const Formosa::Mandarin::BopomofoKeyboardLayout* layout);
+
  private:
+  bool convertsToSimplifiedChinese_ = false;
+  bool mapsDvorakToQwerty_ = false;
+
   Formosa::Mandarin::BopomofoReadingBuffer bopomofoReadingBuffer_;
 
   // language model

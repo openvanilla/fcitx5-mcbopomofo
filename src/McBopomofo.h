@@ -52,20 +52,24 @@ FCITX_CONFIGURATION(
         bopomofoKeyboardLayout{this, "BopomofoKeyboardLayout",
                                _("Bopomofo Keyboard Layout"),
                                BopomofoKeyboardLayout::Standard};
+    fcitx::Option<bool> convertsToSimplifiedChinese{
+        this, "ConvertsToSimplifiedChinese",
+        _("Converts to Simplified Chinese"), false};
     // Whether to map Dvorak characters back to Qwerty layout;
     // this is a workaround of fcitx5/wayland's limitations.
     // See https://bugzilla.gnome.org/show_bug.cgi?id=162726
     // TODO(unassigned): Remove this once fcitx5 handles Dvorak better.
-    fcitx::Option<bool> debugMapDvorakBackToQwerty{
-        this, "DebugMapDvorakBackToQwerty",
-        _("Debug Only - Map Dvorak back to Qwerty"), false};);
+    fcitx::Option<bool> mapsDvorakToQwerty{this, "MapDvorakToQWERTY",
+                                           _("Map Dvorak to QWERTY"), false};);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
   McBopomofoEngine();
 
+  void activate(const fcitx::InputMethodEntry& entry,
+                fcitx::InputContextEvent& event) override;
   void reset(const fcitx::InputMethodEntry& entry,
-             fcitx::InputContextEvent& keyEvent) override;
+             fcitx::InputContextEvent& event) override;
   void keyEvent(const fcitx::InputMethodEntry& entry,
                 fcitx::KeyEvent& keyEvent) override;
 

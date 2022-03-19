@@ -50,7 +50,21 @@ bool KeyHandler::handle(const fcitx::Key key, McBopomofo::InputState* state,
   }
   return false;
 }
+
 void KeyHandler::reset() {}
+
+void KeyHandler::setConvertToSimplifiedChinese(bool shouldConvert) {
+  convertsToSimplifiedChinese_ = shouldConvert;
+}
+
+void KeyHandler::setMapDvorakToQwerty(bool shouldMap) {
+  mapsDvorakToQwerty_ = shouldMap;
+}
+
+void KeyHandler::setKeyboardLayout(
+    const Formosa::Mandarin::BopomofoKeyboardLayout* layout) {
+  bopomofoReadingBuffer_.setKeyboardLayout(layout);
+}
 
 #pragma GCC diagnostic pop
 

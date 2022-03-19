@@ -106,26 +106,33 @@ void McBopomofoEngine::reloadConfig() {
   fcitx::readAsIni(config_, kConfigPath);
 }
 
-void McBopomofoEngine::reset(const fcitx::InputMethodEntry& entry,
-                             fcitx::InputContextEvent& keyEvent) {
-  keyHandler_->reset();
-  fooBuffer_ = "";
-  enterNewState(keyEvent.inputContext(),
-                std::make_unique<InputStates::Empty>());
+void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
+                                fcitx::InputContextEvent&) {
+  keyHandler_->setConvertToSimplifiedChinese(
+      config_.convertsToSimplifiedChinese.value());
+  keyHandler_->setMapDvorakToQwerty(config_.mapsDvorakToQwerty.value());
+
+  auto layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
+  switch (config_.bopomofoKeyboardLayout.value()) {
+    case BopomofoKeyboardLayout::Standard:
+      layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
+      break;
+    case BopomofoKeyboardLayout::Eten:
+      layout = Formosa::Mandarin::BopomofoKeyboardLayout::ETenLayout();
+      break;
+  }
+  keyHandler_->setKeyboardLayout(layout);
 }
 
-void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
+void McBopomofoEngine::reset(const fcitx::InputMethodEntry&,
+                             fcitx::InputContextEvent& event) {
+  keyHandler_->reset();
+  fooBuffer_ = "";
+  enterNewState(event.inputContext(), std::make_unique<InputStates::Empty>());
+}
+
+void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
                                 fcitx::KeyEvent& keyEvent) {
-  FCITX_UNUSED(entry);
-
-  if (config_.bopomofoKeyboardLayout.value() == BopomofoKeyboardLayout::Eten) {
-    FCITX_INFO() << "using layout: eten";
-  } else {
-    FCITX_INFO() << "using layout: standard";
-  }
-
-  FCITX_INFO() << "convert Dvorak to QWERTY: "
-               << config_.debugMapDvorakBackToQwerty.value();
   FCITX_INFO() << keyEvent.key() << " isRelease=" << keyEvent.isRelease()
                << " isInputContextEvent=" << keyEvent.isInputContextEvent();
 
