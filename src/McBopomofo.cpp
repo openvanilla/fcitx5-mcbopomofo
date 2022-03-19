@@ -340,16 +340,16 @@ void McBopomofoEngine::handleCandidatesState(
   candidateList->setSelectionKey(selectionKeys_);
   candidateList->setPageSize(selectionKeys_.size());
 
-  for (size_t i = 0, s = current->candidates().size(); i < s; i++) {
+  for (const std::string& candidateStr : current->candidates()) {
     // TODO(unassigned): Migrate to the new fcitx5 API using the commented-out
     // code below once on the latest API.
     // std::unique_ptr<fcitx::CandidateWord> candidate =
-    // std::make_unique<fcitx::CandidateWord>(fcitx::Text(current->candidates().at(i)));
+    // std::make_unique<fcitx::CandidateWord>(fcitx::Text(candidateStr));
 
     fcitx::CandidateWord* candidate =
-        new DisplayOnlyCandidateWord(fcitx::Text(current->candidates().at(i)));
+        new DisplayOnlyCandidateWord(fcitx::Text(candidateStr));
     // ownership of candidate is transferred to candidateList.
-    candidateList->insert(i, candidate);
+    candidateList->append(candidate);
   }
   context->inputPanel().setCandidateList(std::move(candidateList));
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
