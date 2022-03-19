@@ -25,9 +25,6 @@
 
 #include <utility>
 
-// TODO(unassigned): Remove this after everything is implemented.
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
 namespace McBopomofo {
 
 constexpr const char* kJoinSeparator = "-";
@@ -42,9 +39,8 @@ KeyHandler::KeyHandler(
   builder_->setJoinSeparator(kJoinSeparator);
 }
 
-bool KeyHandler::handle(const fcitx::Key key, McBopomofo::InputState* state,
-                        StateCallback stateCallback,
-                        ErrorCallback errorCallback) {
+bool KeyHandler::handle(const fcitx::Key, McBopomofo::InputState* state,
+                        StateCallback, ErrorCallback) {
   if (dynamic_cast<McBopomofo::InputStates::Empty*>(state)) {
     return false;
   }
@@ -65,7 +61,5 @@ void KeyHandler::setKeyboardLayout(
     const Formosa::Mandarin::BopomofoKeyboardLayout* layout) {
   bopomofoReadingBuffer_.setKeyboardLayout(layout);
 }
-
-#pragma GCC diagnostic pop
 
 }  // namespace McBopomofo

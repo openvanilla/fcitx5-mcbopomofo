@@ -37,9 +37,6 @@
 
 namespace McBopomofo {
 
-// TODO(unassigned): Remove this after everything is implemented.
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
 static const char* kDataPath = "data/mcbopomofo-data.txt";
 static const char* kConfigPath = "conf/mcbopomofo.conf";
 
@@ -49,7 +46,7 @@ class DisplayOnlyCandidateWord : public fcitx::CandidateWord {
  public:
   explicit DisplayOnlyCandidateWord(fcitx::Text text)
       : fcitx::CandidateWord(text) {}
-  void select(fcitx::InputContext* inputContext) const override {}
+  void select(fcitx::InputContext*) const override {}
 };
 
 class EmptyLM : public Formosa::Gramambular::LanguageModel {
@@ -285,8 +282,7 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
   }
 }
 void McBopomofoEngine::handleEmptyState(fcitx::InputContext* context,
-                                        InputState* prev,
-                                        InputStates::Empty* current) {
+                                        InputState* prev, InputStates::Empty*) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   context->updatePreedit();
@@ -296,15 +292,15 @@ void McBopomofoEngine::handleEmptyState(fcitx::InputContext* context,
 }
 
 void McBopomofoEngine::handleEmptyIgnoringPreviousState(
-    fcitx::InputContext* context, InputState* prev,
-    InputStates::EmptyIgnoringPrevious* current) {
+    fcitx::InputContext* context, InputState*,
+    InputStates::EmptyIgnoringPrevious*) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   context->updatePreedit();
 }
 
 void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
-                                             InputState* prev,
+                                             InputState*,
                                              InputStates::Committing* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
@@ -315,7 +311,7 @@ void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
 }
 
 void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
-                                            InputState* prev,
+                                            InputState*,
                                             InputStates::Inputting* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
@@ -326,7 +322,7 @@ void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
 }
 
 void McBopomofoEngine::handleCandidatesState(
-    fcitx::InputContext* context, InputState* prev,
+    fcitx::InputContext* context, InputState*,
     InputStates::ChoosingCandidate* current) {
   std::unique_ptr<fcitx::CommonCandidateList> candidateList =
       std::make_unique<fcitx::CommonCandidateList>();
@@ -383,7 +379,5 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
 }
 
 FCITX_ADDON_FACTORY(McBopomofoEngineFactory);
-
-#pragma GCC diagnostic pop
 
 }  // namespace McBopomofo
