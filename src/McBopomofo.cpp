@@ -263,6 +263,9 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
                  dynamic_cast<InputStates::EmptyIgnoringPrevious*>(
                      currentPtr)) {
     handleEmptyIgnoringPreviousState(context, prevPtr, emptyIgnoringPrevious);
+
+    // Optimization: set the current state to empty.
+    state_ = std::make_unique<InputStates::Empty>();
   } else if (auto committing =
                  dynamic_cast<InputStates::Committing*>(currentPtr)) {
     handleCommittingState(context, prevPtr, committing);
