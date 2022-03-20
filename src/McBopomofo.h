@@ -29,20 +29,31 @@
 #include <fcitx-config/iniparser.h>
 #include <fcitx-utils/i18n.h>
 #include <fcitx/addonfactory.h>
+#include <fcitx/addonmanager.h>
 #include <fcitx/candidatelist.h>
 #include <fcitx/inputmethodengine.h>
+#include <fcitx/instance.h>
 
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include "InputState.h"
 #include "KeyHandler.h"
 
 namespace McBopomofo {
 
-enum class BopomofoKeyboardLayout { Standard, Eten };
+enum class BopomofoKeyboardLayout {
+  Standard,
+  Eten,
+  Hsu,
+  Et26,
+  HanyuPinyin,
+  IBM
+};
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(BopomofoKeyboardLayout, N_("standard"),
-                                 N_("eten"));
+                                 N_("eten"), N_("hsu"), N_("et26"),
+                                 N_("hanyupinyin"), N_("ibm"));
 
 FCITX_CONFIGURATION(
     McBopomofoConfig,
@@ -65,7 +76,8 @@ FCITX_CONFIGURATION(
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
-  McBopomofoEngine();
+  McBopomofoEngine(fcitx::Instance* instance);
+  fcitx::Instance* instance() { return instance_; }
 
   void activate(const fcitx::InputMethodEntry& entry,
                 fcitx::InputContextEvent& event) override;
@@ -79,6 +91,9 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void reloadConfig() override;
 
  private:
+  FCITX_ADDON_DEPENDENCY_LOADER(chttrans, instance_->addonManager());
+  fcitx::Instance* instance_;
+
   void handleCandidateKeyEvent(fcitx::InputContext* context, fcitx::Key key,
                                fcitx::CommonCandidateList* candidateList);
 
@@ -118,7 +133,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
 class McBopomofoEngineFactory : public fcitx::AddonFactory {
   fcitx::AddonInstance* create(fcitx::AddonManager* manager) override {
     FCITX_UNUSED(manager);
-    return new McBopomofoEngine();
+    return new McBopomofoEngine(manager->instance());
   }
 };
 
