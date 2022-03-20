@@ -64,9 +64,6 @@ FCITX_CONFIGURATION(
         bopomofoKeyboardLayout{this, "BopomofoKeyboardLayout",
                                _("Bopomofo Keyboard Layout"),
                                BopomofoKeyboardLayout::Standard};
-    fcitx::Option<bool> convertsToSimplifiedChinese{
-        this, "ConvertsToSimplifiedChinese",
-        _("Converts to Simplified Chinese"), false};
     // Whether to map Dvorak characters back to Qwerty layout;
     // this is a workaround of fcitx5/wayland's limitations.
     // See https://bugzilla.gnome.org/show_bug.cgi?id=162726
@@ -120,9 +117,6 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   // index.
   void updatePreedit(fcitx::InputContext* context,
                      InputStates::NotEmpty* state);
-
-  // Commits the text to the context, applying any conversions along the way.
-  void commitString(fcitx::InputContext* context, std::string text);
 
   std::unique_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
