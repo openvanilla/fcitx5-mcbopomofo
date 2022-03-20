@@ -21,31 +21,15 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#include <string>
+#ifndef SRC_CHINESECONVERTER_H_
+#define SRC_CHINESECONVERTER_H_
 
-#include "KeyHandler.h"
-#include "gtest/gtest.h"
+#include <string>
 
 namespace McBopomofo {
 
-TEST(KeyHandlerTest, Trivial) {
-  KeyHandler handler(nullptr);
-
-  bool stateCallbackInvoked = false;
-  bool errorCallbackInvoked = false;
-
-  auto emptyState = std::make_unique<InputStates::Empty>();
-
-  bool handled = handler.handle(
-      fcitx::Key(), emptyState.get(),
-      [&stateCallbackInvoked](std::unique_ptr<McBopomofo::InputState>) {
-        stateCallbackInvoked = true;
-      },
-      [&errorCallbackInvoked]() { errorCallbackInvoked = true; });
-
-  EXPECT_FALSE(stateCallbackInvoked);
-  EXPECT_FALSE(errorCallbackInvoked);
-  EXPECT_FALSE(handled);
-}
+std::string ConvertToSimplifiedChinese(const std::string& text);
 
 }  // namespace McBopomofo
+
+#endif  // SRC_CHINESECONVERTER_H_

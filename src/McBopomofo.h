@@ -29,6 +29,7 @@
 #include <fcitx-config/iniparser.h>
 #include <fcitx-utils/i18n.h>
 #include <fcitx/addonfactory.h>
+#include <fcitx/candidatelist.h>
 #include <fcitx/inputmethodengine.h>
 
 #include <memory>
@@ -52,20 +53,24 @@ FCITX_CONFIGURATION(
         bopomofoKeyboardLayout{this, "BopomofoKeyboardLayout",
                                _("Bopomofo Keyboard Layout"),
                                BopomofoKeyboardLayout::Standard};
+    fcitx::Option<bool> convertsToSimplifiedChinese{
+        this, "ConvertsToSimplifiedChinese",
+        _("Converts to Simplified Chinese"), false};
     // Whether to map Dvorak characters back to Qwerty layout;
     // this is a workaround of fcitx5/wayland's limitations.
     // See https://bugzilla.gnome.org/show_bug.cgi?id=162726
     // TODO(unassigned): Remove this once fcitx5 handles Dvorak better.
-    fcitx::Option<bool> debugMapDvorakBackToQwerty{
-        this, "DebugMapDvorakBackToQwerty",
-        _("Debug Only - Map Dvorak back to Qwerty"), false};);
+    fcitx::Option<bool> mapsDvorakToQwerty{this, "MapDvorakToQWERTY",
+                                           _("Map Dvorak to QWERTY"), false};);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
   McBopomofoEngine();
 
+  void activate(const fcitx::InputMethodEntry& entry,
+                fcitx::InputContextEvent& event) override;
   void reset(const fcitx::InputMethodEntry& entry,
-             fcitx::InputContextEvent& keyEvent) override;
+             fcitx::InputContextEvent& event) override;
   void keyEvent(const fcitx::InputMethodEntry& entry,
                 fcitx::KeyEvent& keyEvent) override;
 
@@ -74,6 +79,9 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void reloadConfig() override;
 
  private:
+  void handleCandidateKeyEvent(fcitx::InputContext* context, fcitx::Key key,
+                               fcitx::CommonCandidateList* candidateList);
+
   // Handles state transitions.
   void enterNewState(fcitx::InputContext* context,
                      std::unique_ptr<InputState> newState);
@@ -98,11 +106,13 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void updatePreedit(fcitx::InputContext* context,
                      InputStates::NotEmpty* state);
 
+  // Commits the text to the context, applying any conversions along the way.
+  void commitString(fcitx::InputContext* context, std::string text);
+
   std::unique_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;
   fcitx::KeyList selectionKeys_;
-  std::string fooBuffer_;
 };
 
 class McBopomofoEngineFactory : public fcitx::AddonFactory {

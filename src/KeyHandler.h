@@ -43,18 +43,58 @@ class KeyHandler {
   explicit KeyHandler(
       std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel);
 
+  using StateCallback =
+      std::function<void(std::unique_ptr<McBopomofo::InputState>)>;
+  using ErrorCallback = std::function<void(void)>;
+
   // Given a fcitx5 KeyEvent and the current state, invokes the stateCallback if
   // a new state is entered, or errorCallback will be invoked. Returns true if
   // the key should be absorbed, signaling that the key is accepted and handled,
   // or false if the event should be let pass through.
-  bool handle(const fcitx::KeyEvent& keyEvent, McBopomofo::InputState* state,
-              std::function<void(std::unique_ptr<McBopomofo::InputState>)>
-                  stateCallback,
-              std::function<void(void)> errorCallback);
+  bool handle(fcitx::Key key, McBopomofo::InputState* state,
+              StateCallback stateCallback, ErrorCallback errorCallback);
+
+  // Candidate selected. Can assume the context is in a candidate state.
+  void candidateSelected(const std::string& candidate,
+                         StateCallback stateCallback);
+  // Candidate panel canceled. Can assume the context is in a candidate state.
+  void candidatePanelCancelled(StateCallback stateCallback);
+
   void reset();
 
+  // Sets the Bopomofo keyboard layout.
+  void setKeyboardLayout(
+      const Formosa::Mandarin::BopomofoKeyboardLayout* layout);
+
  private:
-  Formosa::Mandarin::BopomofoReadingBuffer bopomofoReadingBuffer_;
+  bool handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
+                        StateCallback stateCallback,
+                        ErrorCallback errorCallback);
+  bool handleDeleteKeys(fcitx::Key key, McBopomofo::InputState* state,
+                        StateCallback stateCallback,
+                        ErrorCallback errorCallback);
+  bool handlePunctuation(std::string punctuationUnigramKey,
+                         StateCallback stateCallback,
+                         ErrorCallback errorCallback);
+
+  std::unique_ptr<InputStates::Inputting> buildInputtingState();
+  std::unique_ptr<InputStates::ChoosingCandidate> bulidChoosingCandidateState(
+      InputStates::NotEmpty* nonEmptyState);
+
+  // Returns the text that needs to be evicted from the walked grid due to the
+  // grid now being overflown with the recently added reading, then walk the
+  // grid.
+  std::string popEvictedTextAndWalk();
+
+  // Compute the actual candidate cursor index.
+  size_t actualCandidateCursorIndex();
+
+  // Pin a node with a fixed unigram value, usually a candidate.
+  void pinNode(const std::string& candidate);
+
+  void walk();
+
+  Formosa::Mandarin::BopomofoReadingBuffer reading_;
 
   // language model
   std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel_;

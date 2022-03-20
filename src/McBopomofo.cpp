@@ -33,15 +33,113 @@
 #include <utility>
 #include <vector>
 
+#include "ChineseConverter.h"
 #include "ParselessLM.h"
 
 namespace McBopomofo {
 
-// TODO(unassigned): Remove this after everything is implemented.
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
 static const char* kDataPath = "data/mcbopomofo-data.txt";
 static const char* kConfigPath = "conf/mcbopomofo.conf";
+
+static char CovertDvorakToQwerty(char c) {
+  switch (c) {
+    case '[':
+      return '-';
+    case ']':
+      return '=';
+    case '{':
+      return '_';
+    case '}':
+      return '+';
+    case '\'':
+      return 'q';
+    case ',':
+      return 'w';
+    case '.':
+      return 'e';
+    case 'p':
+      return 'r';
+    case 'y':
+      return 't';
+    case 'f':
+      return 'y';
+    case 'g':
+      return 'u';
+    case 'c':
+      return 'i';
+    case 'r':
+      return 'o';
+    case 'l':
+      return 'p';
+    case '/':
+      return '[';
+    case '=':
+      return ']';
+    case '?':
+      return '{';
+    case '+':
+      return '}';
+    case 'o':
+      return 's';
+    case 'e':
+      return 'd';
+    case 'u':
+      return 'f';
+    case 'i':
+      return 'g';
+    case 'd':
+      return 'h';
+    case 'h':
+      return 'j';
+    case 't':
+      return 'k';
+    case 'n':
+      return 'l';
+    case 's':
+      return ';';
+    case '-':
+      return '\'';
+    case 'S':
+      return ':';
+    case '_':
+      return '"';
+    case ';':
+      return 'z';
+    case 'q':
+      return 'x';
+    case 'j':
+      return 'c';
+    case 'k':
+      return 'v';
+    case 'x':
+      return 'b';
+    case 'b':
+      return 'n';
+    case 'w':
+      return ',';
+    case 'v':
+      return '.';
+    case 'z':
+      return '/';
+    case 'W':
+      return '<';
+    case 'V':
+      return '>';
+    case 'Z':
+      return '?';
+  }
+  return c;
+}
+
+static fcitx::Key ConvertDvorakToQwerty(fcitx::Key key) {
+  if (!key.isSimple()) {
+    return key;
+  }
+
+  // For simple keys, it's guaranteed to be downcastable.
+  char sym = CovertDvorakToQwerty(key.sym());
+  return fcitx::Key(static_cast<fcitx::KeySym>(sym));
+}
 
 // TODO(unassigned): Remove this once fcitx::DisplayOnlyCandidateWord is
 // available through Ubuntu.
@@ -49,7 +147,7 @@ class DisplayOnlyCandidateWord : public fcitx::CandidateWord {
  public:
   explicit DisplayOnlyCandidateWord(fcitx::Text text)
       : fcitx::CandidateWord(text) {}
-  void select(fcitx::InputContext* inputContext) const override {}
+  void select(fcitx::InputContext*) const override {}
 };
 
 class EmptyLM : public Formosa::Gramambular::LanguageModel {
@@ -106,29 +204,28 @@ void McBopomofoEngine::reloadConfig() {
   fcitx::readAsIni(config_, kConfigPath);
 }
 
-void McBopomofoEngine::reset(const fcitx::InputMethodEntry& entry,
-                             fcitx::InputContextEvent& keyEvent) {
-  keyHandler_->reset();
-  fooBuffer_ = "";
-  enterNewState(keyEvent.inputContext(),
-                std::make_unique<InputStates::Empty>());
+void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
+                                fcitx::InputContextEvent&) {
+  auto layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
+  switch (config_.bopomofoKeyboardLayout.value()) {
+    case BopomofoKeyboardLayout::Standard:
+      layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
+      break;
+    case BopomofoKeyboardLayout::Eten:
+      layout = Formosa::Mandarin::BopomofoKeyboardLayout::ETenLayout();
+      break;
+  }
+  keyHandler_->setKeyboardLayout(layout);
 }
 
-void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
+void McBopomofoEngine::reset(const fcitx::InputMethodEntry&,
+                             fcitx::InputContextEvent& event) {
+  keyHandler_->reset();
+  enterNewState(event.inputContext(), std::make_unique<InputStates::Empty>());
+}
+
+void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
                                 fcitx::KeyEvent& keyEvent) {
-  FCITX_UNUSED(entry);
-
-  if (config_.bopomofoKeyboardLayout.value() == BopomofoKeyboardLayout::Eten) {
-    FCITX_INFO() << "using layout: eten";
-  } else {
-    FCITX_INFO() << "using layout: standard";
-  }
-
-  FCITX_INFO() << "convert Dvorak to QWERTY: "
-               << config_.debugMapDvorakBackToQwerty.value();
-  FCITX_INFO() << keyEvent.key() << " isRelease=" << keyEvent.isRelease()
-               << " isInputContextEvent=" << keyEvent.isInputContextEvent();
-
   if (!keyEvent.isInputContextEvent()) {
     return;
   }
@@ -138,114 +235,98 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& entry,
   }
 
   fcitx::InputContext* context = keyEvent.inputContext();
+  fcitx::Key key = keyEvent.key();
+  if (config_.mapsDvorakToQwerty.value()) {
+    key = ConvertDvorakToQwerty(key);
+  }
 
-  // If candidate list is on.
-  auto current_candidate_list = context->inputPanel().candidateList();
-  if (current_candidate_list != nullptr) {
-    int idx = keyEvent.key().keyListIndex(selectionKeys_);
-    if (idx >= 0) {
-      if (idx < current_candidate_list->size()) {
-        keyEvent.filterAndAccept();
-        auto selectedCandidate = current_candidate_list->candidate(idx);
-        auto committing = std::make_unique<InputStates::Committing>();
-        committing->setPoppedText(selectedCandidate->text().toString());
-        enterNewState(context, std::move(committing));
-        fooBuffer_ = "";
-        return;
-      }
-    }
+  if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr) {
+    // Absorb all keys when the candidate panel is on.
+    keyEvent.filterAndAccept();
 
-    if (keyEvent.key().check(FcitxKey_Escape)) {
-      keyEvent.filterAndAccept();
-
-      auto inputting = std::make_unique<InputStates::Inputting>();
-      inputting->setComposingBuffer(fooBuffer_);
-      inputting->setCursorIndex(fooBuffer_.size());
-      enterNewState(context, std::move(inputting));
+    fcitx::CommonCandidateList* maybeCandidateList =
+        dynamic_cast<fcitx::CommonCandidateList*>(
+            context->inputPanel().candidateList());
+    if (maybeCandidateList == nullptr) {
+      // TODO(unassigned): Just assert this.
+      FCITX_WARN() << "inconsistent state";
+      enterNewState(context, std::make_unique<InputStates::Empty>());
       return;
     }
 
-    // Absorb all other keys.
-    keyEvent.filterAndAccept();
+    handleCandidateKeyEvent(context, key, maybeCandidateList);
     return;
   }
 
-  if (keyEvent.key().check(FcitxKey_Return) ||
-      keyEvent.key().check(FcitxKey_KP_Enter)) {
-    if (fooBuffer_.empty()) {
+  bool accepted = keyHandler_->handle(
+      key, state_.get(),
+      [this, context](std::unique_ptr<InputState> next) {
+        enterNewState(context, std::move(next));
+      },
+      []() {
+        // TODO(unassigned): beep?
+      });
+
+  if (accepted) {
+    keyEvent.filterAndAccept();
+    return;
+  }
+}
+
+void McBopomofoEngine::handleCandidateKeyEvent(
+    fcitx::InputContext* context, fcitx::Key key,
+    fcitx::CommonCandidateList* candidateList) {
+  int idx = key.keyListIndex(selectionKeys_);
+  if (idx >= 0) {
+    if (idx < candidateList->size()) {
+      std::string candidate = candidateList->candidate(idx)->text().toString();
+      keyHandler_->candidateSelected(
+          candidate, [this, context](std::unique_ptr<InputState> next) {
+            enterNewState(context, std::move(next));
+          });
       return;
     }
+  }
 
-    auto committing = std::make_unique<InputStates::Committing>();
-    committing->setPoppedText(fooBuffer_);
-    enterNewState(context, std::move(committing));
-    fooBuffer_ = "";
+  if (key.check(FcitxKey_Escape)) {
+    keyHandler_->candidatePanelCancelled(
+        [this, context](std::unique_ptr<InputState> next) {
+          enterNewState(context, std::move(next));
+        });
     return;
   }
 
-  if (keyEvent.key().check(FcitxKey_space)) {
-    if (fooBuffer_.empty()) {
-      return;
+  // Space goes to next page or wraps to the first if at the end.
+  if (key.check(FcitxKey_space)) {
+    if (candidateList->hasNext()) {
+      candidateList->next();
+    } else if (candidateList->currentPage() > 0) {
+      candidateList->setPage(0);
     }
-
-    keyEvent.filterAndAccept();
-
-    auto choosingCandidate = std::make_unique<InputStates::ChoosingCandidate>();
-    choosingCandidate->setCandidates({"hello", "world", "foobar", "baz"});
-    choosingCandidate->setComposingBuffer(fooBuffer_);
-    choosingCandidate->setCursorIndex(fooBuffer_.size());
-    enterNewState(context, std::move(choosingCandidate));
+    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
     return;
   }
 
-  if (keyEvent.key().check(FcitxKey_Escape)) {
-    if (fooBuffer_.empty()) {
-      return;
-    }
+  static std::array<fcitx::Key, 3> nextKeys{fcitx::Key(FcitxKey_Page_Down),
+                                            fcitx::Key(FcitxKey_Right),
+                                            fcitx::Key(FcitxKey_Down)};
+  static std::array<fcitx::Key, 3> prevKeys{fcitx::Key(FcitxKey_Page_Up),
+                                            fcitx::Key(FcitxKey_Left),
+                                            fcitx::Key(FcitxKey_Up)};
 
-    fooBuffer_.clear();
-    keyEvent.filterAndAccept();
-    enterNewState(context,
-                  std::make_unique<InputStates::EmptyIgnoringPrevious>());
+  if (key.checkKeyList(nextKeys) && candidateList->hasNext()) {
+    candidateList->next();
+    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
     return;
   }
 
-  if (keyEvent.key().check(FcitxKey_BackSpace)) {
-    if (fooBuffer_.empty()) {
-      return;
-    }
-
-    keyEvent.filterAndAccept();
-    fooBuffer_ = fooBuffer_.substr(0, fooBuffer_.length() - 1);
-    if (fooBuffer_.empty()) {
-      enterNewState(context,
-                    std::make_unique<InputStates::EmptyIgnoringPrevious>());
-    } else {
-      auto inputting = std::make_unique<InputStates::Inputting>();
-      inputting->setComposingBuffer(fooBuffer_);
-      inputting->setCursorIndex(fooBuffer_.size());
-      enterNewState(context, std::move(inputting));
-    }
+  if (key.checkKeyList(prevKeys) && candidateList->hasPrev()) {
+    candidateList->prev();
+    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
     return;
   }
 
-  if (keyEvent.key().isLAZ() || keyEvent.key().isDigit()) {
-    keyEvent.filterAndAccept();
-    fooBuffer_.append(fcitx::Key::keySymToString(keyEvent.key().sym()));
-    auto inputting = std::make_unique<InputStates::Inputting>();
-    inputting->setComposingBuffer(fooBuffer_);
-    inputting->setCursorIndex(fooBuffer_.size());
-    enterNewState(context, std::move(inputting));
-    return;
-  }
-
-  // Absorb other keys if buffer is not empty.
-  if (!fooBuffer_.empty()) {
-    keyEvent.filterAndAccept();
-    return;
-  }
-
-  // Otherwise, fall through.
+  // TODO(unassigned): All else... beep?
 }
 
 void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
@@ -263,6 +344,9 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
                  dynamic_cast<InputStates::EmptyIgnoringPrevious*>(
                      currentPtr)) {
     handleEmptyIgnoringPreviousState(context, prevPtr, emptyIgnoringPrevious);
+
+    // Optimization: set the current state to empty.
+    state_ = std::make_unique<InputStates::Empty>();
   } else if (auto committing =
                  dynamic_cast<InputStates::Committing*>(currentPtr)) {
     handleCommittingState(context, prevPtr, committing);
@@ -275,48 +359,47 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
   }
 }
 void McBopomofoEngine::handleEmptyState(fcitx::InputContext* context,
-                                        InputState* prev,
-                                        InputStates::Empty* current) {
+                                        InputState* prev, InputStates::Empty*) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   context->updatePreedit();
   if (auto notEmpty = dynamic_cast<InputStates::NotEmpty*>(prev)) {
-    context->commitString(notEmpty->composingBuffer());
+    commitString(context, notEmpty->composingBuffer());
   }
 }
 
 void McBopomofoEngine::handleEmptyIgnoringPreviousState(
-    fcitx::InputContext* context, InputState* prev,
-    InputStates::EmptyIgnoringPrevious* current) {
+    fcitx::InputContext* context, InputState*,
+    InputStates::EmptyIgnoringPrevious*) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   context->updatePreedit();
 }
 
 void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
-                                             InputState* prev,
+                                             InputState*,
                                              InputStates::Committing* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   context->updatePreedit();
   if (!current->poppedText().empty()) {
-    context->commitString(current->poppedText());
+    commitString(context, current->poppedText());
   }
 }
 
 void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
-                                            InputState* prev,
+                                            InputState*,
                                             InputStates::Inputting* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   if (!current->poppedText().empty()) {
-    context->commitString(current->poppedText());
+    commitString(context, current->poppedText());
   }
   updatePreedit(context, current);
 }
 
 void McBopomofoEngine::handleCandidatesState(
-    fcitx::InputContext* context, InputState* prev,
+    fcitx::InputContext* context, InputState*,
     InputStates::ChoosingCandidate* current) {
   std::unique_ptr<fcitx::CommonCandidateList> candidateList =
       std::make_unique<fcitx::CommonCandidateList>();
@@ -337,16 +420,16 @@ void McBopomofoEngine::handleCandidatesState(
   candidateList->setSelectionKey(selectionKeys_);
   candidateList->setPageSize(selectionKeys_.size());
 
-  for (size_t i = 0, s = current->candidates().size(); i < s; i++) {
+  for (const std::string& candidateStr : current->candidates()) {
     // TODO(unassigned): Migrate to the new fcitx5 API using the commented-out
     // code below once on the latest API.
     // std::unique_ptr<fcitx::CandidateWord> candidate =
-    // std::make_unique<fcitx::CandidateWord>(fcitx::Text(current->candidates().at(i)));
+    // std::make_unique<fcitx::CandidateWord>(fcitx::Text(candidateStr));
 
     fcitx::CandidateWord* candidate =
-        new DisplayOnlyCandidateWord(fcitx::Text(current->candidates().at(i)));
+        new DisplayOnlyCandidateWord(fcitx::Text(candidateStr));
     // ownership of candidate is transferred to candidateList.
-    candidateList->insert(i, candidate);
+    candidateList->append(candidate);
   }
   context->inputPanel().setCandidateList(std::move(candidateList));
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
@@ -372,8 +455,15 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
   context->updatePreedit();
 }
 
-FCITX_ADDON_FACTORY(McBopomofoEngineFactory);
+void McBopomofoEngine::commitString(fcitx::InputContext* context,
+                                    std::string text) {
+  if (config_.convertsToSimplifiedChinese.value()) {
+    context->commitString(ConvertToSimplifiedChinese(text));
+  } else {
+    context->commitString(text);
+  }
+}
 
-#pragma GCC diagnostic pop
+FCITX_ADDON_FACTORY(McBopomofoEngineFactory);
 
 }  // namespace McBopomofo

@@ -67,9 +67,7 @@ class BopomofoSyllable {
 
   Component consonantComponent() const { return syllable_ & ConsonantMask; }
 
-  Component middleVowelComponent() const {
-    return syllable_ & MiddleVowelMask;
-  }
+  Component middleVowelComponent() const { return syllable_ & MiddleVowelMask; }
 
   Component vowelComponent() const { return syllable_ & VowelMask; }
 
@@ -113,8 +111,8 @@ class BopomofoSyllable {
 
   const BopomofoSyllable operator+(const BopomofoSyllable& another) const {
     Component newSyllable = syllable_;
-#define OP_SOVER(mask) \
-  if (another.syllable_ & mask) { \
+#define OP_SOVER(mask)                                                \
+  if (another.syllable_ & mask) {                                     \
     newSyllable = (newSyllable & ~mask) | (another.syllable_ & mask); \
   }
     OP_SOVER(ConsonantMask);
@@ -126,8 +124,8 @@ class BopomofoSyllable {
   }
 
   BopomofoSyllable& operator+=(const BopomofoSyllable& another) {
-#define OPE_SOVER(mask) \
-  if (another.syllable_ & mask) { \
+#define OPE_SOVER(mask)                                           \
+  if (another.syllable_ & mask) {                                 \
     syllable_ = (syllable_ & ~mask) | (another.syllable_ & mask); \
   }
     OPE_SOVER(ConsonantMask);
@@ -381,6 +379,8 @@ class BopomofoReadingBuffer {
       pinyin_sequence_ = "";
     }
   }
+
+  const BopomofoKeyboardLayout* keyboardLayout() const { return layout_; }
 
   bool isValidKey(char k) const {
     if (!pinyin_mode_) {
