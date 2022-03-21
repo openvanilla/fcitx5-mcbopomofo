@@ -141,15 +141,6 @@ static fcitx::Key ConvertDvorakToQwerty(fcitx::Key key) {
   return fcitx::Key(static_cast<fcitx::KeySym>(sym));
 }
 
-// TODO(unassigned): Remove this once fcitx::DisplayOnlyCandidateWord is
-// available through Ubuntu.
-class DisplayOnlyCandidateWord : public fcitx::CandidateWord {
- public:
-  explicit DisplayOnlyCandidateWord(fcitx::Text text)
-      : fcitx::CandidateWord(text) {}
-  void select(fcitx::InputContext*) const override {}
-};
-
 class EmptyLM : public Formosa::Gramambular::LanguageModel {
  public:
   const std::vector<Formosa::Gramambular::Bigram> bigramsForKeys(
@@ -267,7 +258,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
 
     fcitx::CommonCandidateList* maybeCandidateList =
         dynamic_cast<fcitx::CommonCandidateList*>(
-            context->inputPanel().candidateList());
+            context->inputPanel().candidateList().get());
     if (maybeCandidateList == nullptr) {
       // TODO(unassigned): Just assert this.
       FCITX_WARN() << "inconsistent state";
@@ -300,7 +291,7 @@ void McBopomofoEngine::handleCandidateKeyEvent(
   int idx = key.keyListIndex(selectionKeys_);
   if (idx >= 0) {
     if (idx < candidateList->size()) {
-      std::string candidate = candidateList->candidate(idx)->text().toString();
+      std::string candidate = candidateList->candidate(idx).text().toString();
       keyHandler_->candidateSelected(
           candidate, [this, context](std::unique_ptr<InputState> next) {
             enterNewState(context, std::move(next));
@@ -442,15 +433,10 @@ void McBopomofoEngine::handleCandidatesState(
   candidateList->setPageSize(selectionKeys_.size());
 
   for (const std::string& candidateStr : current->candidates()) {
-    // TODO(unassigned): Migrate to the new fcitx5 API using the commented-out
-    // code below once on the latest API.
-    // std::unique_ptr<fcitx::CandidateWord> candidate =
-    // std::make_unique<fcitx::CandidateWord>(fcitx::Text(candidateStr));
-
-    fcitx::CandidateWord* candidate =
-        new DisplayOnlyCandidateWord(fcitx::Text(candidateStr));
-    // ownership of candidate is transferred to candidateList.
-    candidateList->append(candidate);
+    std::unique_ptr<fcitx::CandidateWord> candidate =
+        std::make_unique<fcitx::DisplayOnlyCandidateWord>(
+            fcitx::Text(candidateStr));
+    candidateList->append(std::move(candidate));
   }
   context->inputPanel().setCandidateList(std::move(candidateList));
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
@@ -463,7 +449,7 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
       context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
   fcitx::TextFormatFlags format{use_client_preedit
                                     ? fcitx::TextFormatFlag::Underline
-                                    : fcitx::TextFormatFlag::None};
+                                    : fcitx::TextFormatFlag::NoFlag};
 
   fcitx::Text preedit;
   preedit.append(state->composingBuffer(), format);
