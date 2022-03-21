@@ -8,3 +8,4 @@ CMakeCache.txt
 .vscode
 .idea
 .DS_Store
+*.pot
