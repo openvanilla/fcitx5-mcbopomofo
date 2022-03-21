@@ -242,6 +242,10 @@ void KeyHandler::setKeyboardLayout(
   reading_.setKeyboardLayout(layout);
 }
 
+void KeyHandler::setSelectPhraseAfterCursorAsCandidate(bool flag) {
+  selectPhraseAfterCursorAsCandidate_ = flag;
+}
+
 bool KeyHandler::handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
                                   KeyHandler::StateCallback stateCallback,
                                   KeyHandler::ErrorCallback errorCallback) {
@@ -452,10 +456,16 @@ KeyHandler::bulidChoosingCandidateState(InputStates::NotEmpty* nonEmptyState) {
 
 size_t KeyHandler::actualCandidateCursorIndex() {
   size_t cursorIndex = builder_->cursorIndex();
-  // Cursor must be in the middle or right after a node. So if the cursor is at
-  // the beginning, move by one.
-  if (!cursorIndex && builder_->length() > 0) {
-    ++cursorIndex;
+  if (selectPhraseAfterCursorAsCandidate_) {
+    if (cursorIndex < builder_->length()) {
+      ++cursorIndex;
+    }
+  } else {
+    // Cursor must be in the middle or right after a node. So if the cursor is
+    // at the beginning, move by one.
+    if (!cursorIndex && builder_->length() > 0) {
+      ++cursorIndex;
+    }
   }
   return cursorIndex;
 }

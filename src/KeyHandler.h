@@ -66,6 +66,9 @@ class KeyHandler {
   void setKeyboardLayout(
       const Formosa::Mandarin::BopomofoKeyboardLayout* layout);
 
+  // Sets select phrase after cursor as candidate.
+  void setSelectPhraseAfterCursorAsCandidate(bool flag);
+
  private:
   bool handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
                         StateCallback stateCallback,
@@ -103,6 +106,8 @@ class KeyHandler {
 
   // latest walked path (trellis) using the Viterbi algorithm
   std::vector<Formosa::Gramambular::NodeAnchor> walkedNodes_;
+
+  bool selectPhraseAfterCursorAsCandidate_;
 };
 
 }  // namespace McBopomofo
