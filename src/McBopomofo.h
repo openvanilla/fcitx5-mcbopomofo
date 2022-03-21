@@ -55,21 +55,33 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(BopomofoKeyboardLayout, N_("standard"),
                                  N_("eten"), N_("hsu"), N_("et26"),
                                  N_("hanyupinyin"), N_("ibm"));
 
+enum class SelectPhrase { BeforeCursor, AfterCursor };
+
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(SelectPhrase, N_("before_cursor"),
+                                 N_("after_cursor"));
+
 FCITX_CONFIGURATION(
     McBopomofoConfig,
     // Keyboard layout: standard, eten, etc.
-
     fcitx::OptionWithAnnotation<BopomofoKeyboardLayout,
                                 BopomofoKeyboardLayoutI18NAnnotation>
         bopomofoKeyboardLayout{this, "BopomofoKeyboardLayout",
                                _("Bopomofo Keyboard Layout"),
                                BopomofoKeyboardLayout::Standard};
+
+    // Select the phrase as candidate before or after the cursor.
+    fcitx::OptionWithAnnotation<SelectPhrase, SelectPhraseI18NAnnotation>
+        selectPhrase{this, "SelectPhrase", _("Show Candidate Phrase"),
+                     SelectPhrase::BeforeCursor};
+
     // Whether to map Dvorak characters back to Qwerty layout;
     // this is a workaround of fcitx5/wayland's limitations.
     // See https://bugzilla.gnome.org/show_bug.cgi?id=162726
     // TODO(unassigned): Remove this once fcitx5 handles Dvorak better.
     fcitx::Option<bool> mapsDvorakToQwerty{this, "MapDvorakToQWERTY",
-                                           _("Map Dvorak to QWERTY"), false};);
+                                           _("Map Dvorak to QWERTY"), false};
+
+);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:

@@ -228,6 +228,9 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
       break;
   }
   keyHandler_->setKeyboardLayout(layout);
+
+  keyHandler_->setSelectPhraseAfterCursorAsCandidate(
+      config_.selectPhrase.value() == SelectPhrase::AfterCursor);
 }
 
 void McBopomofoEngine::reset(const fcitx::InputMethodEntry&,
