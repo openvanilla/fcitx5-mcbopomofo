@@ -1,0 +1,3 @@
+install(DIRECTORY 64x64 DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor"
+         PATTERN ".*" EXCLUDE
+         PATTERN "*~" EXCLUDE)

@@ -7,3 +7,4 @@ CMakeCache.txt
 *.so
 .vscode
 .idea
+.DS_Store
