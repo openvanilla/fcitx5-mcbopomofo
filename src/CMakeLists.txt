@@ -1,5 +1,4 @@
 set(MCBOPOMOFO_LIB_SOURCES
- ChineseConverter.cpp
  InputState.cpp
  KeyHandler.cpp
  UTF8Helper.cpp

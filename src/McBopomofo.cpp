@@ -27,13 +27,13 @@
 #include <fcitx/candidatelist.h>
 #include <fcitx/inputcontext.h>
 #include <fcitx/inputpanel.h>
+#include <fcitx/userinterfacemanager.h>
 
 #include <filesystem>
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include "ChineseConverter.h"
 #include "ParselessLM.h"
 
 namespace McBopomofo {
@@ -163,7 +163,8 @@ class EmptyLM : public Formosa::Gramambular::LanguageModel {
   bool hasUnigramsForKey(const std::string&) override { return false; }
 };
 
-McBopomofoEngine::McBopomofoEngine() {
+McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
+    : instance_(instance) {
   std::string path;
   path = fcitx::StandardPath::global().locate(
       fcitx::StandardPath::Type::PkgData, kDataPath);
@@ -205,7 +206,15 @@ void McBopomofoEngine::reloadConfig() {
 }
 
 void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
-                                fcitx::InputContextEvent&) {
+                                fcitx::InputContextEvent& event) {
+  chttrans();
+  auto* inputContext = event.inputContext();
+  if (auto* action =
+          instance_->userInterfaceManager().lookupAction("chttrans")) {
+    inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                         action);
+  }
+
   auto layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
   switch (config_.bopomofoKeyboardLayout.value()) {
     case BopomofoKeyboardLayout::Standard:
@@ -213,6 +222,18 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
       break;
     case BopomofoKeyboardLayout::Eten:
       layout = Formosa::Mandarin::BopomofoKeyboardLayout::ETenLayout();
+      break;
+    case BopomofoKeyboardLayout::Hsu:
+      layout = Formosa::Mandarin::BopomofoKeyboardLayout::HsuLayout();
+      break;
+    case BopomofoKeyboardLayout::Et26:
+      layout = Formosa::Mandarin::BopomofoKeyboardLayout::ETen26Layout();
+      break;
+    case BopomofoKeyboardLayout::HanyuPinyin:
+      layout = Formosa::Mandarin::BopomofoKeyboardLayout::HanyuPinyinLayout();
+      break;
+    case BopomofoKeyboardLayout::IBM:
+      layout = Formosa::Mandarin::BopomofoKeyboardLayout::IBMLayout();
       break;
   }
   keyHandler_->setKeyboardLayout(layout);
@@ -364,7 +385,7 @@ void McBopomofoEngine::handleEmptyState(fcitx::InputContext* context,
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   context->updatePreedit();
   if (auto notEmpty = dynamic_cast<InputStates::NotEmpty*>(prev)) {
-    commitString(context, notEmpty->composingBuffer());
+    context->commitString(notEmpty->composingBuffer());
   }
 }
 
@@ -383,7 +404,7 @@ void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   context->updatePreedit();
   if (!current->poppedText().empty()) {
-    commitString(context, current->poppedText());
+    context->commitString(current->poppedText());
   }
 }
 
@@ -393,7 +414,7 @@ void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   if (!current->poppedText().empty()) {
-    commitString(context, current->poppedText());
+    context->commitString(current->poppedText());
   }
   updatePreedit(context, current);
 }
@@ -453,15 +474,6 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
     context->inputPanel().setPreedit(preedit);
   }
   context->updatePreedit();
-}
-
-void McBopomofoEngine::commitString(fcitx::InputContext* context,
-                                    std::string text) {
-  if (config_.convertsToSimplifiedChinese.value()) {
-    context->commitString(ConvertToSimplifiedChinese(text));
-  } else {
-    context->commitString(text);
-  }
 }
 
 FCITX_ADDON_FACTORY(McBopomofoEngineFactory);
