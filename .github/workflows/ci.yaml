@@ -5,14 +5,17 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ubuntu:21-10
+    container: ubuntu:impish-20220316
 
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt install -y fcitx5=5.0.5-1ubuntu2 libfcitx5core-dev=5.0.5-1ubuntu2 libfcitx5config-dev=5.0.5-1ubuntu2 libfcitx5utils-dev=5.0.5-1ubuntu2
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt install -y clang
+          apt install -y cmake
+          apt install -y fcitx5=5.0.5-1ubuntu2 libfcitx5core-dev=5.0.5-1ubuntu2 libfcitx5config-dev=5.0.5-1ubuntu2 libfcitx5utils-dev=5.0.5-1ubuntu2
       - name: Build
         run: |
           mkdir -p build
