@@ -69,6 +69,9 @@ class KeyHandler {
   // Sets select phrase after cursor as candidate.
   void setSelectPhraseAfterCursorAsCandidate(bool flag);
 
+  // Sets move cursor after selection.
+  void setMoveCursorAfterSelection(bool flag);
+
  private:
   bool handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
                         StateCallback stateCallback,
@@ -108,6 +111,7 @@ class KeyHandler {
   std::vector<Formosa::Gramambular::NodeAnchor> walkedNodes_;
 
   bool selectPhraseAfterCursorAsCandidate_;
+  bool moveCursorAfterSelection_;
 };
 
 }  // namespace McBopomofo

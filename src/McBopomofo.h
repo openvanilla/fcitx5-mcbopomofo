@@ -57,8 +57,9 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(BopomofoKeyboardLayout, N_("standard"),
 
 enum class SelectPhrase { BeforeCursor, AfterCursor };
 
-FCITX_CONFIG_ENUM_NAME_WITH_I18N(SelectPhrase, N_("before_cursor"),
-                                 N_("after_cursor"));
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(SelectPhrase,
+                                 N_("before the cursor (like Hanin)"),
+                                 N_("after the cursor (like MS-IME)"));
 
 FCITX_CONFIGURATION(
     McBopomofoConfig,
@@ -73,6 +74,12 @@ FCITX_CONFIGURATION(
     fcitx::OptionWithAnnotation<SelectPhrase, SelectPhraseI18NAnnotation>
         selectPhrase{this, "SelectPhrase", _("Show Candidate Phrase"),
                      SelectPhrase::BeforeCursor};
+
+    fcitx::Option<bool> moveCursorAfterSelection{
+        this, "moveCursorAfterSelection",
+        _("Move cursor after selection\n"
+          "(works only when selecting phrases after the cursor)"),
+        false};
 
     // Whether to map Dvorak characters back to Qwerty layout;
     // this is a workaround of fcitx5/wayland's limitations.

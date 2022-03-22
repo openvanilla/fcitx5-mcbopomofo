@@ -231,6 +231,9 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
 
   keyHandler_->setSelectPhraseAfterCursorAsCandidate(
       config_.selectPhrase.value() == SelectPhrase::AfterCursor);
+
+  keyHandler_->setMoveCursorAfterSelection(
+      config_.moveCursorAfterSelection.value());
 }
 
 void McBopomofoEngine::reset(const fcitx::InputMethodEntry&,
