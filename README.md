@@ -2,7 +2,7 @@
 
 ![Build](https://github.com/openvanilla/fcitx5-mcbopomofo/actions/workflows/ci.yaml/badge.svg)
 
-本專案是[小麥注音](https://github.com/openvanilla/McBopomofo)開發者為了能在 Linux 上使用而開發，目前是 MVP (minimally-viable product)，功能做到小麥注音 1.1 的程度。限制如下：
+本專案是[小麥注音](https://github.com/openvanilla/McBopomofo)開發者為了能在 Linux 上使用而開發，目前是 MVP (minimum viable product)，功能做到小麥注音 1.1 的程度。限制如下：
 
 - 只實作最重要的按鍵，例如注音組字只支援空白鍵，選字也只支援空白鍵
 - 選字窗用的是內建的 pageable candidate list, 事件處理一切從簡
