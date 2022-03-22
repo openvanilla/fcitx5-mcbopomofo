@@ -5,10 +5,11 @@ find_package(Fcitx5Core REQUIRED)
 # Setup some compiler option that is generally useful and compatible with Fcitx 5 (C++17)
 include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cmake")
 
+# So that `make install` does not also install Google Test
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+
 add_subdirectory(src)
 
 # McBopomofo data
 configure_file(data/data.txt mcbopomofo-data.txt)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-data.txt" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
-
-set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest." FORCE)
