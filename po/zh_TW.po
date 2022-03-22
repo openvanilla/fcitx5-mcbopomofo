@@ -1,0 +1,29 @@
+# Chinese translations for fcitx-mcbopomofo package
+# traditional Chinese translation for fcitx-mcbopomofo.
+# Copyright (C) 2022 OpenVanilla
+# This file is distributed under the same license as the fcitx-mcbopomofo package.
+# Automatically generated, 2022.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: fcitx-mcbopomofo v0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-03-21 21:09+0800\n"
+"PO-Revision-Date: 2022-03-21 21:09+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "McBopomofo"
+msgstr "小麥注音"
+
+#: src/McBopomofo.h:65
+msgid "Bopomofo Keyboard Layout"
+msgstr "注音鍵盤配置"
+
+#: src/McBopomofo.h:72
+msgid "Map Dvorak to QWERTY"
+msgstr "將 QWERTY 鍵盤對應到 Dvorak 鍵盤"

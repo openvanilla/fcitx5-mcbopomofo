@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 3.6)
-project(fcitx5-mcbopomofo)
+project(fcitx5-mcbopomofo VERSION 1.0)
+
+find_package(ECM REQUIRED 1.0.0)
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 find_package(Fcitx5Core REQUIRED)
+include(FeatureSummary)
+include(GNUInstallDirs)
+include(ECMSetupVersion)
+include(ECMUninstallTarget)
+
 # Setup some compiler option that is generally useful and compatible with Fcitx 5 (C++17)
 include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cmake")
 
@@ -9,6 +17,11 @@ include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cma
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(src)
+add_subdirectory(data)
+# add_subdirectory(po)
+
+message(STATUS "CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR}")
 
 # McBopomofo data
 configure_file(data/data.txt mcbopomofo-data.txt)
