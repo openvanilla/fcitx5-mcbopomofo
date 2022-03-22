@@ -30,9 +30,9 @@
 
 namespace McBopomofo {
 
-static constexpr const char* const kJoinSeparator = "-";
-static constexpr const char* const kPunctationListKey = "_punctuation_list";
-static constexpr const char* const kPunctationKeyPrefix = "_punctuation_";
+constexpr char kJoinSeparator[] = "-";
+constexpr char kPunctuationListKey[] = "_punctuation_list";
+constexpr char kPunctuationKeyPrefix[] = "_punctuation_";
 
 // Maximum composing buffer size, roughly in codepoints.
 // TODO(unassigned): maybe make this configurable.
@@ -173,9 +173,9 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
 
   // Punctuation key: backtick or grave accent.
   if (key.check(FcitxKey_grave) &&
-      languageModel_->hasUnigramsForKey(kPunctationListKey)) {
+      languageModel_->hasUnigramsForKey(kPunctuationListKey)) {
     if (reading_.isEmpty()) {
-      builder_->insertReadingAtCursor(kPunctationListKey);
+      builder_->insertReadingAtCursor(kPunctuationListKey);
 
       std::string evictedText = popEvictedTextAndWalk();
 
@@ -196,7 +196,7 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     std::string chrStr(1, asciiChar);
 
     // Bopomofo layout-specific punctuation handling.
-    std::string unigram = std::string(kPunctationKeyPrefix) +
+    std::string unigram = std::string(kPunctuationKeyPrefix) +
                           GetKeyboardLayoutName(reading_.keyboardLayout()) +
                           "_" + chrStr;
     if (handlePunctuation(unigram, stateCallback, errorCallback)) {
@@ -204,7 +204,7 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     }
 
     // Not handled, try generic punctuations.
-    unigram = std::string(kPunctationKeyPrefix) + chrStr;
+    unigram = std::string(kPunctuationKeyPrefix) + chrStr;
     if (handlePunctuation(unigram, stateCallback, errorCallback)) {
       return true;
     }

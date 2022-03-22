@@ -38,8 +38,8 @@
 
 namespace McBopomofo {
 
-static const char* kDataPath = "data/mcbopomofo-data.txt";
-static const char* kConfigPath = "conf/mcbopomofo.conf";
+constexpr char kDataPath[] = "data/mcbopomofo-data.txt";
+constexpr char kConfigPath[] = "conf/mcbopomofo.conf";
 
 static char CovertDvorakToQwerty(char c) {
   switch (c) {
