@@ -2,7 +2,7 @@
 
 ![Build](https://github.com/openvanilla/fcitx5-mcbopomofo/actions/workflows/ci.yaml/badge.svg)
 
-本專案是小麥注音開發者為了能在 Linux 上使用而開發，目前是 MVP (minimally-viable product)，功能做到小麥注音 1.1 的程度。限制如下：
+本專案是[小麥注音](https://github.com/openvanilla/McBopomofo)開發者為了能在 Linux 上使用而開發，目前是 MVP (minimally-viable product)，功能做到小麥注音 1.1 的程度。限制如下：
 
 - 只實作最重要的按鍵，例如注音組字只支援空白鍵，選字也只支援空白鍵
 - 選字窗用的是內建的 pageable candidate list, 事件處理一切從簡
@@ -48,3 +48,11 @@ sudo make install
 此外，`src/Engine/` 目錄裡的程式碼，傳統上使用 [WebKit style](https://webkit.org/code-style-guidelines/)，未來繼續使用 WebKit 風格。我們也在該目錄放置了 符合該風格的 `.clang-format`。
 
 我們也推薦使用 [cpplint](https://github.com/cpplint/cpplint) 檢查 C++ 常見問題。
+
+## 社群公約
+
+歡迎小麥注音 Linux 用戶回報問題與指教，也歡迎大家參與小麥注音開發。
+
+我們採用了 GitHub 的[通用社群公約](https://github.com/openvanilla/fcitx5-mcbopomofo/blob/master/CODE_OF_CONDUCT.md)。公約的中文版請參考[這裡的翻譯](https://www.contributor-covenant.org/zh-tw/version/1/4/code-of-conduct/)。我們以上述公約，作為維護小麥注音社群的準則。
+
+
