@@ -18,6 +18,9 @@ cd build
 cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug
 make
 sudo make install
+
+# 初次安裝後，執行以下指令，小麥注音 icon 就會出現在 fcitx5 選單中
+sudo update-icon-caches /usr/share/icons/*
 ```
 
 之後就會在 fcitx5 設定中看到小麥注音。
