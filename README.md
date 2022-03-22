@@ -34,7 +34,7 @@ make
 sudo make install
 ```
 
-之後就會在 fcitx5 設定中看到小麥注音。
+安裝後重新啟動 fcitx5，就會在設定中找到小麥注音。
 
 ## C++ 語法風格
 
