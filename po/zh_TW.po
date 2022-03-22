@@ -26,4 +26,4 @@ msgstr "注音鍵盤配置"
 
 #: src/McBopomofo.h:72
 msgid "Map Dvorak to QWERTY"
-msgstr "將 QWERTY 鍵盤對應到 Dvorak 鍵盤"
+msgstr "將 Dvorak 鍵盤字元對應回 QWERTY"
