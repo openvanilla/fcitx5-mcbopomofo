@@ -10,6 +10,8 @@ include(GNUInstallDirs)
 include(ECMSetupVersion)
 include(ECMUninstallTarget)
 
+find_package(Gettext REQUIRED)
+
 # Setup some compiler option that is generally useful and compatible with Fcitx 5 (C++17)
 include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cmake")
 
@@ -18,7 +20,7 @@ set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(src)
 add_subdirectory(data)
-# add_subdirectory(po)
+add_subdirectory(po)
 
 message(STATUS "CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR}")

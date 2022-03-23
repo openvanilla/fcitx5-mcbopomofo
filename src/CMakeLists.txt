@@ -28,6 +28,7 @@ add_library(mcbopomofo MODULE McBopomofo.cpp)
 target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core McBopomofoLib)
 target_include_directories(mcbopomofo PRIVATE Fcitx5::Core)
 set_target_properties(mcbopomofo PROPERTIES PREFIX "")
+target_compile_definitions(mcbopomofo PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 install(TARGETS mcbopomofo DESTINATION "${FCITX_INSTALL_LIBDIR}/fcitx5")
 
 # Addon config file
