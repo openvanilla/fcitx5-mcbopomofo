@@ -1,13 +1,8 @@
 [InputMethod]
-# Translatable name of the input method
 Name=McBopomofo
-# Icon name
+Name[zh_TW]=小麥注音
 Icon=fcitx-mcbopomofo
-# A short label that present the name of input method
 Label=麥
-# ISO 639 language code
 LangCode=zh_TW
-# Match addon name
 Addon=mcbopomofo
-# Whether this input method support customization
 Configurable=True
