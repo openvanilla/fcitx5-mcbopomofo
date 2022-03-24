@@ -38,6 +38,7 @@
 #include "UserOverrideModel.h"
 
 namespace McBopomofo {
+
 class KeyHandler {
  public:
   explicit KeyHandler(

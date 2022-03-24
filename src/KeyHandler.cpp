@@ -103,7 +103,7 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     std::string evictedText = popEvictedTextAndWalk();
 
     auto inputtingState = buildInputtingState();
-    inputtingState->setPoppedText(evictedText);
+    inputtingState->evictedText = evictedText;
     stateCallback(std::move(inputtingState));
     return true;
   }
@@ -128,8 +128,7 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
       if (!builder_->length()) {
         stateCallback(std::make_unique<InputStates::Empty>());
       } else {
-        auto inputtingState = buildInputtingState();
-        stateCallback(std::move(inputtingState));
+        stateCallback(buildInputtingState());
       }
     }
     return true;
@@ -163,9 +162,9 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     }
 
     auto inputtingState = buildInputtingState();
-    auto committingState = std::make_unique<InputStates::Committing>();
-    // Steal the composed text built by the inputting state.
-    committingState->setPoppedText(inputtingState->composingBuffer());
+    // Steal the composingBuffer built by the inputting state.
+    auto committingState = std::make_unique<InputStates::Committing>(
+        inputtingState->composingBuffer);
     stateCallback(std::move(committingState));
     reset();
     return true;
@@ -180,7 +179,7 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
       std::string evictedText = popEvictedTextAndWalk();
 
       auto inputtingState = buildInputtingState();
-      inputtingState->setPoppedText(evictedText);
+      inputtingState->evictedText = evictedText;
       auto choosingCanidateState =
           bulidChoosingCandidateState(inputtingState.get());
       stateCallback(std::move(inputtingState));
@@ -354,7 +353,7 @@ bool KeyHandler::handlePunctuation(std::string punctuationUnigramKey,
   std::string evictedText = popEvictedTextAndWalk();
 
   auto inputtingState = buildInputtingState();
-  inputtingState->setPoppedText(evictedText);
+  inputtingState->evictedText = evictedText;
   stateCallback(std::move(inputtingState));
   return true;
 }
@@ -419,10 +418,9 @@ std::unique_ptr<InputStates::Inputting> KeyHandler::buildInputtingState() {
   std::string tail =
       composed.substr(composedCursor, composed.length() - composedCursor);
 
-  auto state = std::make_unique<InputStates::Inputting>();
-  state->setComposingBuffer(head + reading + tail);
-  state->setCursorIndex(composedCursor + reading.length());
-  return state;
+  std::string composingBuffer = head + reading + tail;
+  size_t cursorIndex = composedCursor + reading.length();
+  return std::make_unique<InputStates::Inputting>(composingBuffer, cursorIndex);
 }
 
 std::unique_ptr<InputStates::ChoosingCandidate>
@@ -447,11 +445,8 @@ KeyHandler::bulidChoosingCandidateState(InputStates::NotEmpty* nonEmptyState) {
     }
   }
 
-  auto state = std::make_unique<InputStates::ChoosingCandidate>();
-  state->setCursorIndex(nonEmptyState->cursorIndex());
-  state->setComposingBuffer(nonEmptyState->composingBuffer());
-  state->setCandidates(candidates);
-  return state;
+  return std::make_unique<InputStates::ChoosingCandidate>(
+      nonEmptyState->composingBuffer, nonEmptyState->cursorIndex, candidates);
 }
 
 size_t KeyHandler::actualCandidateCursorIndex() {

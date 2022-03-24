@@ -29,62 +29,62 @@
 
 namespace McBopomofo {
 
-class InputState {
- public:
+struct InputState {
   virtual ~InputState() = default;
 };
 
 namespace InputStates {
 
-class Empty : public InputState {
- public:
-  std::string composingBuffer() const;
+// Empty state, the ground state of a state machine.
+//
+// When a state machine implementation enters this state, it may produce a side
+// effect with the previous state. For example, if the previous state is
+// Inputting, and an implementation enters Empty, the implementation may commit
+// whatever is in Inputting to the input method context.
+struct Empty : InputState {};
+
+// Empty state with no consideration for any previous state.
+//
+// When a state machine implementation enters this state, it must not produce
+// any side effect. In other words, any previous state is discarded. An
+// implementation must continue to enter Empty after this, so that no use sites
+// of the state machine need to check for both Empty and EmptyIgnoringPrevious
+// states.
+struct EmptyIgnoringPrevious : InputState {};
+
+// Committing text.
+struct Committing : InputState {
+  explicit Committing(const std::string& t) : text(t) {}
+
+  const std::string text;
 };
 
-class EmptyIgnoringPrevious : public InputState {
- public:
-  std::string composingBuffer() const;
+// NotEmpty state that has a non-empty composing buffer ("preedit" in some IME
+// frameworks).
+struct NotEmpty : InputState {
+  NotEmpty(const std::string& buf, const size_t index)
+      : composingBuffer(buf), cursorIndex(index) {}
+
+  const std::string composingBuffer;
+  const size_t cursorIndex;
 };
 
-class Committing : public InputState {
- public:
-  void setPoppedText(const std::string& poppedText);
-  std::string poppedText() const;
+// Inputting state with an optional field to commit evicted ("popped") segments
+// in the composing buffer.
+struct Inputting : NotEmpty {
+  Inputting(const std::string& buf, const size_t index)
+      : NotEmpty(buf, index) {}
 
- protected:
-  std::string poppedText_;
+  std::string evictedText;
 };
 
-class NotEmpty : public InputState {
- public:
-  void setComposingBuffer(const std::string& composingBuffer);
-  std::string composingBuffer() const;
+// Candidate selecting state with a non-empty composing buffer.
+struct ChoosingCandidate : NotEmpty {
+  ChoosingCandidate(const std::string& buf, const size_t index,
+                    const std::vector<std::string>& cs)
+      : NotEmpty(buf, index), candidates(cs) {}
 
-  // cursorIndex must be *byte-based* per fcitx5 requirement.
-  void setCursorIndex(size_t cursorIndex);
-  size_t cursorIndex() const;
-
- protected:
-  std::string composingBuffer_;
-  size_t cursorIndex_;
-};
-
-class Inputting : public NotEmpty {
- public:
-  void setPoppedText(const std::string& poppedText);
-  std::string poppedText() const;
-
- protected:
-  std::string poppedText_;
-};
-
-class ChoosingCandidate : public NotEmpty {
- public:
-  void setCandidates(const std::vector<std::string>& candidates);
-  const std::vector<std::string>& candidates() const;
-
- protected:
-  std::vector<std::string> candidates_;
+  const std::vector<std::string> candidates;
 };
 
 }  // namespace InputStates

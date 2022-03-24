@@ -1,5 +1,4 @@
 set(MCBOPOMOFO_LIB_SOURCES
- InputState.cpp
  KeyHandler.cpp
  UTF8Helper.cpp
  Engine/KeyValueBlobReader.cpp 
