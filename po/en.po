@@ -1,5 +1,4 @@
-# Chinese translations for fcitx-mcbopomofo package
-# Traditional Chinese translation for fcitx-mcbopomofo.
+# English translations for fcitx-mcbopomofo package.
 # Copyright (C) 2022 OpenVanilla
 # This file is distributed under the same license as the fcitx-mcbopomofo package.
 # Automatically generated, 2022.
@@ -12,30 +11,31 @@ msgstr ""
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
-"Language: zh_TW\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=ASCII\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/McBopomofo.h:54
 msgid "standard"
-msgstr "標準"
+msgstr "Standard"
 
 #: src/McBopomofo.h:55
 msgid "eten"
-msgstr "倚天"
+msgstr "ETen"
 
 #: src/McBopomofo.h:55
 msgid "hsu"
-msgstr "許氏鍵盤"
+msgstr "Hsu"
 
 #: src/McBopomofo.h:55
 msgid "et26"
-msgstr "倚天26鍵"
+msgstr "ETen26"
 
 #: src/McBopomofo.h:56
 msgid "hanyupinyin"
-msgstr "漢語拼音"
+msgstr "Pinyin"
 
 #: src/McBopomofo.h:56
 msgid "ibm"
@@ -43,20 +43,20 @@ msgstr "IBM"
 
 #: src/McBopomofo.h:60
 msgid "before_cursor"
-msgstr "游標前面（像漢音輸入法）"
+msgstr "Before the Cursor (Like Hanin)"
 
 #: src/McBopomofo.h:61
 msgid "after_cursor"
-msgstr "游標後面（像微軟新注音）"
+msgstr "After the Cursor (Like MS IME)"
 
 #: src/McBopomofo.h:69
 msgid "Bopomofo Keyboard Layout"
-msgstr "注音鍵盤配置"
+msgstr "Bopomofo Keyboard Layout"
 
 #: src/McBopomofo.h:74
 msgid "Show Candidate Phrase"
-msgstr "選字時，候選詞起算點"
+msgstr "Show Candidates"
 
 #: src/McBopomofo.h:82
 msgid "Map Dvorak to QWERTY"
-msgstr "將 Dvorak 鍵盤字元對應回 QWERTY"
+msgstr "Map Dvorak to QWERTY"
