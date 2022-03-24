@@ -360,7 +360,8 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
                      currentPtr)) {
     handleEmptyIgnoringPreviousState(context, prevPtr, emptyIgnoringPrevious);
 
-    // Optimization: set the current state to empty.
+    // Transition to Empty state as required by the spec: see
+    // EmptyIgnoringPrevious's own definition for why.
     state_ = std::make_unique<InputStates::Empty>();
   } else if (auto committing =
                  dynamic_cast<InputStates::Committing*>(currentPtr)) {
@@ -379,7 +380,7 @@ void McBopomofoEngine::handleEmptyState(fcitx::InputContext* context,
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   context->updatePreedit();
   if (auto notEmpty = dynamic_cast<InputStates::NotEmpty*>(prev)) {
-    context->commitString(notEmpty->composingBuffer());
+    context->commitString(notEmpty->composingBuffer);
   }
 }
 
@@ -397,8 +398,8 @@ void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   context->updatePreedit();
-  if (!current->poppedText().empty()) {
-    context->commitString(current->poppedText());
+  if (!current->text.empty()) {
+    context->commitString(current->text);
   }
 }
 
@@ -407,8 +408,8 @@ void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
                                             InputStates::Inputting* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-  if (!current->poppedText().empty()) {
-    context->commitString(current->poppedText());
+  if (!current->evictedText.empty()) {
+    context->commitString(current->evictedText);
   }
   updatePreedit(context, current);
 }
@@ -435,7 +436,7 @@ void McBopomofoEngine::handleCandidatesState(
   candidateList->setSelectionKey(selectionKeys_);
   candidateList->setPageSize(selectionKeys_.size());
 
-  for (const std::string& candidateStr : current->candidates()) {
+  for (const std::string& candidateStr : current->candidates) {
     std::unique_ptr<fcitx::CandidateWord> candidate =
         std::make_unique<fcitx::DisplayOnlyCandidateWord>(
             fcitx::Text(candidateStr));
@@ -455,8 +456,8 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
                                     : fcitx::TextFormatFlag::NoFlag};
 
   fcitx::Text preedit;
-  preedit.append(state->composingBuffer(), format);
-  preedit.setCursor(state->cursorIndex());
+  preedit.append(state->composingBuffer, format);
+  preedit.setCursor(state->cursorIndex);
   if (use_client_preedit) {
     context->inputPanel().setClientPreedit(preedit);
   } else {
