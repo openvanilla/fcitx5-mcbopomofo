@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-22 20:28-0700\n"
+"POT-Creation-Date: 2022-03-25 12:11-0700\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -60,3 +60,27 @@ msgstr "選字時，候選詞起算點"
 #: src/McBopomofo.h:82
 msgid "Map Dvorak to QWERTY"
 msgstr "將 Dvorak 鍵盤字元對應回 QWERTY"
+
+#: src/KeyHandler.cpp:481
+msgid "Cursor is between syllables {0} and {1}"
+msgstr "游標在「{0}」與「{1}」之間"
+
+#: src/KeyHandler.cpp:573
+msgid "{0} syllables required"
+msgstr "至少需要選取{0}個字"
+
+#: src/KeyHandler.cpp:576
+msgid "{0} syllables maximum"
+msgstr "最多只能選取{0}個字"
+
+#: src/KeyHandler.cpp:579
+msgid "phrase already exists"
+msgstr "詞庫已經有這個詞"
+
+#: src/KeyHandler.cpp:581
+msgid "press Enter to add the phrase"
+msgstr "請按 Enter 加入用戶詞庫"
+
+#: src/KeyHandler.cpp:585
+msgid "Marked: {0}, syllables: {1}, {2}"
+msgstr "選取了「{0}」，注音「{1}」：{2}"

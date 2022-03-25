@@ -9,3 +9,5 @@ CMakeCache.txt
 .idea
 .DS_Store
 *.pot
+*.pot~
+*.po~

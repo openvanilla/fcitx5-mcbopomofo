@@ -10,6 +10,7 @@ include(GNUInstallDirs)
 include(ECMSetupVersion)
 include(ECMUninstallTarget)
 
+find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
 
 # Setup some compiler option that is generally useful and compatible with Fcitx 5 (C++17)

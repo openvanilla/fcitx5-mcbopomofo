@@ -85,7 +85,7 @@ FCITX_CONFIGURATION(
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
-  McBopomofoEngine(fcitx::Instance* instance);
+  explicit McBopomofoEngine(fcitx::Instance* instance);
   fcitx::Instance* instance() { return instance_; }
 
   void activate(const fcitx::InputMethodEntry& entry,
@@ -122,6 +122,8 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
                             InputStates::Inputting* current);
   void handleCandidatesState(fcitx::InputContext* context, InputState* prev,
                              InputStates::ChoosingCandidate* current);
+  void handleMarkingState(fcitx::InputContext* context, InputState* prev,
+                          InputStates::Marking* current);
 
   // Helpers.
 
