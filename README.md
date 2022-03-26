@@ -2,10 +2,19 @@
 
 ![Build](https://github.com/openvanilla/fcitx5-mcbopomofo/actions/workflows/ci.yaml/badge.svg)
 
-本專案是[小麥注音](https://github.com/openvanilla/McBopomofo)開發者為了能在 Linux 上使用而開發，目前是 MVP (minimum viable product)，功能做到小麥注音 2.0 的程度。限制如下：
+本專案是[小麥注音](https://github.com/openvanilla/McBopomofo)開發者為了能在 Linux 上使用而開發，目前是 MVP (minimum viable product)，功能做到小麥注音 2.2 的程度：
 
-- 只實作最重要的按鍵，例如注音組字只支援空白鍵，選字也只支援空白鍵
-- 選字窗用的是內建的 pageable candidate list, 事件處理一切從簡
+* 提供自動選字注音
+* 用戶自訂詞功能：可在組字區加詞，亦可直接修改用戶詞庫檔案及刪詞設定檔
+* 記憶使用者最近選字
+* 支援標準、倚天、許氏鍵盤、倚天 26 鍵等常見注音鍵盤排列
+* 支援微軟新注音式「游標後」跟漢音式「游標前」選字
+
+與 macOS 版的主要差別及功能限制如下：
+
+- 目前只支援最常用的按鍵，例如注音組字只支援空白鍵，選字也只支援空白鍵
+- 使用 fcitx5 內建選字窗
+- 繁簡轉換使用 fcitx5 內建 chttrans 模組
 - 沒有實作組字區有字時，按 Shift + 英文字母鍵的各種中英混打處理
 
 此外，在專案組織上：
@@ -69,5 +78,3 @@ make
 歡迎小麥注音 Linux 用戶回報問題與指教，也歡迎大家參與小麥注音開發。
 
 我們採用了 GitHub 的[通用社群公約](https://github.com/openvanilla/fcitx5-mcbopomofo/blob/master/CODE_OF_CONDUCT.md)。公約的中文版請參考[這裡的翻譯](https://www.contributor-covenant.org/zh-tw/version/1/4/code-of-conduct/)。我們以上述公約，作為維護小麥注音社群的準則。
-
-
