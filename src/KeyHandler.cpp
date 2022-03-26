@@ -680,7 +680,7 @@ void KeyHandler::pinNode(const std::string& candidate) {
 
   walk();
 
-  if (selectPhraseAfterCursorAsCandidate_ && moveCursorAfterSelection_) {
+  if (moveCursorAfterSelection_) {
     size_t nextPosition = 0;
     for (auto node : walkedNodes_) {
       if (nextPosition >= cursorIndex) {

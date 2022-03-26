@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-26 22:39+0800\n"
+"POT-Creation-Date: 2022-03-27 00:19+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -73,13 +73,11 @@ msgstr ""
 msgid "Show Candidate Phrase"
 msgstr "Show Candidates"
 
-#: src/McBopomofo.h:92
-msgid ""
-"Move cursor after selection\n"
-"(works only when selecting phrases after the cursor)"
+#: src/McBopomofo.h:91
+msgid "Move cursor after selection"
 msgstr ""
 
-#: src/McBopomofo.h:101
+#: src/McBopomofo.h:99
 msgid "Map Dvorak to QWERTY"
 msgstr ""
 

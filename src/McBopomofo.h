@@ -88,9 +88,7 @@ FCITX_CONFIGURATION(
                      SelectPhrase::BeforeCursor};
 
     fcitx::Option<bool> moveCursorAfterSelection{
-        this, "moveCursorAfterSelection",
-        _("Move cursor after selection\n"
-          "(works only when selecting phrases after the cursor)"),
+        this, "moveCursorAfterSelection", _("Move cursor after selection"),
         false};
 
     // Whether to map Dvorak characters back to Qwerty layout;

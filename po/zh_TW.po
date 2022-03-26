@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-26 22:39+0800\n"
+"POT-Creation-Date: 2022-03-27 00:19+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -73,15 +73,11 @@ msgstr "選字鍵"
 msgid "Show Candidate Phrase"
 msgstr "選字時，候選詞起算點"
 
-#: src/McBopomofo.h:92
-msgid ""
-"Move cursor after selection\n"
-"(works only when selecting phrases after the cursor)"
-msgstr ""
-"選字後自動移動游標\n"
-"(只會在候選詞起算點設置成在游標之後生效)"
+#: src/McBopomofo.h:91
+msgid "Move cursor after selection"
+msgstr "選字後自動移動游標"
 
-#: src/McBopomofo.h:101
+#: src/McBopomofo.h:99
 msgid "Map Dvorak to QWERTY"
 msgstr "將 Dvorak 鍵盤字元對應回 QWERTY"
 
