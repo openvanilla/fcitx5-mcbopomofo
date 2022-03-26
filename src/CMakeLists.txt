@@ -25,6 +25,11 @@ include_directories(Engine/Gramambular)
 include_directories(Engine/Mandarin)
 
 add_library(mcbopomofo MODULE McBopomofo.cpp)
+# Use this to build McBopomofo on, for example, Ubuntu 20.04 LTS
+if (USE_LEGACY_FCITX5_API)
+    MESSAGE(STATUS "Using legacy (pre-2021) Fcitx5 API")
+    add_compile_definitions(mcbopomofo USE_LEGACY_FCITX5_API=1)
+endif()
 # target_compile_options(mcbopomofo PRIVATE -Wall -Wextra)
 target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core McBopomofoLib)
 target_include_directories(mcbopomofo PRIVATE Fcitx5::Core)

@@ -139,6 +139,15 @@ static fcitx::Key ConvertDvorakToQwerty(fcitx::Key key) {
   return fcitx::Key(static_cast<fcitx::KeySym>(sym));
 }
 
+#ifdef USE_LEGACY_FCITX5_API
+class DisplayOnlyCandidateWord : public fcitx::CandidateWord {
+ public:
+  explicit DisplayOnlyCandidateWord(fcitx::Text text)
+      : fcitx::CandidateWord(std::move(text)) {}
+  void select(fcitx::InputContext*) const override {}
+};
+#endif
+
 McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
     : instance_(instance) {
   languageModelLoader_ = std::make_shared<LanguageModelLoader>();
@@ -231,8 +240,13 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
     // Absorb all keys when the candidate panel is on.
     keyEvent.filterAndAccept();
 
+#ifdef USE_LEGACY_FCITX5_API
+    auto maybeCandidateList = dynamic_cast<fcitx::CommonCandidateList*>(
+        context->inputPanel().candidateList());
+#else
     auto maybeCandidateList = dynamic_cast<fcitx::CommonCandidateList*>(
         context->inputPanel().candidateList().get());
+#endif
     if (maybeCandidateList == nullptr) {
       // TODO(unassigned): Just assert this.
       FCITX_WARN() << "inconsistent state";
@@ -265,7 +279,11 @@ void McBopomofoEngine::handleCandidateKeyEvent(
   int idx = key.keyListIndex(selectionKeys_);
   if (idx >= 0) {
     if (idx < candidateList->size()) {
+#ifdef USE_LEGACY_FCITX5_API
+      std::string candidate = candidateList->candidate(idx)->text().toString();
+#else
       std::string candidate = candidateList->candidate(idx).text().toString();
+#endif
       keyHandler_->candidateSelected(
           candidate, [this, context](std::unique_ptr<InputState> next) {
             enterNewState(context, std::move(next));
@@ -393,10 +411,6 @@ void McBopomofoEngine::handleCandidatesState(
   std::unique_ptr<fcitx::CommonCandidateList> candidateList =
       std::make_unique<fcitx::CommonCandidateList>();
 
-  // TODO(unassigned): Make this configurable; read from KeyHandler or some
-  // config
-  selectionKeys_.clear();
-
   auto keysConfig = config_.selectionKeys.value();
   if (keysConfig == SelectionKeys::Key_asdfghjkl) {
     selectionKeys_.emplace_back(FcitxKey_a);
@@ -434,10 +448,17 @@ void McBopomofoEngine::handleCandidatesState(
   candidateList->setPageSize(selectionKeys_.size());
 
   for (const std::string& candidateStr : current->candidates) {
+#ifdef USE_LEGACY_FCITX5_API
+    fcitx::CandidateWord* candidate =
+        new DisplayOnlyCandidateWord(fcitx::Text(candidateStr));
+    // ownership of candidate is transferred to candidateList.
+    candidateList->append(candidate);
+#else
     std::unique_ptr<fcitx::CandidateWord> candidate =
         std::make_unique<fcitx::DisplayOnlyCandidateWord>(
             fcitx::Text(candidateStr));
     candidateList->append(std::move(candidate));
+#endif
   }
   context->inputPanel().reset();
   context->inputPanel().setCandidateList(std::move(candidateList));
@@ -458,9 +479,15 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
                                      InputStates::NotEmpty* state) {
   bool use_client_preedit =
       context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
+#ifdef USE_LEGACY_FCITX5_API
+  fcitx::TextFormatFlags normalFormat{use_client_preedit
+                                          ? fcitx::TextFormatFlag::Underline
+                                          : fcitx::TextFormatFlag::None};
+#else
   fcitx::TextFormatFlags normalFormat{use_client_preedit
                                           ? fcitx::TextFormatFlag::Underline
                                           : fcitx::TextFormatFlag::NoFlag};
+#endif
   fcitx::Text preedit;
   if (auto marking = dynamic_cast<InputStates::Marking*>(state)) {
     preedit.append(marking->head, normalFormat);

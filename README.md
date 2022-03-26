@@ -15,7 +15,7 @@
 
 ## 安裝方式
 
-目前僅測試過在 Ubuntu 21 上面編譯安裝。
+以下說明如何在 Ubuntu 21 上面編譯安裝。
 
 請先安裝 fcitx5, CMake, 以及以下開發用模組：
 
@@ -39,6 +39,17 @@ sudo update-icon-caches /usr/share/icons/*
 ```
 
 安裝後重新啟動 fcitx5，就會在設定中找到小麥注音。
+
+### Ubuntu 20.04 LTS 上的編譯方式
+
+Ubuntu 20.04 LTS 安裝的 fcitx5 版本老舊。如果要編譯，請使用以下 `cmake` 指令即可：
+
+```
+mkdir -p build
+cd build
+cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug -DUSE_LEGACY_FCITX5_API=1
+make
+```
 
 ## C++ 語法風格
 
