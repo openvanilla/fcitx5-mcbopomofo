@@ -2,12 +2,11 @@
 
 ![Build](https://github.com/openvanilla/fcitx5-mcbopomofo/actions/workflows/ci.yaml/badge.svg)
 
-本專案是[小麥注音](https://github.com/openvanilla/McBopomofo)開發者為了能在 Linux 上使用而開發，目前是 MVP (minimum viable product)，功能做到小麥注音 1.1 的程度。限制如下：
+本專案是[小麥注音](https://github.com/openvanilla/McBopomofo)開發者為了能在 Linux 上使用而開發，目前是 MVP (minimum viable product)，功能做到小麥注音 2.0 的程度。限制如下：
 
 - 只實作最重要的按鍵，例如注音組字只支援空白鍵，選字也只支援空白鍵
 - 選字窗用的是內建的 pageable candidate list, 事件處理一切從簡
 - 沒有實作組字區有字時，按 Shift + 英文字母鍵的各種中英混打處理
-- 沒有記憶用戶選字、用戶自訂詞等小麥注音 2.0 版之後才有的功能
 
 此外，在專案組織上：
 
@@ -23,7 +22,7 @@
 ```
 sudo apt install \
     fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev \
-    cmake extra-cmake-modules gettext
+    cmake extra-cmake-modules gettext libfmt-dev
 ```
 
 然後在本專案的 git 目錄下執行以下指令：

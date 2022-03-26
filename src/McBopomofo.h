@@ -40,6 +40,7 @@
 
 #include "InputState.h"
 #include "KeyHandler.h"
+#include "LanguageModelLoader.h"
 
 namespace McBopomofo {
 
@@ -64,9 +65,8 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(SelectionKeys, N_("123456789"),
                                  N_("asdfghjkl"), N_("asdfzxcvb"));
 
 enum class SelectPhrase { BeforeCursor, AfterCursor };
-FCITX_CONFIG_ENUM_NAME_WITH_I18N(SelectPhrase,
-                                 N_("before the cursor (like Hanin)"),
-                                 N_("after the cursor (like MS-IME)"));
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(SelectPhrase, N_("before_cursor"),
+                                 N_("after_cursor"));
 
 FCITX_CONFIGURATION(
     McBopomofoConfig,
@@ -104,7 +104,7 @@ FCITX_CONFIGURATION(
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
-  McBopomofoEngine(fcitx::Instance* instance);
+  explicit McBopomofoEngine(fcitx::Instance* instance);
   fcitx::Instance* instance() { return instance_; }
 
   void activate(const fcitx::InputMethodEntry& entry,
@@ -141,6 +141,8 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
                             InputStates::Inputting* current);
   void handleCandidatesState(fcitx::InputContext* context, InputState* prev,
                              InputStates::ChoosingCandidate* current);
+  void handleMarkingState(fcitx::InputContext* context, InputState* prev,
+                          InputStates::Marking* current);
 
   // Helpers.
 
@@ -149,6 +151,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void updatePreedit(fcitx::InputContext* context,
                      InputStates::NotEmpty* state);
 
+  std::shared_ptr<LanguageModelLoader> languageModelLoader_;
   std::unique_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;

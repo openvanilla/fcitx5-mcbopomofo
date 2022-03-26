@@ -29,7 +29,7 @@
 namespace McBopomofo {
 
 TEST(KeyHandlerTest, Trivial) {
-  KeyHandler handler(nullptr);
+  KeyHandler handler(nullptr, nullptr);
 
   bool stateCallbackInvoked = false;
   bool errorCallbackInvoked = false;

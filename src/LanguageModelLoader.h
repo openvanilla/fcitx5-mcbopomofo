@@ -21,45 +21,39 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#include "InputState.h"
+#ifndef SRC_LANGUAGEMODELLOADER_H_
+#define SRC_LANGUAGEMODELLOADER_H_
+
+#include <filesystem>
+#include <memory>
+#include <string>
+#include <string_view>
+
+#include "McBopomofoLM.h"
 
 namespace McBopomofo {
-namespace InputStates {
 
-std::string Empty::composingBuffer() const { return ""; }
+class LanguageModelLoader {
+ public:
+  LanguageModelLoader();
 
-std::string EmptyIgnoringPrevious::composingBuffer() const { return ""; }
+  std::shared_ptr<McBopomofoLM> getLM() { return lm_; }
 
-void Committing::setPoppedText(const std::string& poppedText) {
-  poppedText_ = poppedText;
-}
+  void addUserPhrase(const std::string_view& reading,
+                     const std::string_view& phrase);
 
-std::string Committing::poppedText() const { return poppedText_; }
+  void reloadUserModelsIfNeeded();
 
-void NotEmpty::setComposingBuffer(const std::string& composingBuffer) {
-  composingBuffer_ = composingBuffer;
-}
+ private:
+  void populateUserDataFilesIfNeeded();
 
-std::string NotEmpty::composingBuffer() const { return composingBuffer_; }
+  std::shared_ptr<McBopomofoLM> lm_;
+  std::string userPhrasesPath_;
+  std::filesystem::file_time_type userPhrasesTimestamp_;
+  std::string excludedPhrasesPath_;
+  std::filesystem::file_time_type excludedPhrasesTimestamp_;
+};
 
-void NotEmpty::setCursorIndex(size_t index) { cursorIndex_ = index; }
-
-size_t NotEmpty::cursorIndex() const { return cursorIndex_; }
-
-void Inputting::setPoppedText(const std::string& poppedText) {
-  poppedText_ = poppedText;
-}
-
-std::string Inputting::poppedText() const { return poppedText_; }
-
-void ChoosingCandidate::setCandidates(
-    const std::vector<std::string>& candidates) {
-  candidates_ = candidates;
-}
-
-const std::vector<std::string>& ChoosingCandidate::candidates() const {
-  return candidates_;
-}
-
-}  // namespace InputStates
 }  // namespace McBopomofo
+
+#endif  // SRC_LANGUAGEMODELLOADER_H_

@@ -1,6 +1,6 @@
 set(MCBOPOMOFO_LIB_SOURCES
- InputState.cpp
  KeyHandler.cpp
+ LanguageModelLoader.cpp
  UTF8Helper.cpp
  Engine/KeyValueBlobReader.cpp 
  Engine/McBopomofoLM.cpp
@@ -15,9 +15,10 @@ set(MCBOPOMOFO_LIB_SOURCES
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 add_library(McBopomofoLib STATIC ${MCBOPOMOFO_LIB_SOURCES})
-target_include_directories(McBopomofoLib PRIVATE BEFORE Fcitx5::Core)
-target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Core)
+target_include_directories(McBopomofoLib PRIVATE BEFORE Fcitx5::Core fmt::fmt)
+target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Core fmt::fmt)
 set_target_properties(McBopomofoLib PROPERTIES PREFIX "")
+target_compile_definitions(McBopomofoLib PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 
 include_directories(Engine)
 include_directories(Engine/Gramambular)

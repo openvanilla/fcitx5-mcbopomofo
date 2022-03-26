@@ -33,15 +33,18 @@
 
 #include "Gramambular.h"
 #include "InputState.h"
+#include "LanguageModelLoader.h"
 #include "Mandarin.h"
 #include "McBopomofoLM.h"
 #include "UserOverrideModel.h"
 
 namespace McBopomofo {
+
 class KeyHandler {
  public:
   explicit KeyHandler(
-      std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel);
+      std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel,
+      std::shared_ptr<LanguageModelLoader> languageModelLoader);
 
   using StateCallback =
       std::function<void(std::unique_ptr<McBopomofo::InputState>)>;
@@ -83,9 +86,25 @@ class KeyHandler {
                          StateCallback stateCallback,
                          ErrorCallback errorCallback);
 
+  // Get the head and the tail of current composed string, separated by the
+  // current cursor.
+  struct ComposedString {
+    std::string head;
+    std::string tail;
+    // Any tooltip during the build process.
+    std::string tooltip;
+  };
+  ComposedString getComposedString(size_t builderCursor);
+
   std::unique_ptr<InputStates::Inputting> buildInputtingState();
-  std::unique_ptr<InputStates::ChoosingCandidate> bulidChoosingCandidateState(
+  std::unique_ptr<InputStates::ChoosingCandidate> buildChoosingCandidateState(
       InputStates::NotEmpty* nonEmptyState);
+
+  // Build a Marking state, ranging from beginCursorIndex to the current builder
+  // cursor. It doesn't matter if the beginCursorIndex is behind or after the
+  // builder cursor.
+  std::unique_ptr<InputStates::Marking> buildMarkingState(
+      size_t beginCursorIndex);
 
   // Returns the text that needs to be evicted from the walked grid due to the
   // grid now being overflown with the recently added reading, then walk the
@@ -100,11 +119,11 @@ class KeyHandler {
 
   void walk();
 
-  Formosa::Mandarin::BopomofoReadingBuffer reading_;
-
-  // language model
   std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel_;
+  std::shared_ptr<LanguageModelLoader> languageModelLoader_;
 
+  UserOverrideModel userOverrideModel_;
+  Formosa::Mandarin::BopomofoReadingBuffer reading_;
   std::unique_ptr<Formosa::Gramambular::BlockReadingBuilder> builder_;
 
   // latest walked path (trellis) using the Viterbi algorithm
