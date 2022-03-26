@@ -25,6 +25,7 @@
 #define SRC_INPUTSTATE_H_
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace McBopomofo {

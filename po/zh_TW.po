@@ -79,7 +79,7 @@ msgstr "詞庫已經有這個詞"
 
 #: src/KeyHandler.cpp:581
 msgid "press Enter to add the phrase"
-msgstr "請按 Enter 加入用戶詞庫"
+msgstr "請按 Enter 加入自訂詞庫"
 
 #: src/KeyHandler.cpp:585
 msgid "Marked: {0}, syllables: {1}, {2}"
