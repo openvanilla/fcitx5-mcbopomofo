@@ -372,6 +372,8 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
   } else if (auto candidates =
                  dynamic_cast<InputStates::ChoosingCandidate*>(currentPtr)) {
     handleCandidatesState(context, prevPtr, candidates);
+  } else if (auto marking = dynamic_cast<InputStates::Marking*>(currentPtr)) {
+    handleMarkingState(context, prevPtr, marking);
   }
 }
 void McBopomofoEngine::handleEmptyState(fcitx::InputContext* context,
@@ -442,27 +444,45 @@ void McBopomofoEngine::handleCandidatesState(
             fcitx::Text(candidateStr));
     candidateList->append(std::move(candidate));
   }
+  context->inputPanel().reset();
   context->inputPanel().setCandidateList(std::move(candidateList));
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
 
   updatePreedit(context, current);
 }
+
+void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
+                                          InputState*,
+                                          InputStates::Marking* current) {
+  context->inputPanel().reset();
+  context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+  updatePreedit(context, current);
+}
+
 void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
                                      InputStates::NotEmpty* state) {
   bool use_client_preedit =
       context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
-  fcitx::TextFormatFlags format{use_client_preedit
-                                    ? fcitx::TextFormatFlag::Underline
-                                    : fcitx::TextFormatFlag::NoFlag};
-
+  fcitx::TextFormatFlags normalFormat{use_client_preedit
+                                          ? fcitx::TextFormatFlag::Underline
+                                          : fcitx::TextFormatFlag::NoFlag};
   fcitx::Text preedit;
-  preedit.append(state->composingBuffer, format);
+  if (auto marking = dynamic_cast<InputStates::Marking*>(state)) {
+    preedit.append(marking->head, normalFormat);
+    preedit.append(marking->markedText, fcitx::TextFormatFlag::HighLight);
+    preedit.append(marking->tail, normalFormat);
+  } else {
+    preedit.append(state->composingBuffer, normalFormat);
+  }
   preedit.setCursor(state->cursorIndex);
+
   if (use_client_preedit) {
     context->inputPanel().setClientPreedit(preedit);
   } else {
     context->inputPanel().setPreedit(preedit);
   }
+
+  context->inputPanel().setAuxDown(fcitx::Text(state->tooltip));
   context->updatePreedit();
 }
 

@@ -54,7 +54,7 @@ class BlockReadingBuilder {
   void setJoinSeparator(const std::string& separator);
   const std::string joinSeparator() const;
 
-  std::vector<std::string> readings() const;
+  const std::vector<std::string>& readings() const;
 
   Grid& grid();
 
@@ -76,8 +76,7 @@ class BlockReadingBuilder {
   std::string m_joinSeparator;
 };
 
-inline BlockReadingBuilder::BlockReadingBuilder(LanguageModel* lm)
-    : m_LM(lm) {}
+inline BlockReadingBuilder::BlockReadingBuilder(LanguageModel* lm) : m_LM(lm) {}
 
 inline void BlockReadingBuilder::clear() {
   m_cursorIndex = 0;
@@ -102,7 +101,7 @@ inline void BlockReadingBuilder::insertReadingAtCursor(
   m_cursorIndex++;
 }
 
-inline std::vector<std::string> BlockReadingBuilder::readings() const {
+inline const std::vector<std::string>& BlockReadingBuilder::readings() const {
   return m_readings;
 }
 

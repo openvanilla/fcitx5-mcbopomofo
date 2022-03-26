@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-22 20:28-0700\n"
+"POT-Creation-Date: 2022-03-25 12:11-0700\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -51,7 +51,7 @@ msgstr "After the Cursor (Like MS IME)"
 
 #: src/McBopomofo.h:69
 msgid "Bopomofo Keyboard Layout"
-msgstr "Bopomofo Keyboard Layout"
+msgstr ""
 
 #: src/McBopomofo.h:74
 msgid "Show Candidate Phrase"
@@ -59,4 +59,28 @@ msgstr "Show Candidates"
 
 #: src/McBopomofo.h:82
 msgid "Map Dvorak to QWERTY"
-msgstr "Map Dvorak to QWERTY"
+msgstr ""
+
+#: src/KeyHandler.cpp:481
+msgid "Cursor is between syllables {0} and {1}"
+msgstr ""
+
+#: src/KeyHandler.cpp:573
+msgid "{0} syllables required"
+msgstr ""
+
+#: src/KeyHandler.cpp:576
+msgid "{0} syllables maximum"
+msgstr ""
+
+#: src/KeyHandler.cpp:579
+msgid "phrase already exists"
+msgstr ""
+
+#: src/KeyHandler.cpp:581
+msgid "press Enter to add the phrase"
+msgstr ""
+
+#: src/KeyHandler.cpp:585
+msgid "Marked: {0}, syllables: {1}, {2}"
+msgstr ""
