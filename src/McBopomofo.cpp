@@ -141,39 +141,11 @@ static fcitx::Key ConvertDvorakToQwerty(fcitx::Key key) {
   return fcitx::Key(static_cast<fcitx::KeySym>(sym));
 }
 
-class EmptyLM : public Formosa::Gramambular::LanguageModel {
- public:
-  const std::vector<Formosa::Gramambular::Bigram> bigramsForKeys(
-      const std::string&, const std::string&) override {
-    return std::vector<Formosa::Gramambular::Bigram>();
-  }
-  const std::vector<Formosa::Gramambular::Unigram> unigramsForKey(
-      const std::string&) override {
-    return std::vector<Formosa::Gramambular::Unigram>();
-  }
-  bool hasUnigramsForKey(const std::string&) override { return false; }
-};
-
 McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
     : instance_(instance) {
-  std::string path;
-  path = fcitx::StandardPath::global().locate(
-      fcitx::StandardPath::Type::PkgData, kDataPath);
-
-  std::shared_ptr<Formosa::Gramambular::LanguageModel> lm =
-      std::make_shared<EmptyLM>();
-  if (std::filesystem::exists(path)) {
-    FCITX_INFO() << "found McBopomofo data: " << path;
-
-    std::shared_ptr<ParselessLM> parseless_lm = std::make_shared<ParselessLM>();
-    bool result = parseless_lm->open(path);
-    if (result) {
-      FCITX_INFO() << "language model successfully opened";
-      lm = std::move(parseless_lm);
-    }
-  }
-
-  keyHandler_ = std::make_unique<KeyHandler>(std::move(lm));
+  languageModelLoader_ = std::make_shared<LanguageModelLoader>();
+  keyHandler_ = std::make_unique<KeyHandler>(languageModelLoader_->getLM(),
+                                             languageModelLoader_);
   state_ = std::make_unique<InputStates::Empty>();
 
   // Required by convention of fcitx5 modules to load config on its own.
@@ -181,18 +153,15 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
 }
 
 const fcitx::Configuration* McBopomofoEngine::getConfig() const {
-  FCITX_INFO() << "getConfig";
   return &config_;
 }
 
 void McBopomofoEngine::setConfig(const fcitx::RawConfig& config) {
-  FCITX_INFO() << "setConfig";
   config_.load(config, true);
   fcitx::safeSaveAsIni(config_, kConfigPath);
 }
 
 void McBopomofoEngine::reloadConfig() {
-  FCITX_INFO() << "reloadConfig";
   fcitx::readAsIni(config_, kConfigPath);
 }
 
@@ -231,6 +200,8 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
 
   keyHandler_->setSelectPhraseAfterCursorAsCandidate(
       config_.selectPhrase.value() == SelectPhrase::AfterCursor);
+
+  languageModelLoader_->reloadUserModelsIfNeeded();
 }
 
 void McBopomofoEngine::reset(const fcitx::InputMethodEntry&,
