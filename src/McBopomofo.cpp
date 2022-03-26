@@ -29,12 +29,9 @@
 #include <fcitx/inputpanel.h>
 #include <fcitx/userinterfacemanager.h>
 
-#include <filesystem>
 #include <memory>
 #include <utility>
 #include <vector>
-
-#include "ParselessLM.h"
 
 namespace McBopomofo {
 
@@ -127,8 +124,9 @@ static char CovertDvorakToQwerty(char c) {
       return '>';
     case 'Z':
       return '?';
+    default:
+      return c;
   }
-  return c;
 }
 
 static fcitx::Key ConvertDvorakToQwerty(fcitx::Key key) {
@@ -233,9 +231,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
     // Absorb all keys when the candidate panel is on.
     keyEvent.filterAndAccept();
 
-    fcitx::CommonCandidateList* maybeCandidateList =
-        dynamic_cast<fcitx::CommonCandidateList*>(
-            context->inputPanel().candidateList().get());
+    auto maybeCandidateList = dynamic_cast<fcitx::CommonCandidateList*>(
+        context->inputPanel().candidateList().get());
     if (maybeCandidateList == nullptr) {
       // TODO(unassigned): Just assert this.
       FCITX_WARN() << "inconsistent state";

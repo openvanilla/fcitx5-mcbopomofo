@@ -76,12 +76,10 @@ static bool MarkedPhraseExists(Formosa::Gramambular::LanguageModel* lm,
   }
 
   auto unigrams = lm->unigramsForKey(reading);
-  for (const auto& unigram : unigrams) {
-    if (unigram.keyValue.value == value) {
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(unigrams.begin(), unigrams.end(),
+                     [&value](const auto& unigram) {
+                       return unigram.keyValue.value == value;
+                     });
 }
 
 static double GetNow() {
@@ -93,11 +91,11 @@ static double GetNow() {
 }
 
 static double FindHighestScore(
-    const std::vector<Formosa::Gramambular::NodeAnchor>& nodes,
+    const std::vector<Formosa::Gramambular::NodeAnchor>& nodeAnchors,
     double epsilon) {
   double highestScore = 0.0;
-  for (auto ni = nodes.begin(), ne = nodes.end(); ni != ne; ++ni) {
-    double score = ni->node->highestUnigramScore();
+  for (const auto& anchor : nodeAnchors) {
+    double score = anchor.node->highestUnigramScore();
     if (score > highestScore) {
       highestScore = score;
     }
@@ -118,8 +116,8 @@ KeyHandler::KeyHandler(
 }
 
 bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
-                        StateCallback stateCallback,
-                        ErrorCallback errorCallback) {
+                        const StateCallback& stateCallback,
+                        const ErrorCallback& errorCallback) {
   // key.isSimple() is true => key.sym() guaranteed to be printable ASCII.
   char asciiChar = key.isSimple() ? key.sym() : 0;
 
@@ -172,8 +170,7 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
   }
 
   // Space hit: see if we should enter the candidate choosing state.
-  InputStates::NotEmpty* maybeNotEmptyState =
-      dynamic_cast<InputStates::NotEmpty*>(state);
+  auto maybeNotEmptyState = dynamic_cast<InputStates::NotEmpty*>(state);
   if (key.check(FcitxKey_space) && maybeNotEmptyState != nullptr &&
       reading_.isEmpty()) {
     stateCallback(buildChoosingCandidateState(maybeNotEmptyState));
@@ -301,13 +298,12 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
 }
 
 void KeyHandler::candidateSelected(const std::string& candidate,
-                                   KeyHandler::StateCallback stateCallback) {
+                                   const StateCallback& stateCallback) {
   pinNode(candidate);
   stateCallback(buildInputtingState());
 }
 
-void KeyHandler::candidatePanelCancelled(
-    KeyHandler::StateCallback stateCallback) {
+void KeyHandler::candidatePanelCancelled(const StateCallback& stateCallback) {
   stateCallback(buildInputtingState());
 }
 
@@ -331,8 +327,8 @@ void KeyHandler::setMoveCursorAfterSelection(bool flag) {
 }
 
 bool KeyHandler::handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
-                                  KeyHandler::StateCallback stateCallback,
-                                  KeyHandler::ErrorCallback errorCallback) {
+                                  const StateCallback& stateCallback,
+                                  const ErrorCallback& errorCallback) {
   if (dynamic_cast<InputStates::Inputting*>(state) == nullptr &&
       dynamic_cast<InputStates::Marking*>(state) == nullptr) {
     return false;
@@ -390,8 +386,8 @@ bool KeyHandler::handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
 }
 
 bool KeyHandler::handleDeleteKeys(fcitx::Key key, McBopomofo::InputState* state,
-                                  KeyHandler::StateCallback stateCallback,
-                                  KeyHandler::ErrorCallback errorCallback) {
+                                  const StateCallback& stateCallback,
+                                  const ErrorCallback& errorCallback) {
   if (dynamic_cast<InputStates::NotEmpty*>(state) == nullptr) {
     return false;
   }
@@ -431,9 +427,9 @@ bool KeyHandler::handleDeleteKeys(fcitx::Key key, McBopomofo::InputState* state,
   return true;
 }
 
-bool KeyHandler::handlePunctuation(std::string punctuationUnigramKey,
-                                   KeyHandler::StateCallback stateCallback,
-                                   KeyHandler::ErrorCallback errorCallback) {
+bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
+                                   const StateCallback& stateCallback,
+                                   const ErrorCallback& errorCallback) {
   if (!languageModel_->hasUnigramsForKey(punctuationUnigramKey)) {
     return false;
   }

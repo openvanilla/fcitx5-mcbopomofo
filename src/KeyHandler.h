@@ -55,13 +55,14 @@ class KeyHandler {
   // the key should be absorbed, signaling that the key is accepted and handled,
   // or false if the event should be let pass through.
   bool handle(fcitx::Key key, McBopomofo::InputState* state,
-              StateCallback stateCallback, ErrorCallback errorCallback);
+              const StateCallback& stateCallback,
+              const ErrorCallback& errorCallback);
 
   // Candidate selected. Can assume the context is in a candidate state.
   void candidateSelected(const std::string& candidate,
-                         StateCallback stateCallback);
+                         const StateCallback& stateCallback);
   // Candidate panel canceled. Can assume the context is in a candidate state.
-  void candidatePanelCancelled(StateCallback stateCallback);
+  void candidatePanelCancelled(const StateCallback& stateCallback);
 
   void reset();
 
@@ -77,14 +78,14 @@ class KeyHandler {
 
  private:
   bool handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
-                        StateCallback stateCallback,
-                        ErrorCallback errorCallback);
+                        const StateCallback& stateCallback,
+                        const ErrorCallback& errorCallback);
   bool handleDeleteKeys(fcitx::Key key, McBopomofo::InputState* state,
-                        StateCallback stateCallback,
-                        ErrorCallback errorCallback);
-  bool handlePunctuation(std::string punctuationUnigramKey,
-                         StateCallback stateCallback,
-                         ErrorCallback errorCallback);
+                        const StateCallback& stateCallback,
+                        const ErrorCallback& errorCallback);
+  bool handlePunctuation(const std::string& punctuationUnigramKey,
+                         const StateCallback& stateCallback,
+                         const ErrorCallback& errorCallback);
 
   // Get the head and the tail of current composed string, separated by the
   // current cursor.
