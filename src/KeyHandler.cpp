@@ -27,20 +27,24 @@
 #include <fmt/format.h>
 
 #include <algorithm>
+#include <chrono>
 #include <utility>
 
 #include "UTF8Helper.h"
 
 namespace McBopomofo {
 
-// TODO(unassigned): Remove this once the feature is enabled
-static bool MarkingFeatureEnabled = false;
-
 constexpr char kJoinSeparator[] = "-";
 constexpr char kPunctuationListKey[] = "_punctuation_list";
 constexpr char kPunctuationKeyPrefix[] = "_punctuation_";
 constexpr size_t kMinValidMarkingReadingCount = 2;
 constexpr size_t kMaxValidMarkingReadingCount = 6;
+
+constexpr int kUserOverrideModelCapacity = 500;
+constexpr double kObservedOverrideHalfLife = 5400.0;  // 1.5 hr.
+// Unigram whose score is below this shouldn't be put into user override model.
+constexpr double kNoOverrideThreshold = -8.0;
+constexpr double kEpsilon = 0.000001;
 
 // Maximum composing buffer size, roughly in codepoints.
 // TODO(unassigned): maybe make this configurable.
@@ -65,7 +69,8 @@ static const char* GetKeyboardLayoutName(
 }
 
 static bool MarkedPhraseExists(Formosa::Gramambular::LanguageModel* lm,
-                               std::string reading, std::string value) {
+                               const std::string& reading,
+                               const std::string& value) {
   if (!lm->hasUnigramsForKey(reading)) {
     return false;
   }
@@ -79,10 +84,34 @@ static bool MarkedPhraseExists(Formosa::Gramambular::LanguageModel* lm,
   return false;
 }
 
+static double GetNow() {
+  auto now = std::chrono::system_clock::now();
+  int64_t timestamp = std::chrono::time_point_cast<std::chrono::seconds>(now)
+                          .time_since_epoch()
+                          .count();
+  return timestamp;
+}
+
+static double FindHighestScore(
+    const std::vector<Formosa::Gramambular::NodeAnchor>& nodes,
+    double epsilon) {
+  double highestScore = 0.0;
+  for (auto ni = nodes.begin(), ne = nodes.end(); ni != ne; ++ni) {
+    double score = ni->node->highestUnigramScore();
+    if (score > highestScore) {
+      highestScore = score;
+    }
+  }
+  return highestScore + epsilon;
+}
+
 KeyHandler::KeyHandler(
-    std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel)
-    : reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {
-  languageModel_ = std::move(languageModel);
+    std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel,
+    std::shared_ptr<LanguageModelLoader> languageModelLoader)
+    : languageModel_(std::move(languageModel)),
+      languageModelLoader_(std::move(languageModelLoader)),
+      userOverrideModel_(kUserOverrideModelCapacity, kObservedOverrideHalfLife),
+      reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {
   builder_ = std::make_unique<Formosa::Gramambular::BlockReadingBuilder>(
       languageModel_.get());
   builder_->setJoinSeparator(kJoinSeparator);
@@ -124,6 +153,17 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
 
     builder_->insertReadingAtCursor(syllable);
     std::string evictedText = popEvictedTextAndWalk();
+
+    std::string overrideValue = userOverrideModel_.suggest(
+        walkedNodes_, builder_->cursorIndex(), GetNow());
+    if (!overrideValue.empty()) {
+      size_t cursorIndex = actualCandidateCursorIndex();
+      std::vector<Formosa::Gramambular::NodeAnchor> nodes =
+          builder_->grid().nodesCrossingOrEndingAt(cursorIndex);
+      double highestScore = FindHighestScore(nodes, kEpsilon);
+      builder_->grid().overrideNodeScoreForSelectedCandidate(
+          cursorIndex, overrideValue, static_cast<float>(highestScore));
+    }
 
     auto inputtingState = buildInputtingState();
     inputtingState->evictedText = evictedText;
@@ -192,10 +232,8 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     // See if we are in Marking state, and, if a valid mark, accept it.
     if (auto marking = dynamic_cast<InputStates::Marking*>(state)) {
       if (marking->acceptable) {
-        // TODO(unassigned): Commit this to the user phrase database.
-        FCITX_INFO() << "Processing user-defined phrase: "
-                     << marking->markedText
-                     << ", reading: " << marking->reading;
+        languageModelLoader_->addUserPhrase(marking->reading,
+                                            marking->markedText);
         stateCallback(buildInputtingState());
       } else {
         errorCallback();
@@ -338,7 +376,7 @@ bool KeyHandler::handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
     errorCallback();
   }
 
-  if (MarkingFeatureEnabled && key.states() & fcitx::KeyState::Shift &&
+  if (key.states() & fcitx::KeyState::Shift &&
       builder_->cursorIndex() != markBeginCursorIndex) {
     stateCallback(buildMarkingState(markBeginCursorIndex));
   } else {
@@ -628,8 +666,14 @@ std::string KeyHandler::popEvictedTextAndWalk() {
 }
 
 void KeyHandler::pinNode(const std::string& candidate) {
-  builder_->grid().fixNodeSelectedCandidate(actualCandidateCursorIndex(),
-                                            candidate);
+  size_t cursorIndex = actualCandidateCursorIndex();
+  Formosa::Gramambular::NodeAnchor selectedNode =
+      builder_->grid().fixNodeSelectedCandidate(cursorIndex, candidate);
+  double score = selectedNode.node->scoreForCandidate(candidate);
+  if (score > kNoOverrideThreshold) {
+    userOverrideModel_.observe(walkedNodes_, cursorIndex, candidate, GetNow());
+  }
+
   walk();
 }
 

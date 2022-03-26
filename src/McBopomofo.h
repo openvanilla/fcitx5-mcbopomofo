@@ -40,6 +40,7 @@
 
 #include "InputState.h"
 #include "KeyHandler.h"
+#include "LanguageModelLoader.h"
 
 namespace McBopomofo {
 
@@ -132,6 +133,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void updatePreedit(fcitx::InputContext* context,
                      InputStates::NotEmpty* state);
 
+  std::shared_ptr<LanguageModelLoader> languageModelLoader_;
   std::unique_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;

@@ -21,31 +21,39 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#include <string>
+#ifndef SRC_LANGUAGEMODELLOADER_H_
+#define SRC_LANGUAGEMODELLOADER_H_
 
-#include "KeyHandler.h"
-#include "gtest/gtest.h"
+#include <filesystem>
+#include <memory>
+#include <string>
+#include <string_view>
+
+#include "McBopomofoLM.h"
 
 namespace McBopomofo {
 
-TEST(KeyHandlerTest, Trivial) {
-  KeyHandler handler(nullptr, nullptr);
+class LanguageModelLoader {
+ public:
+  LanguageModelLoader();
 
-  bool stateCallbackInvoked = false;
-  bool errorCallbackInvoked = false;
+  std::shared_ptr<McBopomofoLM> getLM() { return lm_; }
 
-  auto emptyState = std::make_unique<InputStates::Empty>();
+  void addUserPhrase(const std::string_view& reading,
+                     const std::string_view& phrase);
 
-  bool handled = handler.handle(
-      fcitx::Key(), emptyState.get(),
-      [&stateCallbackInvoked](std::unique_ptr<McBopomofo::InputState>) {
-        stateCallbackInvoked = true;
-      },
-      [&errorCallbackInvoked]() { errorCallbackInvoked = true; });
+  void reloadUserModelsIfNeeded();
 
-  EXPECT_FALSE(stateCallbackInvoked);
-  EXPECT_FALSE(errorCallbackInvoked);
-  EXPECT_FALSE(handled);
-}
+ private:
+  void populateUserDataFilesIfNeeded();
+
+  std::shared_ptr<McBopomofoLM> lm_;
+  std::string userPhrasesPath_;
+  std::filesystem::file_time_type userPhrasesTimestamp_;
+  std::string excludedPhrasesPath_;
+  std::filesystem::file_time_type excludedPhrasesTimestamp_;
+};
 
 }  // namespace McBopomofo
+
+#endif  // SRC_LANGUAGEMODELLOADER_H_

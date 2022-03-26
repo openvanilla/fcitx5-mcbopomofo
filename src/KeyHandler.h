@@ -33,6 +33,7 @@
 
 #include "Gramambular.h"
 #include "InputState.h"
+#include "LanguageModelLoader.h"
 #include "Mandarin.h"
 #include "McBopomofoLM.h"
 #include "UserOverrideModel.h"
@@ -42,7 +43,8 @@ namespace McBopomofo {
 class KeyHandler {
  public:
   explicit KeyHandler(
-      std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel);
+      std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel,
+      std::shared_ptr<LanguageModelLoader> languageModelLoader);
 
   using StateCallback =
       std::function<void(std::unique_ptr<McBopomofo::InputState>)>;
@@ -114,11 +116,11 @@ class KeyHandler {
 
   void walk();
 
-  Formosa::Mandarin::BopomofoReadingBuffer reading_;
-
-  // language model
   std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel_;
+  std::shared_ptr<LanguageModelLoader> languageModelLoader_;
 
+  UserOverrideModel userOverrideModel_;
+  Formosa::Mandarin::BopomofoReadingBuffer reading_;
   std::unique_ptr<Formosa::Gramambular::BlockReadingBuilder> builder_;
 
   // latest walked path (trellis) using the Viterbi algorithm
