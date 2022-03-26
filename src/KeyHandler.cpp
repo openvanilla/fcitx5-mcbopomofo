@@ -326,6 +326,10 @@ void KeyHandler::setSelectPhraseAfterCursorAsCandidate(bool flag) {
   selectPhraseAfterCursorAsCandidate_ = flag;
 }
 
+void KeyHandler::setMoveCursorAfterSelection(bool flag) {
+  moveCursorAfterSelection_ = flag;
+}
+
 bool KeyHandler::handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
                                   KeyHandler::StateCallback stateCallback,
                                   KeyHandler::ErrorCallback errorCallback) {
@@ -675,6 +679,19 @@ void KeyHandler::pinNode(const std::string& candidate) {
   }
 
   walk();
+
+  if (moveCursorAfterSelection_) {
+    size_t nextPosition = 0;
+    for (auto node : walkedNodes_) {
+      if (nextPosition >= cursorIndex) {
+        break;
+      }
+      nextPosition += node.spanningLength;
+    }
+    if (nextPosition <= builder_->length()) {
+      builder_->setCursorIndex(nextPosition);
+    }
+  }
 }
 
 void KeyHandler::walk() {

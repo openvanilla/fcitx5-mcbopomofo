@@ -201,6 +201,9 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
   keyHandler_->setSelectPhraseAfterCursorAsCandidate(
       config_.selectPhrase.value() == SelectPhrase::AfterCursor);
 
+  keyHandler_->setMoveCursorAfterSelection(
+      config_.moveCursorAfterSelection.value());
+
   languageModelLoader_->reloadUserModelsIfNeeded();
 }
 
@@ -396,15 +399,39 @@ void McBopomofoEngine::handleCandidatesState(
   // TODO(unassigned): Make this configurable; read from KeyHandler or some
   // config
   selectionKeys_.clear();
-  selectionKeys_.emplace_back(FcitxKey_1);
-  selectionKeys_.emplace_back(FcitxKey_2);
-  selectionKeys_.emplace_back(FcitxKey_3);
-  selectionKeys_.emplace_back(FcitxKey_4);
-  selectionKeys_.emplace_back(FcitxKey_5);
-  selectionKeys_.emplace_back(FcitxKey_6);
-  selectionKeys_.emplace_back(FcitxKey_7);
-  selectionKeys_.emplace_back(FcitxKey_8);
-  selectionKeys_.emplace_back(FcitxKey_9);
+
+  auto keysConfig = config_.selectionKeys.value();
+  if (keysConfig == SelectionKeys::Key_asdfghjkl) {
+    selectionKeys_.emplace_back(FcitxKey_a);
+    selectionKeys_.emplace_back(FcitxKey_s);
+    selectionKeys_.emplace_back(FcitxKey_d);
+    selectionKeys_.emplace_back(FcitxKey_f);
+    selectionKeys_.emplace_back(FcitxKey_g);
+    selectionKeys_.emplace_back(FcitxKey_h);
+    selectionKeys_.emplace_back(FcitxKey_j);
+    selectionKeys_.emplace_back(FcitxKey_k);
+    selectionKeys_.emplace_back(FcitxKey_l);
+  } else if (keysConfig == SelectionKeys::Key_asdfzxcvb) {
+    selectionKeys_.emplace_back(FcitxKey_a);
+    selectionKeys_.emplace_back(FcitxKey_s);
+    selectionKeys_.emplace_back(FcitxKey_d);
+    selectionKeys_.emplace_back(FcitxKey_f);
+    selectionKeys_.emplace_back(FcitxKey_z);
+    selectionKeys_.emplace_back(FcitxKey_x);
+    selectionKeys_.emplace_back(FcitxKey_c);
+    selectionKeys_.emplace_back(FcitxKey_v);
+    selectionKeys_.emplace_back(FcitxKey_b);
+  } else {
+    selectionKeys_.emplace_back(FcitxKey_1);
+    selectionKeys_.emplace_back(FcitxKey_2);
+    selectionKeys_.emplace_back(FcitxKey_3);
+    selectionKeys_.emplace_back(FcitxKey_4);
+    selectionKeys_.emplace_back(FcitxKey_5);
+    selectionKeys_.emplace_back(FcitxKey_6);
+    selectionKeys_.emplace_back(FcitxKey_7);
+    selectionKeys_.emplace_back(FcitxKey_8);
+    selectionKeys_.emplace_back(FcitxKey_9);
+  }
 
   candidateList->setSelectionKey(selectionKeys_);
   candidateList->setPageSize(selectionKeys_.size());
