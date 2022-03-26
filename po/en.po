@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-25 12:11-0700\n"
+"POT-Creation-Date: 2022-03-26 22:39+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,70 +17,92 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/McBopomofo.h:54
+#: src/McBopomofo.h:55
 msgid "standard"
 msgstr "Standard"
 
-#: src/McBopomofo.h:55
+#: src/McBopomofo.h:56
 msgid "eten"
 msgstr "ETen"
 
-#: src/McBopomofo.h:55
+#: src/McBopomofo.h:56
 msgid "hsu"
 msgstr "Hsu"
 
-#: src/McBopomofo.h:55
+#: src/McBopomofo.h:56
 msgid "et26"
 msgstr "ETen26"
 
-#: src/McBopomofo.h:56
+#: src/McBopomofo.h:57
 msgid "hanyupinyin"
 msgstr "Pinyin"
 
-#: src/McBopomofo.h:56
+#: src/McBopomofo.h:57
 msgid "ibm"
 msgstr "IBM"
 
-#: src/McBopomofo.h:60
+#: src/McBopomofo.h:64
+msgid "123456789"
+msgstr ""
+
+#: src/McBopomofo.h:65
+msgid "asdfghjkl"
+msgstr ""
+
+#: src/McBopomofo.h:65
+msgid "asdfzxcvb"
+msgstr ""
+
+#: src/McBopomofo.h:68
 msgid "before_cursor"
 msgstr "Before the Cursor (Like Hanin)"
 
-#: src/McBopomofo.h:61
+#: src/McBopomofo.h:69
 msgid "after_cursor"
 msgstr "After the Cursor (Like MS IME)"
 
-#: src/McBopomofo.h:69
+#: src/McBopomofo.h:77
 msgid "Bopomofo Keyboard Layout"
 msgstr ""
 
-#: src/McBopomofo.h:74
+#: src/McBopomofo.h:82
+msgid "Selection Keys"
+msgstr ""
+
+#: src/McBopomofo.h:87
 msgid "Show Candidate Phrase"
 msgstr "Show Candidates"
 
-#: src/McBopomofo.h:82
+#: src/McBopomofo.h:92
+msgid ""
+"Move cursor after selection\n"
+"(works only when selecting phrases after the cursor)"
+msgstr ""
+
+#: src/McBopomofo.h:101
 msgid "Map Dvorak to QWERTY"
 msgstr ""
 
-#: src/KeyHandler.cpp:481
+#: src/KeyHandler.cpp:523
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
-#: src/KeyHandler.cpp:573
+#: src/KeyHandler.cpp:615
 msgid "{0} syllables required"
 msgstr ""
 
-#: src/KeyHandler.cpp:576
+#: src/KeyHandler.cpp:618
 msgid "{0} syllables maximum"
 msgstr ""
 
-#: src/KeyHandler.cpp:579
+#: src/KeyHandler.cpp:621
 msgid "phrase already exists"
 msgstr ""
 
-#: src/KeyHandler.cpp:581
+#: src/KeyHandler.cpp:623
 msgid "press Enter to add the phrase"
 msgstr ""
 
-#: src/KeyHandler.cpp:585
+#: src/KeyHandler.cpp:627
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
