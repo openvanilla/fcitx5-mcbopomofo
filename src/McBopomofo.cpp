@@ -154,6 +154,36 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
                                              languageModelLoader_);
   state_ = std::make_unique<InputStates::Empty>();
 
+  editUserPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
+  editUserPhreasesAction_->setShortText(_("Edit User Phrases"));
+  editUserPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
+      [this](fcitx::InputContext*) {
+        auto command = "xdg-open " + languageModelLoader_->userPhrasesPath();
+        system(command.c_str());
+      });
+  instance_->userInterfaceManager().registerAction(
+      "mcbopomofo-user-phrases-edit", editUserPhreasesAction_.get());
+
+  excludedPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
+  excludedPhreasesAction_->setShortText(_("Edit Excluded Phrases"));
+  excludedPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
+      [this](fcitx::InputContext*) {
+        auto command =
+            "xdg-open " + languageModelLoader_->excludedPhrasesPath();
+        system(command.c_str());
+      });
+  instance_->userInterfaceManager().registerAction(
+      "mcbopomofo-user-excluded-phrases-edit", excludedPhreasesAction_.get());
+
+  reloadUserPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
+  reloadUserPhreasesAction_->setShortText(_("Reload User Phrases"));
+  reloadUserPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
+      [this](fcitx::InputContext*) {
+        languageModelLoader_->reloadUserModelsIfNeeded();
+      });
+  instance_->userInterfaceManager().registerAction(
+      "mcbopomofo-user-phrases-reload", reloadUserPhreasesAction_.get());
+
   // Required by convention of fcitx5 modules to load config on its own.
   reloadConfig();
 }
@@ -174,12 +204,20 @@ void McBopomofoEngine::reloadConfig() {
 void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
                                 fcitx::InputContextEvent& event) {
   chttrans();
+
   auto* inputContext = event.inputContext();
   if (auto* action =
           instance_->userInterfaceManager().lookupAction("chttrans")) {
     inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
                                          action);
   }
+
+  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                       editUserPhreasesAction_.get());
+  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                       excludedPhreasesAction_.get());
+  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                       reloadUserPhreasesAction_.get());
 
   auto layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
   switch (config_.bopomofoKeyboardLayout.value()) {

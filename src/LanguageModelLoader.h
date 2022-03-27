@@ -44,6 +44,10 @@ class LanguageModelLoader {
 
   void reloadUserModelsIfNeeded();
 
+  std::string userPhrasesPath() { return userPhrasesPath_; }
+
+  std::string excludedPhrasesPath() { return excludedPhrasesPath_; };
+
  private:
   void populateUserDataFilesIfNeeded();
 

@@ -28,11 +28,14 @@
 #include <fcitx-config/enum.h>
 #include <fcitx-config/iniparser.h>
 #include <fcitx-utils/i18n.h>
+#include <fcitx/action.h>
 #include <fcitx/addonfactory.h>
 #include <fcitx/addonmanager.h>
 #include <fcitx/candidatelist.h>
 #include <fcitx/inputmethodengine.h>
 #include <fcitx/instance.h>
+#include <fcitx/menu.h>
+#include <fcitx/statusarea.h>
 
 #include <memory>
 #include <string>
@@ -154,6 +157,10 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;
   fcitx::KeyList selectionKeys_;
+
+  std::unique_ptr<fcitx::SimpleAction> editUserPhreasesAction_;
+  std::unique_ptr<fcitx::SimpleAction> excludedPhreasesAction_;
+  std::unique_ptr<fcitx::SimpleAction> reloadUserPhreasesAction_;
 };
 
 class McBopomofoEngineFactory : public fcitx::AddonFactory {
