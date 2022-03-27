@@ -35,7 +35,6 @@
 
 namespace McBopomofo {
 
-constexpr char kDataPath[] = "data/mcbopomofo-data.txt";
 constexpr char kConfigPath[] = "conf/mcbopomofo.conf";
 
 static char CovertDvorakToQwerty(char c) {
