@@ -25,6 +25,7 @@
 
 #include <fcitx-utils/standardpath.h>
 #include <fcitx/candidatelist.h>
+#include <fcitx/event.h>
 #include <fcitx/inputcontext.h>
 #include <fcitx/inputpanel.h>
 #include <fcitx/userinterfacemanager.h>
@@ -154,6 +155,27 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
                                              languageModelLoader_);
   state_ = std::make_unique<InputStates::Empty>();
 
+  editUserPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
+  editUserPhreasesAction_->setShortText(_("Edit User Phrases"));
+  editUserPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
+      [this](fcitx::InputContext*) {
+        auto command = "xdg-open " + languageModelLoader_->userPhrasesPath();
+        system(command.c_str());
+      });
+  instance_->userInterfaceManager().registerAction(
+      "mcbopomofo-user-phrases-edit", editUserPhreasesAction_.get());
+
+  excludedPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
+  excludedPhreasesAction_->setShortText(_("Edit Excluded Phrases"));
+  excludedPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
+      [this](fcitx::InputContext*) {
+        auto command =
+            "xdg-open " + languageModelLoader_->excludedPhrasesPath();
+        system(command.c_str());
+      });
+  instance_->userInterfaceManager().registerAction(
+      "mcbopomofo-user-excluded-phrases-edit", excludedPhreasesAction_.get());
+
   // Required by convention of fcitx5 modules to load config on its own.
   reloadConfig();
 }
@@ -174,12 +196,18 @@ void McBopomofoEngine::reloadConfig() {
 void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
                                 fcitx::InputContextEvent& event) {
   chttrans();
+
   auto* inputContext = event.inputContext();
   if (auto* action =
           instance_->userInterfaceManager().lookupAction("chttrans")) {
     inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
                                          action);
   }
+
+  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                       editUserPhreasesAction_.get());
+  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                       excludedPhreasesAction_.get());
 
   auto layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
   switch (config_.bopomofoKeyboardLayout.value()) {
@@ -215,6 +243,20 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
 
 void McBopomofoEngine::reset(const fcitx::InputMethodEntry&,
                              fcitx::InputContextEvent& event) {
+  auto isFocusOutEvent = dynamic_cast<fcitx::FocusOutEvent*>(&event) != nullptr;
+
+  // Note: when inputting in Chrome based web browsers, the `reset` method would
+  // be called when the input method commits evicted text by passing a focus out
+  // event. We have to ignore such events otherwise we are hardly to input a
+  // complete Chinese sentense.
+  if (isFocusOutEvent) {
+    auto context = event.inputContext();
+    auto program = context->program();
+    if (program.rfind("google-chrome", 0) == 0) return;
+    if (program.rfind("microsoft-edge", 0) == 0) return;
+    if (program.rfind("sidekick-browser", 0) == 0) return;
+  }
+
   keyHandler_->reset();
   enterNewState(event.inputContext(), std::make_unique<InputStates::Empty>());
 }
@@ -364,14 +406,15 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
     handleMarkingState(context, prevPtr, marking);
   }
 }
+
 void McBopomofoEngine::handleEmptyState(fcitx::InputContext* context,
                                         InputState* prev, InputStates::Empty*) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-  context->updatePreedit();
   if (auto notEmpty = dynamic_cast<InputStates::NotEmpty*>(prev)) {
     context->commitString(notEmpty->composingBuffer);
   }
+  context->updatePreedit();
 }
 
 void McBopomofoEngine::handleEmptyIgnoringPreviousState(
@@ -387,10 +430,10 @@ void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
                                              InputStates::Committing* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-  context->updatePreedit();
   if (!current->text.empty()) {
     context->commitString(current->text);
   }
+  context->updatePreedit();
 }
 
 void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
@@ -398,6 +441,7 @@ void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
                                             InputStates::Inputting* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+
   if (!current->evictedText.empty()) {
     context->commitString(current->evictedText);
   }
@@ -411,6 +455,8 @@ void McBopomofoEngine::handleCandidatesState(
       std::make_unique<fcitx::CommonCandidateList>();
 
   auto keysConfig = config_.selectionKeys.value();
+  selectionKeys_.clear();
+
   if (keysConfig == SelectionKeys::Key_asdfghjkl) {
     selectionKeys_.emplace_back(FcitxKey_a);
     selectionKeys_.emplace_back(FcitxKey_s);

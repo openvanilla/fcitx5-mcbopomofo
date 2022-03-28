@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-27 00:19+0800\n"
+"POT-Creation-Date: 2022-03-28 13:54+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,90 +17,98 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/McBopomofo.h:55
+#: src/McBopomofo.cpp:159
+msgid "Edit User Phrases"
+msgstr ""
+
+#: src/McBopomofo.cpp:169
+msgid "Edit Excluded Phrases"
+msgstr ""
+
+#: src/McBopomofo.h:58
 msgid "standard"
 msgstr "Standard"
 
-#: src/McBopomofo.h:56
+#: src/McBopomofo.h:59
 msgid "eten"
 msgstr "ETen"
 
-#: src/McBopomofo.h:56
+#: src/McBopomofo.h:59
 msgid "hsu"
 msgstr "Hsu"
 
-#: src/McBopomofo.h:56
+#: src/McBopomofo.h:59
 msgid "et26"
 msgstr "ETen26"
 
-#: src/McBopomofo.h:57
+#: src/McBopomofo.h:60
 msgid "hanyupinyin"
 msgstr "Pinyin"
 
-#: src/McBopomofo.h:57
+#: src/McBopomofo.h:60
 msgid "ibm"
 msgstr "IBM"
 
-#: src/McBopomofo.h:64
+#: src/McBopomofo.h:67
 msgid "123456789"
 msgstr ""
 
-#: src/McBopomofo.h:65
+#: src/McBopomofo.h:68
 msgid "asdfghjkl"
 msgstr ""
 
-#: src/McBopomofo.h:65
+#: src/McBopomofo.h:68
 msgid "asdfzxcvb"
 msgstr ""
 
-#: src/McBopomofo.h:68
+#: src/McBopomofo.h:71
 msgid "before_cursor"
 msgstr "Before the Cursor (Like Hanin)"
 
-#: src/McBopomofo.h:69
+#: src/McBopomofo.h:72
 msgid "after_cursor"
 msgstr "After the Cursor (Like MS IME)"
 
-#: src/McBopomofo.h:77
+#: src/McBopomofo.h:80
 msgid "Bopomofo Keyboard Layout"
 msgstr ""
 
-#: src/McBopomofo.h:82
+#: src/McBopomofo.h:85
 msgid "Selection Keys"
 msgstr ""
 
-#: src/McBopomofo.h:87
+#: src/McBopomofo.h:90
 msgid "Show Candidate Phrase"
 msgstr "Show Candidates"
 
-#: src/McBopomofo.h:91
+#: src/McBopomofo.h:94
 msgid "Move cursor after selection"
 msgstr ""
 
-#: src/McBopomofo.h:99
+#: src/McBopomofo.h:102
 msgid "Map Dvorak to QWERTY"
 msgstr ""
 
-#: src/KeyHandler.cpp:523
+#: src/KeyHandler.cpp:519
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
-#: src/KeyHandler.cpp:615
+#: src/KeyHandler.cpp:611
 msgid "{0} syllables required"
 msgstr ""
 
-#: src/KeyHandler.cpp:618
+#: src/KeyHandler.cpp:614
 msgid "{0} syllables maximum"
 msgstr ""
 
-#: src/KeyHandler.cpp:621
+#: src/KeyHandler.cpp:617
 msgid "phrase already exists"
 msgstr ""
 
-#: src/KeyHandler.cpp:623
+#: src/KeyHandler.cpp:619
 msgid "press Enter to add the phrase"
 msgstr ""
 
-#: src/KeyHandler.cpp:627
+#: src/KeyHandler.cpp:623
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
