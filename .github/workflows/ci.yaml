@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  build:
+  build_ubuntu_21:
     runs-on: ubuntu-latest
     container: ubuntu:impish-20220316
 
@@ -21,6 +21,30 @@ jobs:
           mkdir -p build
           cd build
           cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
+          make -j
+      - name: Test
+        run: |
+          cd build
+          make runTest
+
+  build_ubuntu_20:
+    runs-on: ubuntu-latest
+    container: ubuntu:focal-20220316
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt install -y clang
+          apt install -y cmake extra-cmake-modules gettext libfmt-dev
+          apt install -y fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev
+      - name: Build
+        run: |
+          mkdir -p build
+          cd build
+          cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DUSE_LEGACY_FCITX5_API=1
           make -j
       - name: Test
         run: |
