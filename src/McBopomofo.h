@@ -160,7 +160,6 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
 
   std::unique_ptr<fcitx::SimpleAction> editUserPhreasesAction_;
   std::unique_ptr<fcitx::SimpleAction> excludedPhreasesAction_;
-  std::unique_ptr<fcitx::SimpleAction> reloadUserPhreasesAction_;
 };
 
 class McBopomofoEngineFactory : public fcitx::AddonFactory {

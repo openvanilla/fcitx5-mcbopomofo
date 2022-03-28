@@ -176,15 +176,6 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
   instance_->userInterfaceManager().registerAction(
       "mcbopomofo-user-excluded-phrases-edit", excludedPhreasesAction_.get());
 
-  reloadUserPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
-  reloadUserPhreasesAction_->setShortText(_("Reload User Phrases"));
-  reloadUserPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
-      [this](fcitx::InputContext*) {
-        languageModelLoader_->reloadUserModelsIfNeeded();
-      });
-  instance_->userInterfaceManager().registerAction(
-      "mcbopomofo-user-phrases-reload", reloadUserPhreasesAction_.get());
-
   // Required by convention of fcitx5 modules to load config on its own.
   reloadConfig();
 }
@@ -217,8 +208,6 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
                                        editUserPhreasesAction_.get());
   inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
                                        excludedPhreasesAction_.get());
-  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
-                                       reloadUserPhreasesAction_.get());
 
   auto layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
   switch (config_.bopomofoKeyboardLayout.value()) {

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-28 00:14+0800\n"
+"POT-Creation-Date: 2022-03-28 13:54+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,16 +17,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/McBopomofo.cpp:158
+#: src/McBopomofo.cpp:159
 msgid "Edit User Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:168
+#: src/McBopomofo.cpp:169
 msgid "Edit Excluded Phrases"
-msgstr ""
-
-#: src/McBopomofo.cpp:179
-msgid "Reload User Phrases"
 msgstr ""
 
 #: src/McBopomofo.h:58

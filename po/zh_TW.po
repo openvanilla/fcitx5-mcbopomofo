@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-28 00:14+0800\n"
+"POT-Creation-Date: 2022-03-28 13:54+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,17 +17,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/McBopomofo.cpp:158
+#: src/McBopomofo.cpp:159
 msgid "Edit User Phrases"
 msgstr "編輯使用者詞彙"
 
-#: src/McBopomofo.cpp:168
+#: src/McBopomofo.cpp:169
 msgid "Edit Excluded Phrases"
 msgstr "編輯排除的詞彙"
-
-#: src/McBopomofo.cpp:179
-msgid "Reload User Phrases"
-msgstr "重新載入使用者詞彙"
 
 #: src/McBopomofo.h:58
 msgid "standard"
