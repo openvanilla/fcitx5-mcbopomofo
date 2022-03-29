@@ -82,7 +82,7 @@ static bool MarkedPhraseExists(Formosa::Gramambular::LanguageModel* lm,
                      });
 }
 
-static double GetNow() {
+static double GetEpochNowInSeconds() {
   auto now = std::chrono::system_clock::now();
   int64_t timestamp = std::chrono::time_point_cast<std::chrono::seconds>(now)
                           .time_since_epoch()
@@ -153,7 +153,7 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     std::string evictedText = popEvictedTextAndWalk();
 
     std::string overrideValue = userOverrideModel_.suggest(
-        walkedNodes_, builder_->cursorIndex(), GetNow());
+        walkedNodes_, builder_->cursorIndex(), GetEpochNowInSeconds());
     if (!overrideValue.empty()) {
       size_t cursorIndex = actualCandidateCursorIndex();
       std::vector<Formosa::Gramambular::NodeAnchor> nodes =
@@ -671,7 +671,8 @@ void KeyHandler::pinNode(const std::string& candidate) {
       builder_->grid().fixNodeSelectedCandidate(cursorIndex, candidate);
   double score = selectedNode.node->scoreForCandidate(candidate);
   if (score > kNoOverrideThreshold) {
-    userOverrideModel_.observe(walkedNodes_, cursorIndex, candidate, GetNow());
+    userOverrideModel_.observe(walkedNodes_, cursorIndex, candidate,
+                               GetEpochNowInSeconds());
   }
 
   walk();
