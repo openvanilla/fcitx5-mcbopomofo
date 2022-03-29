@@ -39,11 +39,13 @@ install(TARGETS mcbopomofo DESTINATION "${FCITX_INSTALL_LIBDIR}/fcitx5")
 
 # Addon config file
 # We need additional layer of conversion because we want PROJECT_VERSION in it.
-configure_file(mcbopomofo-addon.conf.in mcbopomofo-addon.conf)
+configure_file(mcbopomofo-addon.conf.in.in mcbopomofo-addon.conf.in)
+fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-addon.conf.in" mcbopomofo-addon.conf)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-addon.conf" RENAME mcbopomofo.conf DESTINATION "${FCITX_INSTALL_PKGDATADIR}/addon")
 
 # Input Method registration file
-configure_file(mcbopomofo.conf.in mcbopomofo.conf)
+configure_file(mcbopomofo.conf.in.in mcbopomofo.conf.in)
+fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo.conf.in" mcbopomofo.conf)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo.conf" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/inputmethod")
 
 # Let CMake fetch Google Test for us.
