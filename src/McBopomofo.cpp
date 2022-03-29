@@ -34,6 +34,8 @@
 #include <utility>
 #include <vector>
 
+#include "Log.h"
+
 namespace McBopomofo {
 
 constexpr char kConfigPath[] = "conf/mcbopomofo.conf";
@@ -314,7 +316,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
 #endif
     if (maybeCandidateList == nullptr) {
       // TODO(unassigned): Just assert this.
-      FCITX_WARN() << "inconsistent state";
+      FCITX_MCBOPOMOFO_WARN() << "inconsistent state";
       enterNewState(context, std::make_unique<InputStates::Empty>());
       return;
     }

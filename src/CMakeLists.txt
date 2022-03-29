@@ -2,6 +2,7 @@ set(MCBOPOMOFO_LIB_SOURCES
  KeyHandler.cpp
  LanguageModelLoader.cpp
  UTF8Helper.cpp
+ Log.cpp
  Engine/KeyValueBlobReader.cpp 
  Engine/McBopomofoLM.cpp
  Engine/ParselessLM.cpp
