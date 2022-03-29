@@ -38,6 +38,12 @@ namespace McBopomofo {
 
 constexpr char kConfigPath[] = "conf/mcbopomofo.conf";
 
+// This is determined from experience. Even if a user hits Ctrl-Space quickly,
+// it'll take ~200 ms (so 200,000 microseconds) to switch input method context.
+// 90 ms is so fast that only a quick succession of events taken place during
+// FocusOut (see McBopomofoEngine::reset() below) can cause such context switch.
+constexpr int64_t kIgnoreFocusOutEventThresholdMicroseconds = 90'000;  // 90 ms
+
 static char CovertDvorakToQwerty(char c) {
   switch (c) {
     case '[':
@@ -139,6 +145,15 @@ static fcitx::Key ConvertDvorakToQwerty(fcitx::Key key) {
   return fcitx::Key(static_cast<fcitx::KeySym>(sym));
 }
 
+static int64_t GetEpochNowInMicroseconds() {
+  auto now = std::chrono::system_clock::now();
+  int64_t timestamp =
+      std::chrono::time_point_cast<std::chrono::microseconds>(now)
+          .time_since_epoch()
+          .count();
+  return timestamp;
+}
+
 #ifdef USE_LEGACY_FCITX5_API
 class DisplayOnlyCandidateWord : public fcitx::CandidateWord {
  public:
@@ -154,6 +169,7 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
   keyHandler_ = std::make_unique<KeyHandler>(languageModelLoader_->getLM(),
                                              languageModelLoader_);
   state_ = std::make_unique<InputStates::Empty>();
+  stateCommittedTimestampMicroseconds_ = GetEpochNowInMicroseconds();
 
   editUserPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
   editUserPhreasesAction_->setShortText(_("Edit User Phrases"));
@@ -243,18 +259,26 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
 
 void McBopomofoEngine::reset(const fcitx::InputMethodEntry&,
                              fcitx::InputContextEvent& event) {
+  // If our previous state is Inputting and it has evicted text, and reset() is
+  // called soon afterwards--here we use
+  // kIgnoreFocusOutEventThresholdMicroseconds to determine it--then we should
+  // ignore this event. This is because some apps, like Chrome-based browsers,
+  // would trigger this event when some string is committed, even if we stay in
+  // the Inputting state. If we don't ignore this, it'll cause the preedit to be
+  // prematurely cleared, which disrupts the user input flow.
   auto isFocusOutEvent = dynamic_cast<fcitx::FocusOutEvent*>(&event) != nullptr;
-
-  // Note: when inputting in Chrome based web browsers, the `reset` method would
-  // be called when the input method commits evicted text by passing a focus out
-  // event. We have to ignore such events otherwise we are hardly to input a
-  // complete Chinese sentense.
   if (isFocusOutEvent) {
-    auto context = event.inputContext();
-    auto program = context->program();
-    if (program.rfind("google-chrome", 0) == 0) return;
-    if (program.rfind("microsoft-edge", 0) == 0) return;
-    if (program.rfind("sidekick-browser", 0) == 0) return;
+    int64_t delta =
+        GetEpochNowInMicroseconds() - stateCommittedTimestampMicroseconds_;
+    if (delta < kIgnoreFocusOutEventThresholdMicroseconds) {
+      if (auto inputting =
+              dynamic_cast<InputStates::Inputting*>(state_.get())) {
+        if (inputting->evictedText.length() > 0) {
+          // Don't reset anything. Stay in the current Inputting state.
+          return;
+        }
+      }
+    }
   }
 
   keyHandler_->reset();
@@ -379,6 +403,7 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
   // Hold the previous state, and transfer the ownership of newState.
   std::unique_ptr<InputState> prevState = std::move(state_);
   state_ = std::move(newState);
+  stateCommittedTimestampMicroseconds_ = GetEpochNowInMicroseconds();
 
   InputState* prevPtr = prevState.get();
   InputState* currentPtr = state_.get();

@@ -155,6 +155,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   std::shared_ptr<LanguageModelLoader> languageModelLoader_;
   std::unique_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
+  int64_t stateCommittedTimestampMicroseconds_;
   McBopomofoConfig config_;
   fcitx::KeyList selectionKeys_;
 
