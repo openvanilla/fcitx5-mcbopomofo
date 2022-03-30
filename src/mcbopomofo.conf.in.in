@@ -1,6 +1,5 @@
 [InputMethod]
 Name=McBopomofo
-Name[zh_TW]=小麥注音
 Icon=fcitx-mcbopomofo
 Label=麥
 LangCode=zh_TW

@@ -1,14 +1,14 @@
-# Chinese translations for fcitx-mcbopomofo package
-# Traditional Chinese translation for fcitx-mcbopomofo.
+# Chinese translations for fcitx5-mcbopomofo package
+# Traditional Chinese translation for fcitx5-mcbopomofo.
 # Copyright (C) 2022 OpenVanilla
-# This file is distributed under the same license as the fcitx-mcbopomofo package.
+# This file is distributed under the same license as the fcitx5-mcbopomofo package.
 # Automatically generated, 2022.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: fcitx-mcbopomofo v0.1\n"
+"Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-28 13:54+0800\n"
+"POT-Creation-Date: 2022-03-29 10:16-0700\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/McBopomofo.cpp:159
+#: src/McBopomofo.cpp:175
 msgid "Edit User Phrases"
 msgstr "編輯使用者詞彙"
 
-#: src/McBopomofo.cpp:169
+#: src/McBopomofo.cpp:185
 msgid "Edit Excluded Phrases"
 msgstr "編輯排除的詞彙"
 
@@ -112,3 +112,7 @@ msgstr "請按 Enter 加入自訂詞庫"
 #: src/KeyHandler.cpp:623
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr "選取了「{0}」，注音「{1}」：{2}"
+
+#: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
+msgid "McBopomofo"
+msgstr "小麥注音"
