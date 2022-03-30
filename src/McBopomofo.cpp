@@ -74,11 +74,10 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
 
   editUserPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
   editUserPhreasesAction_->setShortText(_("Edit User Phrases"));
-  editUserPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
-      [this](fcitx::InputContext*) {
-        auto command = "xdg-open " + languageModelLoader_->userPhrasesPath();
-        system(command.c_str());
-      });
+  editUserPhreasesAction_->connect<
+      fcitx::SimpleAction::Activated>([this](fcitx::InputContext*) {
+    fcitx::startProcess({"xdg-open", languageModelLoader_->userPhrasesPath()});
+  });
   instance_->userInterfaceManager().registerAction(
       "mcbopomofo-user-phrases-edit", editUserPhreasesAction_.get());
 
@@ -86,9 +85,8 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
   excludedPhreasesAction_->setShortText(_("Edit Excluded Phrases"));
   excludedPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
       [this](fcitx::InputContext*) {
-        auto command =
-            "xdg-open " + languageModelLoader_->excludedPhrasesPath();
-        system(command.c_str());
+        fcitx::startProcess(
+            {"xdg-open", languageModelLoader_->excludedPhrasesPath()});
       });
   instance_->userInterfaceManager().registerAction(
       "mcbopomofo-user-excluded-phrases-edit", excludedPhreasesAction_.get());
