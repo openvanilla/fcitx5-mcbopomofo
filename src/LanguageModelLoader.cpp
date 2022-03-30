@@ -29,6 +29,8 @@
 #include <fstream>
 #include <memory>
 
+#include "Log.h"
+
 namespace McBopomofo {
 
 constexpr char kDataPath[] = "data/mcbopomofo-data.txt";
@@ -39,10 +41,10 @@ LanguageModelLoader::LanguageModelLoader()
     : lm_(std::make_shared<McBopomofoLM>()) {
   std::string buildInLMPath = fcitx::StandardPath::global().locate(
       fcitx::StandardPath::Type::PkgData, kDataPath);
-  FCITX_INFO() << "Built-in LM: " << buildInLMPath;
+  FCITX_MCBOPOMOFO_INFO() << "Built-in LM: " << buildInLMPath;
   lm_->loadLanguageModel(buildInLMPath.c_str());
   if (!lm_->isDataModelLoaded()) {
-    FCITX_INFO() << "Failed to open built-in LM";
+    FCITX_MCBOPOMOFO_INFO() << "Failed to open built-in LM";
   }
 
   std::string userDataPath = fcitx::StandardPath::global().userDirectory(
@@ -57,9 +59,11 @@ LanguageModelLoader::LanguageModelLoader()
   if (!std::filesystem::exists(userDataPath)) {
     bool result = std::filesystem::create_directory(userDataPath);
     if (result) {
-      FCITX_INFO() << "Created user data directory: " << userDataPath;
+      FCITX_MCBOPOMOFO_INFO()
+          << "Created user data directory: " << userDataPath;
     } else {
-      FCITX_WARN() << "Failed to create user data directory: " << userDataPath;
+      FCITX_MCBOPOMOFO_WARN()
+          << "Failed to create user data directory: " << userDataPath;
       return;
     }
   }
@@ -74,7 +78,8 @@ LanguageModelLoader::LanguageModelLoader()
 void LanguageModelLoader::addUserPhrase(const std::string_view& reading,
                                         const std::string_view& phrase) {
   if (userPhrasesPath_.empty() || !std::filesystem::exists(userPhrasesPath_)) {
-    FCITX_INFO() << "Not writing user phrases: data file does not exist";
+    FCITX_MCBOPOMOFO_INFO()
+        << "Not writing user phrases: data file does not exist";
     return;
   }
 
@@ -83,7 +88,8 @@ void LanguageModelLoader::addUserPhrase(const std::string_view& reading,
   ofs << phrase << " " << reading << "\n";
   ofs.close();
 
-  FCITX_INFO() << "Added user phrase: " << phrase << ", reading: " << reading;
+  FCITX_MCBOPOMOFO_INFO() << "Added user phrase: " << phrase
+                          << ", reading: " << reading;
   reloadUserModelsIfNeeded();
 }
 
@@ -98,7 +104,7 @@ void LanguageModelLoader::reloadUserModelsIfNeeded() {
     if (t != userPhrasesTimestamp_) {
       shouldReload = true;
       userPhrasesTimestamp_ = t;
-      FCITX_INFO() << "Will load: " << userPhrasesPath_;
+      FCITX_MCBOPOMOFO_INFO() << "Will load: " << userPhrasesPath_;
     }
     userPhrasesPathPtr = userPhrasesPath_.c_str();
   }
@@ -110,7 +116,7 @@ void LanguageModelLoader::reloadUserModelsIfNeeded() {
     if (t != excludedPhrasesTimestamp_) {
       shouldReload = true;
       excludedPhrasesTimestamp_ = t;
-      FCITX_INFO() << "Will load: " << excludedPhrasesPath_;
+      FCITX_MCBOPOMOFO_INFO() << "Will load: " << excludedPhrasesPath_;
     }
     excludedPhrasesPathPtr = excludedPhrasesPath_.c_str();
   }
@@ -124,7 +130,7 @@ void LanguageModelLoader::populateUserDataFilesIfNeeded() {
   if (!userPhrasesPath_.empty() && !std::filesystem::exists(userPhrasesPath_)) {
     std::ofstream ofs(userPhrasesPath_);
     if (ofs) {
-      FCITX_INFO() << "Creating: " << userPhrasesPath_;
+      FCITX_MCBOPOMOFO_INFO() << "Creating: " << userPhrasesPath_;
 
       // TODO(unassigned): Populate date here
       ofs << "# user phrases file\n";
@@ -136,7 +142,7 @@ void LanguageModelLoader::populateUserDataFilesIfNeeded() {
       !std::filesystem::exists(excludedPhrasesPath_)) {
     std::ofstream ofs(excludedPhrasesPath_);
     if (ofs) {
-      FCITX_INFO() << "Creating: " << excludedPhrasesPath_;
+      FCITX_MCBOPOMOFO_INFO() << "Creating: " << excludedPhrasesPath_;
 
       // TODO(unassigned): Populate date here
       ofs << "# excluded phrases file\n";
