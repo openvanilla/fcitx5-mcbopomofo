@@ -46,107 +46,6 @@ constexpr char kConfigPath[] = "conf/mcbopomofo.conf";
 // FocusOut (see McBopomofoEngine::reset() below) can cause such context switch.
 constexpr int64_t kIgnoreFocusOutEventThresholdMicroseconds = 90'000;  // 90 ms
 
-static char CovertDvorakToQwerty(char c) {
-  switch (c) {
-    case '[':
-      return '-';
-    case ']':
-      return '=';
-    case '{':
-      return '_';
-    case '}':
-      return '+';
-    case '\'':
-      return 'q';
-    case ',':
-      return 'w';
-    case '.':
-      return 'e';
-    case 'p':
-      return 'r';
-    case 'y':
-      return 't';
-    case 'f':
-      return 'y';
-    case 'g':
-      return 'u';
-    case 'c':
-      return 'i';
-    case 'r':
-      return 'o';
-    case 'l':
-      return 'p';
-    case '/':
-      return '[';
-    case '=':
-      return ']';
-    case '?':
-      return '{';
-    case '+':
-      return '}';
-    case 'o':
-      return 's';
-    case 'e':
-      return 'd';
-    case 'u':
-      return 'f';
-    case 'i':
-      return 'g';
-    case 'd':
-      return 'h';
-    case 'h':
-      return 'j';
-    case 't':
-      return 'k';
-    case 'n':
-      return 'l';
-    case 's':
-      return ';';
-    case '-':
-      return '\'';
-    case 'S':
-      return ':';
-    case '_':
-      return '"';
-    case ';':
-      return 'z';
-    case 'q':
-      return 'x';
-    case 'j':
-      return 'c';
-    case 'k':
-      return 'v';
-    case 'x':
-      return 'b';
-    case 'b':
-      return 'n';
-    case 'w':
-      return ',';
-    case 'v':
-      return '.';
-    case 'z':
-      return '/';
-    case 'W':
-      return '<';
-    case 'V':
-      return '>';
-    case 'Z':
-      return '?';
-    default:
-      return c;
-  }
-}
-
-static fcitx::Key ConvertDvorakToQwerty(fcitx::Key key) {
-  if (!key.isSimple()) {
-    return key;
-  }
-
-  // For simple keys, it's guaranteed to be downcastable.
-  char sym = CovertDvorakToQwerty(key.sym());
-  return fcitx::Key(static_cast<fcitx::KeySym>(sym));
-}
-
 static int64_t GetEpochNowInMicroseconds() {
   auto now = std::chrono::system_clock::now();
   int64_t timestamp =
@@ -299,9 +198,6 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
 
   fcitx::InputContext* context = keyEvent.inputContext();
   fcitx::Key key = keyEvent.key();
-  if (config_.mapsDvorakToQwerty.value()) {
-    key = ConvertDvorakToQwerty(key);
-  }
 
   if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr) {
     // Absorb all keys when the candidate panel is on.

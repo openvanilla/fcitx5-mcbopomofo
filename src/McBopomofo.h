@@ -90,18 +90,10 @@ FCITX_CONFIGURATION(
         selectPhrase{this, "SelectPhrase", _("Show Candidate Phrase"),
                      SelectPhrase::BeforeCursor};
 
+    // Move the cursor at the end of the selected candidate phrase.
     fcitx::Option<bool> moveCursorAfterSelection{
         this, "moveCursorAfterSelection", _("Move cursor after selection"),
-        false};
-
-    // Whether to map Dvorak characters back to Qwerty layout;
-    // this is a workaround of fcitx5/wayland's limitations.
-    // See https://bugzilla.gnome.org/show_bug.cgi?id=162726
-    // TODO(unassigned): Remove this once fcitx5 handles Dvorak better.
-    fcitx::Option<bool> mapsDvorakToQwerty{this, "MapDvorakToQWERTY",
-                                           _("Map Dvorak to QWERTY"), false};
-
-);
+        false};);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
