@@ -10,6 +10,8 @@ include(GNUInstallDirs)
 include(ECMSetupVersion)
 include(ECMUninstallTarget)
 
+option(ENABLE_TEST "Build Test" On)
+
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
 
