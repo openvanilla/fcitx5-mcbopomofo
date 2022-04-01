@@ -253,7 +253,7 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  if (key.check(FcitxKey_Escape)) {
+  if (key.check(FcitxKey_Escape) || key.check(FcitxKey_BackSpace)) {
     keyHandler_->candidatePanelCancelled(
         [this, context](std::unique_ptr<InputState> next) {
           enterNewState(context, std::move(next));
@@ -279,13 +279,17 @@ void McBopomofoEngine::handleCandidateKeyEvent(
                                             fcitx::Key(FcitxKey_Left),
                                             fcitx::Key(FcitxKey_Up)};
 
-  if (key.checkKeyList(nextKeys) && candidateList->hasNext()) {
+  if ((key.checkKeyList(nextKeys) ||
+       key.checkKeyList(instance_->globalConfig().defaultNextPage())) &&
+      candidateList->hasNext()) {
     candidateList->next();
     context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
     return;
   }
 
-  if (key.checkKeyList(prevKeys) && candidateList->hasPrev()) {
+  if ((key.checkKeyList(prevKeys) ||
+       key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
+      candidateList->hasPrev()) {
     candidateList->prev();
     context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
     return;
