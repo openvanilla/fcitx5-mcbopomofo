@@ -204,6 +204,13 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
   fcitx::InputContext* context = keyEvent.inputContext();
   fcitx::Key key = keyEvent.key();
 
+  if (key.states() & fcitx::KeyState::Ctrl ||
+      key.states() & fcitx::KeyState::Alt ||
+      key.states() & fcitx::KeyState::Super ||
+      key.states() & fcitx::KeyState::CapsLock) {
+    return;
+  }
+
   if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr) {
     // Absorb all keys when the candidate panel is on.
     keyEvent.filterAndAccept();
@@ -454,14 +461,14 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
 
 void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
                                      InputStates::NotEmpty* state) {
-  bool use_client_preedit =
+  bool useClientPreedit =
       context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
 #ifdef USE_LEGACY_FCITX5_API
-  fcitx::TextFormatFlags normalFormat{use_client_preedit
+  fcitx::TextFormatFlags normalFormat{useClientPreedit
                                           ? fcitx::TextFormatFlag::Underline
                                           : fcitx::TextFormatFlag::None};
 #else
-  fcitx::TextFormatFlags normalFormat{use_client_preedit
+  fcitx::TextFormatFlags normalFormat{useClientPreedit
                                           ? fcitx::TextFormatFlag::Underline
                                           : fcitx::TextFormatFlag::NoFlag};
 #endif
@@ -475,7 +482,7 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
   }
   preedit.setCursor(state->cursorIndex);
 
-  if (use_client_preedit) {
+  if (useClientPreedit) {
     context->inputPanel().setClientPreedit(preedit);
   } else {
     context->inputPanel().setPreedit(preedit);
