@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-29 10:16-0700\n"
+"POT-Creation-Date: 2022-04-03 23:21+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/McBopomofo.cpp:175
+#: src/McBopomofo.cpp:76
 msgid "Edit User Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:185
+#: src/McBopomofo.cpp:85
 msgid "Edit Excluded Phrases"
 msgstr ""
 
@@ -69,50 +69,62 @@ msgstr "Before the Cursor (Like Hanin)"
 msgid "after_cursor"
 msgstr "After the Cursor (Like MS IME)"
 
-#: src/McBopomofo.h:80
-msgid "Bopomofo Keyboard Layout"
+#: src/McBopomofo.h:76
+msgid "Directly Output Uppercased Letters"
+msgstr ""
+
+#: src/McBopomofo.h:77
+msgid "Put Lowercased Letters to Composing Buffer"
 msgstr ""
 
 #: src/McBopomofo.h:85
-msgid "Selection Keys"
+msgid "Bopomofo Keyboard Layout"
 msgstr ""
 
 #: src/McBopomofo.h:90
+msgid "Selection Keys"
+msgstr ""
+
+#: src/McBopomofo.h:95
 msgid "Show Candidate Phrase"
 msgstr "Show Candidates"
 
-#: src/McBopomofo.h:94
+#: src/McBopomofo.h:100
 msgid "Move cursor after selection"
 msgstr ""
 
-#: src/McBopomofo.h:102
-msgid "Map Dvorak to QWERTY"
+#: src/McBopomofo.h:105
+msgid "Shift + Letter Keys"
 msgstr ""
 
-#: src/KeyHandler.cpp:519
+#: src/KeyHandler.cpp:570
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
-#: src/KeyHandler.cpp:611
+#: src/KeyHandler.cpp:662
 msgid "{0} syllables required"
 msgstr ""
 
-#: src/KeyHandler.cpp:614
+#: src/KeyHandler.cpp:665
 msgid "{0} syllables maximum"
 msgstr ""
 
-#: src/KeyHandler.cpp:617
+#: src/KeyHandler.cpp:668
 msgid "phrase already exists"
 msgstr ""
 
-#: src/KeyHandler.cpp:619
+#: src/KeyHandler.cpp:670
 msgid "press Enter to add the phrase"
 msgstr ""
 
-#: src/KeyHandler.cpp:623
+#: src/KeyHandler.cpp:674
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
 msgid "McBopomofo"
+msgstr ""
+
+#: src/mcbopomofo-addon.conf.in.in:4
+msgid "McBopomofo Wrapper For Fcitx"
 msgstr ""

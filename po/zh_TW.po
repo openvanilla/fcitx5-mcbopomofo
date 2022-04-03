@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-29 10:16-0700\n"
+"POT-Creation-Date: 2022-04-03 23:21+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/McBopomofo.cpp:175
+#: src/McBopomofo.cpp:76
 msgid "Edit User Phrases"
 msgstr "編輯使用者詞彙"
 
-#: src/McBopomofo.cpp:185
+#: src/McBopomofo.cpp:85
 msgid "Edit Excluded Phrases"
 msgstr "編輯排除的詞彙"
 
@@ -69,50 +69,63 @@ msgstr "游標前面（像漢音輸入法）"
 msgid "after_cursor"
 msgstr "游標後面（像微軟新注音）"
 
-#: src/McBopomofo.h:80
+#: src/McBopomofo.h:76
+msgid "Directly Output Uppercased Letters"
+msgstr "直接輸入大寫字母"
+
+#: src/McBopomofo.h:77
+msgid "Put Lowercased Letters to Composing Buffer"
+msgstr "在輸入緩衝區中輸入小寫字母"
+
+#: src/McBopomofo.h:85
 msgid "Bopomofo Keyboard Layout"
 msgstr "注音鍵盤配置"
 
-#: src/McBopomofo.h:85
+#: src/McBopomofo.h:90
 msgid "Selection Keys"
 msgstr "選字鍵"
 
-#: src/McBopomofo.h:90
+#: src/McBopomofo.h:95
 msgid "Show Candidate Phrase"
 msgstr "選字時，候選詞起算點"
 
-#: src/McBopomofo.h:94
+#: src/McBopomofo.h:100
 msgid "Move cursor after selection"
 msgstr "選字後自動移動游標"
 
-#: src/McBopomofo.h:102
-msgid "Map Dvorak to QWERTY"
-msgstr "將 Dvorak 鍵盤字元對應回 QWERTY"
+#: src/McBopomofo.h:105
+msgid "Shift + Letter Keys"
+msgstr "Shift + 字母按鍵"
 
-#: src/KeyHandler.cpp:519
+#: src/KeyHandler.cpp:570
 msgid "Cursor is between syllables {0} and {1}"
 msgstr "游標在「{0}」與「{1}」之間"
 
-#: src/KeyHandler.cpp:611
+#: src/KeyHandler.cpp:662
 msgid "{0} syllables required"
 msgstr "至少需要選取{0}個字"
 
-#: src/KeyHandler.cpp:614
+#: src/KeyHandler.cpp:665
 msgid "{0} syllables maximum"
 msgstr "最多只能選取{0}個字"
 
-#: src/KeyHandler.cpp:617
+#: src/KeyHandler.cpp:668
 msgid "phrase already exists"
 msgstr "詞庫已經有這個詞"
 
-#: src/KeyHandler.cpp:619
+#: src/KeyHandler.cpp:670
 msgid "press Enter to add the phrase"
 msgstr "請按 Enter 加入自訂詞庫"
 
-#: src/KeyHandler.cpp:623
+#: src/KeyHandler.cpp:674
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr "選取了「{0}」，注音「{1}」：{2}"
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
 msgid "McBopomofo"
 msgstr "小麥注音"
+
+#: src/mcbopomofo-addon.conf.in.in:4
+msgid "McBopomofo Wrapper For Fcitx"
+msgstr "Fctix 的小麥注音封裝"
+

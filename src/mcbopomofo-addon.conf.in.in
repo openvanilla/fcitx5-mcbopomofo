@@ -1,5 +1,6 @@
 [Addon]
 Name=McBopomofo
+Comment=McBopomofo Wrapper For Fcitx
 Category=InputMethod
 Version=@PROJECT_VERSION@
 Library=mcbopomofo
