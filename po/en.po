@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-03 23:21+0800\n"
+"POT-Creation-Date: 2022-04-04 03:20+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -93,31 +93,35 @@ msgstr "Show Candidates"
 msgid "Move cursor after selection"
 msgstr ""
 
-#: src/McBopomofo.h:105
+#: src/McBopomofo.h:106
+msgid "ESC key clears entire composing buffer"
+msgstr ""
+
+#: src/McBopomofo.h:110
 msgid "Shift + Letter Keys"
 msgstr ""
 
-#: src/KeyHandler.cpp:570
+#: src/KeyHandler.cpp:581
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
-#: src/KeyHandler.cpp:662
+#: src/KeyHandler.cpp:673
 msgid "{0} syllables required"
 msgstr ""
 
-#: src/KeyHandler.cpp:665
+#: src/KeyHandler.cpp:676
 msgid "{0} syllables maximum"
 msgstr ""
 
-#: src/KeyHandler.cpp:668
+#: src/KeyHandler.cpp:679
 msgid "phrase already exists"
 msgstr ""
 
-#: src/KeyHandler.cpp:670
+#: src/KeyHandler.cpp:681
 msgid "press Enter to add the phrase"
 msgstr ""
 
-#: src/KeyHandler.cpp:674
+#: src/KeyHandler.cpp:685
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 

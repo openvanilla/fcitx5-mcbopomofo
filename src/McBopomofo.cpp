@@ -153,6 +153,9 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
   keyHandler_->setMoveCursorAfterSelection(
       config_.moveCursorAfterSelection.value());
 
+  keyHandler_->setEscKeyClearsEntireComposingBuffer(
+      config_.escKeyClearsEntireComposingBuffer.value());
+
   keyHandler_->setPutLowercasedLettersToComposingBuffer(
       config_.shiftLetterKeys.value() ==
       ShiftLetterKeys::PutLowercasedToBuffer);

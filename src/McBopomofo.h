@@ -100,6 +100,11 @@ FCITX_CONFIGURATION(
         this, "MoveCursorAfterSelection", _("Move cursor after selection"),
         false};
 
+    // ESC key clears entire composing buffer.
+    fcitx::Option<bool> escKeyClearsEntireComposingBuffer{
+        this, "EscKeyClearsEntireComposingBuffer",
+        _("ESC key clears entire composing buffer"), false};
+
     /// Shift + letter keys.
     fcitx::OptionWithAnnotation<ShiftLetterKeys, ShiftLetterKeysI18NAnnotation>
         shiftLetterKeys{this, "ShiftLetterKeys", _("Shift + Letter Keys"),

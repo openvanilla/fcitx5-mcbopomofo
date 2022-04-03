@@ -79,6 +79,9 @@ class KeyHandler {
   // Sets if we should put lowercasesd letters into the composing buffer.
   void setPutLowercasedLettersToComposingBuffer(bool flag);
 
+  /// Sets if the ESC key clears enture composing buffer.
+  void setEscKeyClearsEntireComposingBuffer(bool flag);
+
  private:
   bool handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
                         const StateCallback& stateCallback,
@@ -136,6 +139,7 @@ class KeyHandler {
   bool selectPhraseAfterCursorAsCandidate_;
   bool moveCursorAfterSelection_;
   bool putLowercasedLettersToComposingBuffer_;
+  bool escKeyClearsEntireComposingBuffer_;
 };
 
 }  // namespace McBopomofo

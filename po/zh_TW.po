@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-03 23:21+0800\n"
+"POT-Creation-Date: 2022-04-04 03:20+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -93,31 +93,35 @@ msgstr "選字時，候選詞起算點"
 msgid "Move cursor after selection"
 msgstr "選字後自動移動游標"
 
-#: src/McBopomofo.h:105
+#: src/McBopomofo.h:106
+msgid "ESC key clears entire composing buffer"
+msgstr "ESC 按鍵清除輸入緩衝區的所有內容"
+
+#: src/McBopomofo.h:110
 msgid "Shift + Letter Keys"
 msgstr "Shift + 字母按鍵"
 
-#: src/KeyHandler.cpp:570
+#: src/KeyHandler.cpp:581
 msgid "Cursor is between syllables {0} and {1}"
 msgstr "游標在「{0}」與「{1}」之間"
 
-#: src/KeyHandler.cpp:662
+#: src/KeyHandler.cpp:673
 msgid "{0} syllables required"
 msgstr "至少需要選取{0}個字"
 
-#: src/KeyHandler.cpp:665
+#: src/KeyHandler.cpp:676
 msgid "{0} syllables maximum"
 msgstr "最多只能選取{0}個字"
 
-#: src/KeyHandler.cpp:668
+#: src/KeyHandler.cpp:679
 msgid "phrase already exists"
 msgstr "詞庫已經有這個詞"
 
-#: src/KeyHandler.cpp:670
+#: src/KeyHandler.cpp:681
 msgid "press Enter to add the phrase"
 msgstr "請按 Enter 加入自訂詞庫"
 
-#: src/KeyHandler.cpp:674
+#: src/KeyHandler.cpp:685
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr "選取了「{0}」，注音「{1}」：{2}"
 
@@ -128,4 +132,3 @@ msgstr "小麥注音"
 #: src/mcbopomofo-addon.conf.in.in:4
 msgid "McBopomofo Wrapper For Fcitx"
 msgstr "Fctix 的小麥注音封裝"
-

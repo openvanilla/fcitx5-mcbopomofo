@@ -207,6 +207,12 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
       return false;
     }
 
+    if (escKeyClearsEntireComposingBuffer_) {
+      reset();
+      stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+      return true;
+    }
+
     if (!reading_.isEmpty()) {
       reading_.clear();
       if (!builder_->length()) {
@@ -375,6 +381,10 @@ void KeyHandler::setMoveCursorAfterSelection(bool flag) {
 
 void KeyHandler::setPutLowercasedLettersToComposingBuffer(bool flag) {
   putLowercasedLettersToComposingBuffer_ = flag;
+}
+
+void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
+  escKeyClearsEntireComposingBuffer_ = flag;
 }
 
 bool KeyHandler::handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
