@@ -55,14 +55,20 @@ static int64_t GetEpochNowInMicroseconds() {
   return timestamp;
 }
 
-#ifdef USE_LEGACY_FCITX5_API
-class DisplayOnlyCandidateWord : public fcitx::CandidateWord {
+class McBopomofoCandidateWord : public fcitx::CandidateWord {
  public:
-  explicit DisplayOnlyCandidateWord(fcitx::Text text)
-      : fcitx::CandidateWord(std::move(text)) {}
-  void select(fcitx::InputContext*) const override {}
+  McBopomofoCandidateWord(fcitx::Text text,
+                          std::function<void(std::string)> callback)
+      : fcitx::CandidateWord(std::move(text)), callback_(callback) {}
+
+  void select(fcitx::InputContext*) const override {
+    auto string = text().toStringForCommit();
+    callback_(std::move(string));
+  }
+
+ private:
+  std::function<void(std::string)> callback_;
 };
-#endif
 
 McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
     : instance_(instance) {
@@ -433,14 +439,24 @@ void McBopomofoEngine::handleCandidatesState(
 
   for (const std::string& candidateStr : current->candidates) {
 #ifdef USE_LEGACY_FCITX5_API
-    fcitx::CandidateWord* candidate =
-        new DisplayOnlyCandidateWord(fcitx::Text(candidateStr));
+    fcitx::CandidateWord* candidate = new McBopomofoCandidateWord(
+        fcitx::Text(candidateStr), [this, context](std::string candidate) {
+          keyHandler_->candidateSelected(
+              candidate, [this, context](std::unique_ptr<InputState> next) {
+                enterNewState(context, std::move(next));
+              });
+        });
     // ownership of candidate is transferred to candidateList.
     candidateList->append(candidate);
 #else
     std::unique_ptr<fcitx::CandidateWord> candidate =
-        std::make_unique<fcitx::DisplayOnlyCandidateWord>(
-            fcitx::Text(candidateStr));
+        std::make_unique<McBopomofoCandidateWord>(
+            fcitx::Text(candidateStr), [this, context](std::string candidate) {
+              keyHandler_->candidateSelected(
+                  candidate, [this, context](std::unique_ptr<InputState> next) {
+                    enterNewState(context, std::move(next));
+                  });
+            });
     candidateList->append(std::move(candidate));
 #endif
   }
