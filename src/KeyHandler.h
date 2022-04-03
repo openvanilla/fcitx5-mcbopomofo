@@ -70,11 +70,14 @@ class KeyHandler {
   void setKeyboardLayout(
       const Formosa::Mandarin::BopomofoKeyboardLayout* layout);
 
-  // Sets select phrase after cursor as candidate.
+  // Sets if we should select phrase after cursor as candidate.
   void setSelectPhraseAfterCursorAsCandidate(bool flag);
 
-  // Sets move cursor after selection.
+  // Sets if we should move cursor after selection.
   void setMoveCursorAfterSelection(bool flag);
+
+  // Sets if we should put lowercasesd letters into the composing buffer.
+  void setPutLowercasedLettersToComposingBuffer(bool flag);
 
  private:
   bool handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
@@ -132,6 +135,7 @@ class KeyHandler {
 
   bool selectPhraseAfterCursorAsCandidate_;
   bool moveCursorAfterSelection_;
+  bool putLowercasedLettersToComposingBuffer_;
 };
 
 }  // namespace McBopomofo

@@ -153,6 +153,10 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
   keyHandler_->setMoveCursorAfterSelection(
       config_.moveCursorAfterSelection.value());
 
+  keyHandler_->setPutLowercasedLettersToComposingBuffer(
+      config_.shiftLetterKeys.value() ==
+      ShiftLetterKeys::PutLowercasedToBuffer);
+
   languageModelLoader_->reloadUserModelsIfNeeded();
 }
 
