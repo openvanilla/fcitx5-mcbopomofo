@@ -71,6 +71,8 @@ if (ENABLE_TEST)
     target_link_libraries(McBopomofoTest PRIVATE Fcitx5::Core gtest_main McBopomofoLib)
     target_include_directories(McBopomofoTest PRIVATE Fcitx5::Core GoogleTest)
 
+    configure_file(../data/data.txt mcbopomofo-test-data.txt)
+
     gtest_discover_tests(McBopomofoTest)
 
     add_custom_target(

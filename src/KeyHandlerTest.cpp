@@ -28,15 +28,38 @@
 
 namespace McBopomofo {
 
-TEST(KeyHandlerTest, Trivial) {
-  KeyHandler handler(nullptr, nullptr);
+constexpr char kTestDataPath[] = "mcbopomofo-test-data.txt";
 
+class MockUserPhraseAdder : public UserPhraseAdder {
+ public:
+  void addUserPhrase(const std::string_view&,
+                     const std::string_view&) override {}
+};
+
+class KeyHandlerTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    languageModel_ = std::make_shared<ParselessLM>();
+    bool result = languageModel_->open(kTestDataPath);
+    ASSERT_TRUE(result);
+    userPhraseAdder_ = std::make_shared<MockUserPhraseAdder>();
+
+    keyHandler_ =
+        std::make_unique<KeyHandler>(languageModel_, userPhraseAdder_);
+  }
+
+  std::shared_ptr<ParselessLM> languageModel_;
+  std::shared_ptr<UserPhraseAdder> userPhraseAdder_;
+  std::unique_ptr<KeyHandler> keyHandler_;
+};
+
+TEST_F(KeyHandlerTest, Trivial) {
   bool stateCallbackInvoked = false;
   bool errorCallbackInvoked = false;
 
   auto emptyState = std::make_unique<InputStates::Empty>();
 
-  bool handled = handler.handle(
+  bool handled = keyHandler_->handle(
       fcitx::Key(), emptyState.get(),
       [&stateCallbackInvoked](std::unique_ptr<McBopomofo::InputState>) {
         stateCallbackInvoked = true;
