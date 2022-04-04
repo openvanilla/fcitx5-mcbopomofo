@@ -1,3 +1,8 @@
+find_package(Fcitx5Core REQUIRED)
+find_package(Fcitx5Utils REQUIRED)
+find_package(fmt REQUIRED)
+find_package(Gettext REQUIRED)
+
 set(MCBOPOMOFO_LIB_SOURCES
  KeyHandler.cpp
  LanguageModelLoader.cpp
@@ -14,6 +19,9 @@ set(MCBOPOMOFO_LIB_SOURCES
 
 # https://stackoverflow.com/questions/26549137/shared-library-on-linux-and-fpic-error
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
+# Setup some compiler option that is generally useful and compatible with Fcitx 5 (C++17)
+include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cmake")
 
 add_library(McBopomofoLib STATIC ${MCBOPOMOFO_LIB_SOURCES})
 target_include_directories(McBopomofoLib PRIVATE BEFORE Fcitx5::Core fmt::fmt)
