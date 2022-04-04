@@ -5,15 +5,16 @@ find_package(ECM REQUIRED 1.0.0)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 find_package(Fcitx5Core REQUIRED)
+find_package(Fcitx5Utils REQUIRED)
+find_package(fmt REQUIRED)
+find_package(Gettext REQUIRED)
+
 include(FeatureSummary)
 include(GNUInstallDirs)
 include(ECMSetupVersion)
 include(ECMUninstallTarget)
 
 option(ENABLE_TEST "Build Test" On)
-
-find_package(fmt REQUIRED)
-find_package(Gettext REQUIRED)
 
 # Setup some compiler option that is generally useful and compatible with Fcitx 5 (C++17)
 include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cmake")

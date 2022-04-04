@@ -44,7 +44,7 @@ class KeyHandler {
  public:
   explicit KeyHandler(
       std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel,
-      std::shared_ptr<LanguageModelLoader> languageModelLoader);
+      std::shared_ptr<UserPhraseAdder> userPhraseAdder);
 
   using StateCallback =
       std::function<void(std::unique_ptr<McBopomofo::InputState>)>;
@@ -121,7 +121,7 @@ class KeyHandler {
   void walk();
 
   std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel_;
-  std::shared_ptr<LanguageModelLoader> languageModelLoader_;
+  std::shared_ptr<UserPhraseAdder> userPhraseAdder_;
 
   UserOverrideModel userOverrideModel_;
   Formosa::Mandarin::BopomofoReadingBuffer reading_;

@@ -33,14 +33,21 @@
 
 namespace McBopomofo {
 
-class LanguageModelLoader {
+class UserPhraseAdder {
+ public:
+  virtual ~UserPhraseAdder() = default;
+  virtual void addUserPhrase(const std::string_view& reading,
+                             const std::string_view& phrase) = 0;
+};
+
+class LanguageModelLoader : public UserPhraseAdder {
  public:
   LanguageModelLoader();
 
   std::shared_ptr<McBopomofoLM> getLM() { return lm_; }
 
   void addUserPhrase(const std::string_view& reading,
-                     const std::string_view& phrase);
+                     const std::string_view& phrase) override;
 
   void reloadUserModelsIfNeeded();
 
