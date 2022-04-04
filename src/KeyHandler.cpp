@@ -37,6 +37,7 @@ namespace McBopomofo {
 constexpr char kJoinSeparator[] = "-";
 constexpr char kPunctuationListKey[] = "_punctuation_list";
 constexpr char kPunctuationKeyPrefix[] = "_punctuation_";
+constexpr char kLetterPrefix[] = "_letter_";
 constexpr size_t kMinValidMarkingReadingCount = 2;
 constexpr size_t kMaxValidMarkingReadingCount = 6;
 
@@ -169,6 +170,29 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     return true;
   }
 
+  // Shift + Space
+  if (key.check(FcitxKey_space, fcitx::KeyState::Shift)) {
+    if (putLowercaseLettersToComposingBuffer_) {
+      builder_->insertReadingAtCursor(" ");
+      std::string evictedText = popEvictedTextAndWalk();
+      auto inputtingState = buildInputtingState();
+      inputtingState->evictedText = evictedText;
+      stateCallback(std::move(inputtingState));
+    } else {
+      if (builder_->length()) {
+        auto inputtingState = buildInputtingState();
+        // Steal the composingBuffer built by the inputting state.
+        auto committingState = std::make_unique<InputStates::Committing>(
+            inputtingState->composingBuffer);
+        stateCallback(std::move(committingState));
+      }
+      auto committingState = std::make_unique<InputStates::Committing>(" ");
+      stateCallback(std::move(committingState));
+      reset();
+    }
+    return true;
+  }
+
   // Space hit: see if we should enter the candidate choosing state.
   auto maybeNotEmptyState = dynamic_cast<InputStates::NotEmpty*>(state);
   if (key.check(FcitxKey_space) && maybeNotEmptyState != nullptr &&
@@ -181,6 +205,12 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
   if (key.check(FcitxKey_Escape)) {
     if (maybeNotEmptyState == nullptr) {
       return false;
+    }
+
+    if (escKeyClearsEntireComposingBuffer_) {
+      reset();
+      stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+      return true;
     }
 
     if (!reading_.isEmpty()) {
@@ -284,6 +314,29 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     if (handlePunctuation(unigram, stateCallback, errorCallback)) {
       return true;
     }
+
+    // Upper case letters.
+    if (asciiChar >= 'A' && asciiChar <= 'Z') {
+      if (putLowercaseLettersToComposingBuffer_) {
+        unigram = std::string(kLetterPrefix) + chrStr;
+        if (handlePunctuation(unigram, stateCallback, errorCallback)) {
+          return true;
+        }
+      } else {
+        if (builder_->length()) {
+          auto inputtingState = buildInputtingState();
+          // Steal the composingBuffer built by the inputting state.
+          auto committingState = std::make_unique<InputStates::Committing>(
+              inputtingState->composingBuffer);
+          stateCallback(std::move(committingState));
+        }
+        auto committingState =
+            std::make_unique<InputStates::Committing>(chrStr);
+        stateCallback(std::move(committingState));
+        reset();
+      }
+      return true;
+    }
   }
 
   // No key is handled. Refresh and consume the key.
@@ -323,6 +376,14 @@ void KeyHandler::setSelectPhraseAfterCursorAsCandidate(bool flag) {
 
 void KeyHandler::setMoveCursorAfterSelection(bool flag) {
   moveCursorAfterSelection_ = flag;
+}
+
+void KeyHandler::setPutLowercaseLettersToComposingBuffer(bool flag) {
+  putLowercaseLettersToComposingBuffer_ = flag;
+}
+
+void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
+  escKeyClearsEntireComposingBuffer_ = flag;
 }
 
 bool KeyHandler::handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,

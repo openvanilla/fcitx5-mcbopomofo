@@ -55,14 +55,20 @@ static int64_t GetEpochNowInMicroseconds() {
   return timestamp;
 }
 
-#ifdef USE_LEGACY_FCITX5_API
-class DisplayOnlyCandidateWord : public fcitx::CandidateWord {
+class McBopomofoCandidateWord : public fcitx::CandidateWord {
  public:
-  explicit DisplayOnlyCandidateWord(fcitx::Text text)
-      : fcitx::CandidateWord(std::move(text)) {}
-  void select(fcitx::InputContext*) const override {}
+  McBopomofoCandidateWord(fcitx::Text text,
+                          std::function<void(std::string)> callback)
+      : fcitx::CandidateWord(std::move(text)), callback_(callback) {}
+
+  void select(fcitx::InputContext*) const override {
+    auto string = text().toStringForCommit();
+    callback_(std::move(string));
+  }
+
+ private:
+  std::function<void(std::string)> callback_;
 };
-#endif
 
 McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
     : instance_(instance) {
@@ -74,11 +80,10 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
 
   editUserPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
   editUserPhreasesAction_->setShortText(_("Edit User Phrases"));
-  editUserPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
-      [this](fcitx::InputContext*) {
-        auto command = "xdg-open " + languageModelLoader_->userPhrasesPath();
-        system(command.c_str());
-      });
+  editUserPhreasesAction_->connect<
+      fcitx::SimpleAction::Activated>([this](fcitx::InputContext*) {
+    fcitx::startProcess({"xdg-open", languageModelLoader_->userPhrasesPath()});
+  });
   instance_->userInterfaceManager().registerAction(
       "mcbopomofo-user-phrases-edit", editUserPhreasesAction_.get());
 
@@ -86,9 +91,8 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
   excludedPhreasesAction_->setShortText(_("Edit Excluded Phrases"));
   excludedPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
       [this](fcitx::InputContext*) {
-        auto command =
-            "xdg-open " + languageModelLoader_->excludedPhrasesPath();
-        system(command.c_str());
+        fcitx::startProcess(
+            {"xdg-open", languageModelLoader_->excludedPhrasesPath()});
       });
   instance_->userInterfaceManager().registerAction(
       "mcbopomofo-user-excluded-phrases-edit", excludedPhreasesAction_.get());
@@ -155,6 +159,12 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
   keyHandler_->setMoveCursorAfterSelection(
       config_.moveCursorAfterSelection.value());
 
+  keyHandler_->setEscKeyClearsEntireComposingBuffer(
+      config_.escKeyClearsEntireComposingBuffer.value());
+
+  keyHandler_->setPutLowercaseLettersToComposingBuffer(
+      config_.shiftLetterKeys.value() == ShiftLetterKeys::PutLowercaseToBuffer);
+
   languageModelLoader_->reloadUserModelsIfNeeded();
 }
 
@@ -198,6 +208,13 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
 
   fcitx::InputContext* context = keyEvent.inputContext();
   fcitx::Key key = keyEvent.key();
+
+  if (key.states() & fcitx::KeyState::Ctrl ||
+      key.states() & fcitx::KeyState::Alt ||
+      key.states() & fcitx::KeyState::Super ||
+      key.states() & fcitx::KeyState::CapsLock) {
+    return;
+  }
 
   if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr) {
     // Absorb all keys when the candidate panel is on.
@@ -255,7 +272,7 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  if (key.check(FcitxKey_Escape)) {
+  if (key.check(FcitxKey_Escape) || key.check(FcitxKey_BackSpace)) {
     keyHandler_->candidatePanelCancelled(
         [this, context](std::unique_ptr<InputState> next) {
           enterNewState(context, std::move(next));
@@ -281,13 +298,17 @@ void McBopomofoEngine::handleCandidateKeyEvent(
                                             fcitx::Key(FcitxKey_Left),
                                             fcitx::Key(FcitxKey_Up)};
 
-  if (key.checkKeyList(nextKeys) && candidateList->hasNext()) {
+  if ((key.checkKeyList(nextKeys) ||
+       key.checkKeyList(instance_->globalConfig().defaultNextPage())) &&
+      candidateList->hasNext()) {
     candidateList->next();
     context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
     return;
   }
 
-  if (key.checkKeyList(prevKeys) && candidateList->hasPrev()) {
+  if ((key.checkKeyList(prevKeys) ||
+       key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
+      candidateList->hasPrev()) {
     candidateList->prev();
     context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
     return;
@@ -417,14 +438,24 @@ void McBopomofoEngine::handleCandidatesState(
 
   for (const std::string& candidateStr : current->candidates) {
 #ifdef USE_LEGACY_FCITX5_API
-    fcitx::CandidateWord* candidate =
-        new DisplayOnlyCandidateWord(fcitx::Text(candidateStr));
+    fcitx::CandidateWord* candidate = new McBopomofoCandidateWord(
+        fcitx::Text(candidateStr), [this, context](std::string candidate) {
+          keyHandler_->candidateSelected(
+              candidate, [this, context](std::unique_ptr<InputState> next) {
+                enterNewState(context, std::move(next));
+              });
+        });
     // ownership of candidate is transferred to candidateList.
     candidateList->append(candidate);
 #else
     std::unique_ptr<fcitx::CandidateWord> candidate =
-        std::make_unique<fcitx::DisplayOnlyCandidateWord>(
-            fcitx::Text(candidateStr));
+        std::make_unique<McBopomofoCandidateWord>(
+            fcitx::Text(candidateStr), [this, context](std::string candidate) {
+              keyHandler_->candidateSelected(
+                  candidate, [this, context](std::unique_ptr<InputState> next) {
+                    enterNewState(context, std::move(next));
+                  });
+            });
     candidateList->append(std::move(candidate));
 #endif
   }
@@ -445,14 +476,14 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
 
 void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
                                      InputStates::NotEmpty* state) {
-  bool use_client_preedit =
+  bool useClientPreedit =
       context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
 #ifdef USE_LEGACY_FCITX5_API
-  fcitx::TextFormatFlags normalFormat{use_client_preedit
+  fcitx::TextFormatFlags normalFormat{useClientPreedit
                                           ? fcitx::TextFormatFlag::Underline
                                           : fcitx::TextFormatFlag::None};
 #else
-  fcitx::TextFormatFlags normalFormat{use_client_preedit
+  fcitx::TextFormatFlags normalFormat{useClientPreedit
                                           ? fcitx::TextFormatFlag::Underline
                                           : fcitx::TextFormatFlag::NoFlag};
 #endif
@@ -466,7 +497,7 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
   }
   preedit.setCursor(state->cursorIndex);
 
-  if (use_client_preedit) {
+  if (useClientPreedit) {
     context->inputPanel().setClientPreedit(preedit);
   } else {
     context->inputPanel().setPreedit(preedit);

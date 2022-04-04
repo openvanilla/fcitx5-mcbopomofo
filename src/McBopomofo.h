@@ -71,6 +71,11 @@ enum class SelectPhrase { BeforeCursor, AfterCursor };
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(SelectPhrase, N_("before_cursor"),
                                  N_("after_cursor"));
 
+enum class ShiftLetterKeys { DirectlytOutputUppercase, PutLowercaseToBuffer };
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(
+    ShiftLetterKeys, N_("Directly Output Uppercase Letters"),
+    N_("Put Lowercase Letters to Composing Buffer"));
+
 FCITX_CONFIGURATION(
     McBopomofoConfig,
     // Keyboard layout: standard, eten, etc.
@@ -92,8 +97,20 @@ FCITX_CONFIGURATION(
 
     // Move the cursor at the end of the selected candidate phrase.
     fcitx::Option<bool> moveCursorAfterSelection{
-        this, "moveCursorAfterSelection", _("Move cursor after selection"),
-        false};);
+        this, "MoveCursorAfterSelection", _("Move cursor after selection"),
+        false};
+
+    // ESC key clears entire composing buffer.
+    fcitx::Option<bool> escKeyClearsEntireComposingBuffer{
+        this, "EscKeyClearsEntireComposingBuffer",
+        _("ESC key clears entire composing buffer"), false};
+
+    /// Shift + letter keys.
+    fcitx::OptionWithAnnotation<ShiftLetterKeys, ShiftLetterKeysI18NAnnotation>
+        shiftLetterKeys{this, "ShiftLetterKeys", _("Shift + Letter Keys"),
+                        ShiftLetterKeys::DirectlytOutputUppercase};
+
+);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
