@@ -172,7 +172,7 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
 
   // Shift + Space
   if (key.check(FcitxKey_space, fcitx::KeyState::Shift)) {
-    if (putLowercasedLettersToComposingBuffer_) {
+    if (putLowercaseLettersToComposingBuffer_) {
       builder_->insertReadingAtCursor(" ");
       std::string evictedText = popEvictedTextAndWalk();
       auto inputtingState = buildInputtingState();
@@ -318,7 +318,7 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
 
     // Upper case letters.
     if (asciiChar >= 'A' && asciiChar <= 'Z') {
-      if (putLowercasedLettersToComposingBuffer_) {
+      if (putLowercaseLettersToComposingBuffer_) {
         unigram = std::string(kLetterPrefix) + chrStr;
         if (handlePunctuation(unigram, stateCallback, errorCallback)) {
           return true;
@@ -379,8 +379,8 @@ void KeyHandler::setMoveCursorAfterSelection(bool flag) {
   moveCursorAfterSelection_ = flag;
 }
 
-void KeyHandler::setPutLowercasedLettersToComposingBuffer(bool flag) {
-  putLowercasedLettersToComposingBuffer_ = flag;
+void KeyHandler::setPutLowercaseLettersToComposingBuffer(bool flag) {
+  putLowercaseLettersToComposingBuffer_ = flag;
 }
 
 void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {

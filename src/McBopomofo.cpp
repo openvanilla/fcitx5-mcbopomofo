@@ -162,9 +162,8 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
   keyHandler_->setEscKeyClearsEntireComposingBuffer(
       config_.escKeyClearsEntireComposingBuffer.value());
 
-  keyHandler_->setPutLowercasedLettersToComposingBuffer(
-      config_.shiftLetterKeys.value() ==
-      ShiftLetterKeys::PutLowercasedToBuffer);
+  keyHandler_->setPutLowercaseLettersToComposingBuffer(
+      config_.shiftLetterKeys.value() == ShiftLetterKeys::PutLowercaseToBuffer);
 
   languageModelLoader_->reloadUserModelsIfNeeded();
 }

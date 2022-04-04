@@ -70,11 +70,11 @@ msgid "after_cursor"
 msgstr "After the Cursor (Like MS IME)"
 
 #: src/McBopomofo.h:76
-msgid "Directly Output Uppercased Letters"
+msgid "Directly Output Uppercase Letters"
 msgstr ""
 
 #: src/McBopomofo.h:77
-msgid "Put Lowercased Letters to Composing Buffer"
+msgid "Put Lowercase Letters to Composing Buffer"
 msgstr ""
 
 #: src/McBopomofo.h:85
@@ -130,5 +130,5 @@ msgid "McBopomofo"
 msgstr ""
 
 #: src/mcbopomofo-addon.conf.in.in:4
-msgid "McBopomofo Wrapper For Fcitx"
+msgid "McBopomofo Input Method For Fcitx"
 msgstr ""

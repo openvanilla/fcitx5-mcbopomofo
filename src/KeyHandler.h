@@ -77,7 +77,7 @@ class KeyHandler {
   void setMoveCursorAfterSelection(bool flag);
 
   // Sets if we should put lowercasesd letters into the composing buffer.
-  void setPutLowercasedLettersToComposingBuffer(bool flag);
+  void setPutLowercaseLettersToComposingBuffer(bool flag);
 
   /// Sets if the ESC key clears enture composing buffer.
   void setEscKeyClearsEntireComposingBuffer(bool flag);
@@ -138,7 +138,7 @@ class KeyHandler {
 
   bool selectPhraseAfterCursorAsCandidate_;
   bool moveCursorAfterSelection_;
-  bool putLowercasedLettersToComposingBuffer_;
+  bool putLowercaseLettersToComposingBuffer_;
   bool escKeyClearsEntireComposingBuffer_;
 };
 
