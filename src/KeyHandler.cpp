@@ -105,9 +105,9 @@ static double FindHighestScore(
 
 KeyHandler::KeyHandler(
     std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel,
-    std::shared_ptr<LanguageModelLoader> languageModelLoader)
+    std::shared_ptr<UserPhraseAdder> userPhraseAdder)
     : languageModel_(std::move(languageModel)),
-      languageModelLoader_(std::move(languageModelLoader)),
+      userPhraseAdder_(std::move(userPhraseAdder)),
       userOverrideModel_(kUserOverrideModelCapacity, kObservedOverrideHalfLife),
       reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {
   builder_ = std::make_unique<Formosa::Gramambular::BlockReadingBuilder>(
@@ -229,8 +229,7 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     // See if we are in Marking state, and, if a valid mark, accept it.
     if (auto marking = dynamic_cast<InputStates::Marking*>(state)) {
       if (marking->acceptable) {
-        languageModelLoader_->addUserPhrase(marking->reading,
-                                            marking->markedText);
+        userPhraseAdder_->addUserPhrase(marking->reading, marking->markedText);
         stateCallback(buildInputtingState());
       } else {
         errorCallback();
