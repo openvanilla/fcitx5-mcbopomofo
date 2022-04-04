@@ -24,6 +24,7 @@
 #include <string>
 
 #include "KeyHandler.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace McBopomofo {
@@ -48,27 +49,161 @@ class KeyHandlerTest : public ::testing::Test {
         std::make_unique<KeyHandler>(languageModel_, userPhraseAdder_);
   }
 
+  std::vector<fcitx::Key> asciiKeys(const std::string& keyString) {
+    std::vector<fcitx::Key> keys;
+    for (const char chr : keyString) {
+      keys.emplace_back(fcitx::Key(static_cast<fcitx::KeySym>(chr)));
+    }
+    return keys;
+  }
+
+  // Given a sequence of keys, return the last state.
+  std::unique_ptr<InputState> handleKeySequence(
+      std::vector<fcitx::Key> keys, bool expectHandled = true,
+      bool expectErrorCallbackAtEnd = false) {
+    std::unique_ptr<InputState> state = std::make_unique<InputStates::Empty>();
+
+    bool handled = false;
+    bool errorCallbackInvoked = false;
+
+    for (const fcitx::Key& key : keys) {
+      errorCallbackInvoked = false;
+      handled = keyHandler_->handle(
+          key, state.get(),
+          [&state](std::unique_ptr<McBopomofo::InputState> newState) {
+            if (dynamic_cast<InputStates::EmptyIgnoringPrevious*>(
+                    newState.get()) != nullptr) {
+              // Transition required by the contract of EmptyIgnoringPrevious.
+              state = std::make_unique<InputStates::Empty>();
+            } else {
+              state = std::move(newState);
+            }
+          },
+          [&errorCallbackInvoked]() { errorCallbackInvoked = true; });
+    }
+
+    EXPECT_EQ(expectHandled, handled);
+    EXPECT_EQ(expectErrorCallbackAtEnd, errorCallbackInvoked);
+    return state;
+  }
+
   std::shared_ptr<ParselessLM> languageModel_;
   std::shared_ptr<UserPhraseAdder> userPhraseAdder_;
   std::unique_ptr<KeyHandler> keyHandler_;
 };
 
-TEST_F(KeyHandlerTest, Trivial) {
+TEST_F(KeyHandlerTest, EmptyKey_NothingHandled) {
   bool stateCallbackInvoked = false;
   bool errorCallbackInvoked = false;
-
   auto emptyState = std::make_unique<InputStates::Empty>();
-
   bool handled = keyHandler_->handle(
       fcitx::Key(), emptyState.get(),
       [&stateCallbackInvoked](std::unique_ptr<McBopomofo::InputState>) {
         stateCallbackInvoked = true;
       },
       [&errorCallbackInvoked]() { errorCallbackInvoked = true; });
-
   EXPECT_FALSE(stateCallbackInvoked);
   EXPECT_FALSE(errorCallbackInvoked);
   EXPECT_FALSE(handled);
+}
+
+TEST_F(KeyHandlerTest, EmptyPassthrough) {
+  auto endState = handleKeySequence(asciiKeys(" "), /*expectHandled=*/false);
+  auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
+  ASSERT_TRUE(emptyState != nullptr);
+}
+
+TEST_F(KeyHandlerTest, SimpleReading) {
+  auto endState = handleKeySequence(asciiKeys("1"));
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "ㄅ");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("ㄅ"));
+}
+
+TEST_F(KeyHandlerTest, SimpleReadingPlusUnhandledKey) {
+  auto keys = asciiKeys("1");
+  keys.emplace_back(fcitx::Key(FcitxKey_Up));
+  auto endState = handleKeySequence(keys, /*expectHandled=*/true,
+                                    /*expectErrorCallbackAtEnd=*/true);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "ㄅ");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("ㄅ"));
+}
+
+TEST_F(KeyHandlerTest, FullSyllable) {
+  auto endState = handleKeySequence(asciiKeys("5j/"));
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "ㄓㄨㄥ");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("ㄓㄨㄥ"));
+}
+
+TEST_F(KeyHandlerTest, FullSyllablesThenCompose) {
+  auto endState = handleKeySequence(asciiKeys("5j/ jp6"));
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "中文");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("中文"));
+}
+
+TEST_F(KeyHandlerTest, EnterCandidateState) {
+  auto endState = handleKeySequence(asciiKeys("5j/ jp6 "));
+  auto choosingCandidateState =
+      dynamic_cast<InputStates::ChoosingCandidate*>(endState.get());
+  ASSERT_TRUE(choosingCandidateState != nullptr);
+  ASSERT_EQ(choosingCandidateState->composingBuffer, "中文");
+  ASSERT_EQ(choosingCandidateState->cursorIndex, strlen("中文"));
+  EXPECT_THAT(choosingCandidateState->candidates, testing::Contains("中文"));
+}
+
+TEST_F(KeyHandlerTest, CursorMovementLeft) {
+  auto keys = asciiKeys("5j/ jp6");
+  keys.emplace_back(fcitx::Key(FcitxKey_Left));
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "中文");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("中"));
+}
+
+TEST_F(KeyHandlerTest, CursorMovementHome) {
+  auto keys = asciiKeys("5j/ jp6");
+  keys.emplace_back(fcitx::Key(FcitxKey_Home));
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "中文");
+  ASSERT_EQ(inputtingState->cursorIndex, 0);
+}
+
+TEST_F(KeyHandlerTest, SelectCandidatesBeforeCursor) {
+  auto keys = asciiKeys("5j/ jp6");
+  keys.emplace_back(fcitx::Key(FcitxKey_Left));
+  keys.emplace_back(fcitx::Key(FcitxKey_space));
+  auto endState = handleKeySequence(keys);
+  auto choosingCandidateState =
+      dynamic_cast<InputStates::ChoosingCandidate*>(endState.get());
+  ASSERT_TRUE(choosingCandidateState != nullptr);
+  ASSERT_EQ(choosingCandidateState->composingBuffer, "中文");
+  ASSERT_EQ(choosingCandidateState->cursorIndex, strlen("中"));
+  EXPECT_THAT(choosingCandidateState->candidates, testing::Contains("中"));
+}
+
+TEST_F(KeyHandlerTest, SelectCandidatesAfterCursor) {
+  keyHandler_->setSelectPhraseAfterCursorAsCandidate(true);
+
+  auto keys = asciiKeys("5j/ jp6");
+  keys.emplace_back(fcitx::Key(FcitxKey_Left));
+  keys.emplace_back(fcitx::Key(FcitxKey_space));
+  auto endState = handleKeySequence(keys);
+  auto choosingCandidateState =
+      dynamic_cast<InputStates::ChoosingCandidate*>(endState.get());
+  ASSERT_TRUE(choosingCandidateState != nullptr);
+  ASSERT_EQ(choosingCandidateState->composingBuffer, "中文");
+  ASSERT_EQ(choosingCandidateState->cursorIndex, strlen("中"));
+  EXPECT_THAT(choosingCandidateState->candidates, testing::Contains("文"));
 }
 
 }  // namespace McBopomofo
