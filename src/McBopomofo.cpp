@@ -34,6 +34,7 @@
 #include <utility>
 #include <vector>
 
+#include "Key.h"
 #include "Log.h"
 
 namespace McBopomofo {
@@ -53,6 +54,37 @@ static int64_t GetEpochNowInMicroseconds() {
           .time_since_epoch()
           .count();
   return timestamp;
+}
+
+static Key MapFcitxKey(const fcitx::Key& key) {
+  bool shiftPressed = key.states() & fcitx::KeyState::Shift;
+  if (key.isSimple()) {
+    return Key::asciiKey(key.sym(), shiftPressed);
+  }
+
+  switch (key.sym()) {
+    case FcitxKey_BackSpace:
+      return Key::asciiKey(Key::BACKSPACE, shiftPressed);
+    case FcitxKey_Return:
+      return Key::asciiKey(Key::RETURN, shiftPressed);
+    case FcitxKey_Escape:
+      return Key::asciiKey(Key::ESC, shiftPressed);
+    case FcitxKey_space:
+      // This path is taken when Shift is pressed--no longer a "simple" key.
+      return Key::asciiKey(Key::SPACE, shiftPressed);
+    case FcitxKey_Delete:
+      return Key::asciiKey(Key::DELETE, shiftPressed);
+    case FcitxKey_Left:
+      return Key::namedKey(Key::KeyName::LEFT, shiftPressed);
+    case FcitxKey_Right:
+      return Key::namedKey(Key::KeyName::RIGHT, shiftPressed);
+    case FcitxKey_Home:
+      return Key::namedKey(Key::KeyName::HOME, shiftPressed);
+    case FcitxKey_End:
+      return Key::namedKey(Key::KeyName::END, shiftPressed);
+    default:
+      return Key();
+  }
 }
 
 class McBopomofoCandidateWord : public fcitx::CandidateWord {
@@ -239,7 +271,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
   }
 
   bool accepted = keyHandler_->handle(
-      key, state_.get(),
+      MapFcitxKey(key), state_.get(),
       [this, context](std::unique_ptr<InputState> next) {
         enterNewState(context, std::move(next));
       },

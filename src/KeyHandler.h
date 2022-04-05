@@ -33,6 +33,7 @@
 
 #include "Gramambular.h"
 #include "InputState.h"
+#include "Key.h"
 #include "LanguageModelLoader.h"
 #include "Mandarin.h"
 #include "McBopomofoLM.h"
@@ -54,7 +55,7 @@ class KeyHandler {
   // a new state is entered, or errorCallback will be invoked. Returns true if
   // the key should be absorbed, signaling that the key is accepted and handled,
   // or false if the event should be let pass through.
-  bool handle(fcitx::Key key, McBopomofo::InputState* state,
+  bool handle(Key key, McBopomofo::InputState* state,
               const StateCallback& stateCallback,
               const ErrorCallback& errorCallback);
 
@@ -83,10 +84,10 @@ class KeyHandler {
   void setEscKeyClearsEntireComposingBuffer(bool flag);
 
  private:
-  bool handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
+  bool handleCursorKeys(Key key, McBopomofo::InputState* state,
                         const StateCallback& stateCallback,
                         const ErrorCallback& errorCallback);
-  bool handleDeleteKeys(fcitx::Key key, McBopomofo::InputState* state,
+  bool handleDeleteKeys(Key key, McBopomofo::InputState* state,
                         const StateCallback& stateCallback,
                         const ErrorCallback& errorCallback);
   bool handlePunctuation(const std::string& punctuationUnigramKey,

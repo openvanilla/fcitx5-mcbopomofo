@@ -49,24 +49,24 @@ class KeyHandlerTest : public ::testing::Test {
         std::make_unique<KeyHandler>(languageModel_, userPhraseAdder_);
   }
 
-  std::vector<fcitx::Key> asciiKeys(const std::string& keyString) {
-    std::vector<fcitx::Key> keys;
+  std::vector<Key> asciiKeys(const std::string& keyString) {
+    std::vector<Key> keys;
     for (const char chr : keyString) {
-      keys.emplace_back(fcitx::Key(static_cast<fcitx::KeySym>(chr)));
+      keys.emplace_back(Key::asciiKey(chr));
     }
     return keys;
   }
 
   // Given a sequence of keys, return the last state.
   std::unique_ptr<InputState> handleKeySequence(
-      std::vector<fcitx::Key> keys, bool expectHandled = true,
+      std::vector<Key> keys, bool expectHandled = true,
       bool expectErrorCallbackAtEnd = false) {
     std::unique_ptr<InputState> state = std::make_unique<InputStates::Empty>();
 
     bool handled = false;
     bool errorCallbackInvoked = false;
 
-    for (const fcitx::Key& key : keys) {
+    for (const Key& key : keys) {
       errorCallbackInvoked = false;
       handled = keyHandler_->handle(
           key, state.get(),
@@ -97,7 +97,7 @@ TEST_F(KeyHandlerTest, EmptyKey_NothingHandled) {
   bool errorCallbackInvoked = false;
   auto emptyState = std::make_unique<InputStates::Empty>();
   bool handled = keyHandler_->handle(
-      fcitx::Key(), emptyState.get(),
+      Key(), emptyState.get(),
       [&stateCallbackInvoked](std::unique_ptr<McBopomofo::InputState>) {
         stateCallbackInvoked = true;
       },
@@ -123,7 +123,7 @@ TEST_F(KeyHandlerTest, SimpleReading) {
 
 TEST_F(KeyHandlerTest, SimpleReadingPlusUnhandledKey) {
   auto keys = asciiKeys("1");
-  keys.emplace_back(fcitx::Key(FcitxKey_Up));
+  keys.emplace_back(Key::namedKey(Key::KeyName::LEFT));
   auto endState = handleKeySequence(keys, /*expectHandled=*/true,
                                     /*expectErrorCallbackAtEnd=*/true);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
@@ -160,7 +160,7 @@ TEST_F(KeyHandlerTest, EnterCandidateState) {
 
 TEST_F(KeyHandlerTest, CursorMovementLeft) {
   auto keys = asciiKeys("5j/ jp6");
-  keys.emplace_back(fcitx::Key(FcitxKey_Left));
+  keys.emplace_back(Key::namedKey(Key::KeyName::LEFT));
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
@@ -170,7 +170,7 @@ TEST_F(KeyHandlerTest, CursorMovementLeft) {
 
 TEST_F(KeyHandlerTest, CursorMovementHome) {
   auto keys = asciiKeys("5j/ jp6");
-  keys.emplace_back(fcitx::Key(FcitxKey_Home));
+  keys.emplace_back(Key::namedKey(Key::KeyName::HOME));
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
@@ -180,8 +180,8 @@ TEST_F(KeyHandlerTest, CursorMovementHome) {
 
 TEST_F(KeyHandlerTest, SelectCandidatesBeforeCursor) {
   auto keys = asciiKeys("5j/ jp6");
-  keys.emplace_back(fcitx::Key(FcitxKey_Left));
-  keys.emplace_back(fcitx::Key(FcitxKey_space));
+  keys.emplace_back(Key::namedKey(Key::KeyName::LEFT));
+  keys.emplace_back(Key::asciiKey(Key::SPACE));
   auto endState = handleKeySequence(keys);
   auto choosingCandidateState =
       dynamic_cast<InputStates::ChoosingCandidate*>(endState.get());
@@ -195,8 +195,8 @@ TEST_F(KeyHandlerTest, SelectCandidatesAfterCursor) {
   keyHandler_->setSelectPhraseAfterCursorAsCandidate(true);
 
   auto keys = asciiKeys("5j/ jp6");
-  keys.emplace_back(fcitx::Key(FcitxKey_Left));
-  keys.emplace_back(fcitx::Key(FcitxKey_space));
+  keys.emplace_back(Key::namedKey(Key::KeyName::LEFT));
+  keys.emplace_back(Key::asciiKey(Key::SPACE));
   auto endState = handleKeySequence(keys);
   auto choosingCandidateState =
       dynamic_cast<InputStates::ChoosingCandidate*>(endState.get());
