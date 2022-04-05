@@ -23,9 +23,6 @@
 
 #include "KeyHandler.h"
 
-#include <fcitx-utils/i18n.h>
-#include <fmt/format.h>
-
 #include <algorithm>
 #include <chrono>
 #include <utility>
@@ -107,9 +104,11 @@ static double FindHighestScore(
 
 KeyHandler::KeyHandler(
     std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel,
-    std::shared_ptr<UserPhraseAdder> userPhraseAdder)
+    std::shared_ptr<UserPhraseAdder> userPhraseAdder,
+    std::unique_ptr<LocalizedStrings> localizedStrings)
     : languageModel_(std::move(languageModel)),
       userPhraseAdder_(std::move(userPhraseAdder)),
+      localizedStrings_(std::move(localizedStrings)),
       userOverrideModel_(kUserOverrideModelCapacity, kObservedOverrideHalfLife),
       reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {
   builder_ = std::make_unique<Formosa::Gramambular::BlockReadingBuilder>(
@@ -568,8 +567,8 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
       const std::string& prevReading = builder_->readings()[builderCursor - 1];
       const std::string& nextReading = builder_->readings()[builderCursor];
 
-      tooltip = fmt::format(_("Cursor is between syllables {0} and {1}"),
-                            prevReading, nextReading);
+      tooltip =
+          localizedStrings_->cursorIsBetweenSyllables(prevReading, nextReading);
     }
   }
 
@@ -660,21 +659,18 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
   std::string status;
   // Validate the marking.
   if (readings.size() < kMinValidMarkingReadingCount) {
-    status = fmt::format(_("{0} syllables required"),
-                         std::to_string(kMinValidMarkingReadingCount));
+    status = localizedStrings_->syllablesRequired(kMinValidMarkingReadingCount);
   } else if (readings.size() > kMaxValidMarkingReadingCount) {
-    status = fmt::format(_("{0} syllables maximum"),
-                         std::to_string(kMaxValidMarkingReadingCount));
+    status = localizedStrings_->syllablesMaximum(kMaxValidMarkingReadingCount);
   } else if (MarkedPhraseExists(languageModel_.get(), readingValue, marked)) {
-    status = _("phrase already exists");
+    status = localizedStrings_->phraseAlreadyExists();
   } else {
-    status = _("press Enter to add the phrase");
+    status = localizedStrings_->pressEnterToAddThePhrase();
     isValid = true;
   }
 
-  std::string tooltip = fmt::format(_("Marked: {0}, syllables: {1}, {2}"),
-                                    marked, readingUiText, status);
-
+  std::string tooltip = localizedStrings_->markedWithSyllablesAndStatus(
+      marked, readingUiText, status);
   return std::make_unique<InputStates::Marking>(
       composed, composedStringCursorIndex, tooltip, beginCursorIndex, head,
       marked, tail, readingValue, isValid);

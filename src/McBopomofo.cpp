@@ -23,12 +23,12 @@
 
 #include "McBopomofo.h"
 
-#include <fcitx-utils/standardpath.h>
+#include <fcitx-utils/i18n.h>
 #include <fcitx/candidatelist.h>
 #include <fcitx/event.h>
 #include <fcitx/inputcontext.h>
-#include <fcitx/inputpanel.h>
 #include <fcitx/userinterfacemanager.h>
+#include <fmt/format.h>
 
 #include <memory>
 #include <utility>
@@ -90,8 +90,8 @@ static Key MapFcitxKey(const fcitx::Key& key) {
 class McBopomofoCandidateWord : public fcitx::CandidateWord {
  public:
   McBopomofoCandidateWord(fcitx::Text text,
-                          std::function<void(std::string)> callback)
-      : fcitx::CandidateWord(std::move(text)), callback_(callback) {}
+                          std::function<void(const std::string&)> callback)
+      : fcitx::CandidateWord(std::move(text)), callback_(std::move(callback)) {}
 
   void select(fcitx::InputContext*) const override {
     auto string = text().toStringForCommit();
@@ -102,11 +102,44 @@ class McBopomofoCandidateWord : public fcitx::CandidateWord {
   std::function<void(std::string)> callback_;
 };
 
+class KeyHandlerLocalizedString : public KeyHandler::LocalizedStrings {
+ public:
+  std::string cursorIsBetweenSyllables(
+      const std::string& prevReading, const std::string& nextReading) override {
+    return fmt::format(_("Cursor is between syllables {0} and {1}"),
+                       prevReading, nextReading);
+  }
+
+  std::string syllablesRequired(size_t syllables) override {
+    return fmt::format(_("{0} syllables required"), std::to_string(syllables));
+  }
+
+  std::string syllablesMaximum(size_t syllables) override {
+    return fmt::format(_("{0} syllables maximum"), std::to_string(syllables));
+  }
+
+  std::string phraseAlreadyExists() override {
+    return _("phrase already exists");
+  }
+
+  std::string pressEnterToAddThePhrase() override {
+    return _("press Enter to add the phrase");
+  }
+
+  std::string markedWithSyllablesAndStatus(const std::string& marked,
+                                           const std::string& readingUiText,
+                                           const std::string& status) override {
+    return fmt::format(_("Marked: {0}, syllables: {1}, {2}"), marked,
+                       readingUiText, status);
+  }
+};
+
 McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
     : instance_(instance) {
   languageModelLoader_ = std::make_shared<LanguageModelLoader>();
-  keyHandler_ = std::make_unique<KeyHandler>(languageModelLoader_->getLM(),
-                                             languageModelLoader_);
+  keyHandler_ = std::make_unique<KeyHandler>(
+      languageModelLoader_->getLM(), languageModelLoader_,
+      std::make_unique<KeyHandlerLocalizedString>());
   state_ = std::make_unique<InputStates::Empty>();
   stateCommittedTimestampMicroseconds_ = GetEpochNowInMicroseconds();
 
@@ -471,7 +504,8 @@ void McBopomofoEngine::handleCandidatesState(
   for (const std::string& candidateStr : current->candidates) {
 #ifdef USE_LEGACY_FCITX5_API
     fcitx::CandidateWord* candidate = new McBopomofoCandidateWord(
-        fcitx::Text(candidateStr), [this, context](std::string candidate) {
+        fcitx::Text(candidateStr),
+        [this, context](const std::string& candidate) {
           keyHandler_->candidateSelected(
               candidate, [this, context](std::unique_ptr<InputState> next) {
                 enterNewState(context, std::move(next));
@@ -482,7 +516,8 @@ void McBopomofoEngine::handleCandidatesState(
 #else
     std::unique_ptr<fcitx::CandidateWord> candidate =
         std::make_unique<McBopomofoCandidateWord>(
-            fcitx::Text(candidateStr), [this, context](std::string candidate) {
+            fcitx::Text(candidateStr),
+            [this, context](const std::string& candidate) {
               keyHandler_->candidateSelected(
                   candidate, [this, context](std::unique_ptr<InputState> next) {
                     enterNewState(context, std::move(next));

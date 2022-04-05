@@ -37,6 +37,35 @@ class MockUserPhraseAdder : public UserPhraseAdder {
                      const std::string_view&) override {}
 };
 
+class MockLocalizedString : public KeyHandler::LocalizedStrings {
+ public:
+  std::string cursorIsBetweenSyllables(
+      const std::string& prevReading, const std::string& nextReading) override {
+    return std::string("between ") + prevReading + " and " + nextReading;
+  }
+
+  std::string syllablesRequired(size_t syllables) override {
+    return std::to_string(syllables) + " syllables required";
+  }
+
+  std::string syllablesMaximum(size_t syllables) override {
+    return std::to_string(syllables) + " syllables maximum";
+  }
+
+  std::string phraseAlreadyExists() override { return "phrase already exists"; }
+
+  std::string pressEnterToAddThePhrase() override {
+    return "press Enter to add the phrase";
+  }
+
+  std::string markedWithSyllablesAndStatus(const std::string& marked,
+                                           const std::string& readingUiText,
+                                           const std::string& status) override {
+    return std::string("Marked: ") + marked + ", syllables: " + readingUiText +
+           ", " + status;
+  }
+};
+
 class KeyHandlerTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -46,7 +75,8 @@ class KeyHandlerTest : public ::testing::Test {
     userPhraseAdder_ = std::make_shared<MockUserPhraseAdder>();
 
     keyHandler_ =
-        std::make_unique<KeyHandler>(languageModel_, userPhraseAdder_);
+        std::make_unique<KeyHandler>(languageModel_, userPhraseAdder_,
+                                     std::make_unique<MockLocalizedString>());
   }
 
   std::vector<Key> asciiKeys(const std::string& keyString) {

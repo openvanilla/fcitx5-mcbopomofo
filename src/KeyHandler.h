@@ -24,8 +24,6 @@
 #ifndef SRC_KEYHANDLER_H_
 #define SRC_KEYHANDLER_H_
 
-#include <fcitx/inputmethodengine.h>
-
 #include <functional>
 #include <memory>
 #include <string>
@@ -43,9 +41,12 @@ namespace McBopomofo {
 
 class KeyHandler {
  public:
+  class LocalizedStrings;
+
   explicit KeyHandler(
       std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel,
-      std::shared_ptr<UserPhraseAdder> userPhraseAdder);
+      std::shared_ptr<UserPhraseAdder> userPhraseAdder,
+      std::unique_ptr<LocalizedStrings> localizedStrings);
 
   using StateCallback =
       std::function<void(std::unique_ptr<McBopomofo::InputState>)>;
@@ -129,6 +130,7 @@ class KeyHandler {
 
   std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel_;
   std::shared_ptr<UserPhraseAdder> userPhraseAdder_;
+  std::unique_ptr<LocalizedStrings> localizedStrings_;
 
   UserOverrideModel userOverrideModel_;
   Formosa::Mandarin::BopomofoReadingBuffer reading_;
@@ -141,6 +143,31 @@ class KeyHandler {
   bool moveCursorAfterSelection_;
   bool putLowercaseLettersToComposingBuffer_;
   bool escKeyClearsEntireComposingBuffer_;
+
+ public:
+  // Localization helper. We use dependency injection, that is, passing an
+  // instance of the class when constructing KeyHandler, so that KeyHandler
+  // itself is not concerned with how localization is implemented.
+  class LocalizedStrings {
+   public:
+    virtual ~LocalizedStrings() = default;
+
+    // Reference string: "Cursor is between syllables {0} and {1}"
+    virtual std::string cursorIsBetweenSyllables(
+        const std::string& prevReading, const std::string& nextReading) = 0;
+    // Reference string: "{0} syllables required"
+    virtual std::string syllablesRequired(size_t syllables) = 0;
+    // Reference string: "{0} syllables maximum"
+    virtual std::string syllablesMaximum(size_t syllables) = 0;
+    // Reference string: "phrase already exists"
+    virtual std::string phraseAlreadyExists() = 0;
+    // Reference string: "press Enter to add the phrase"
+    virtual std::string pressEnterToAddThePhrase() = 0;
+    // Reference string: "Marked: {0}, syllables: {1}, {2}"
+    virtual std::string markedWithSyllablesAndStatus(
+        const std::string& marked, const std::string& readingUiText,
+        const std::string& status) = 0;
+  };
 };
 
 }  // namespace McBopomofo
