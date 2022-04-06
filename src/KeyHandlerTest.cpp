@@ -122,7 +122,7 @@ class KeyHandlerTest : public ::testing::Test {
   std::unique_ptr<KeyHandler> keyHandler_;
 };
 
-TEST_F(KeyHandlerTest, EmptyKey_NothingHandled) {
+TEST_F(KeyHandlerTest, EmptyKeyNotHandled) {
   bool stateCallbackInvoked = false;
   bool errorCallbackInvoked = false;
   auto emptyState = std::make_unique<InputStates::Empty>();
@@ -234,6 +234,39 @@ TEST_F(KeyHandlerTest, SelectCandidatesAfterCursor) {
   ASSERT_EQ(choosingCandidateState->composingBuffer, "中文");
   ASSERT_EQ(choosingCandidateState->cursorIndex, strlen("中"));
   EXPECT_THAT(choosingCandidateState->candidates, testing::Contains("文"));
+}
+
+TEST_F(KeyHandlerTest, UppercaseLetterCommitComposingBufferByDefault) {
+  auto endState = handleKeySequence(asciiKeys("jp6A"));
+  auto committingState = dynamic_cast<InputStates::Committing*>(endState.get());
+  ASSERT_TRUE(committingState != nullptr);
+  // "文" was already committed, so only A is committed.
+  ASSERT_EQ(committingState->text, "A");
+}
+
+TEST_F(KeyHandlerTest, UppercaseLetterNotHandledIfComposingBufferIsEmpty) {
+  auto endState = handleKeySequence(asciiKeys("A"), /*expectHandled=*/false);
+  auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
+  ASSERT_TRUE(emptyState != nullptr);
+}
+
+TEST_F(KeyHandlerTest, UppercaseLetterConvertedToLowercaseInComposingBuffer) {
+  keyHandler_->setPutLowercaseLettersToComposingBuffer(true);
+  auto endState = handleKeySequence(asciiKeys("jp6A"));
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "文a");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("文a"));
+}
+
+TEST_F(KeyHandlerTest,
+       UppercaseLetterConvertedToLowercaseIfComposingBufferIsEmpty) {
+  keyHandler_->setPutLowercaseLettersToComposingBuffer(true);
+  auto endState = handleKeySequence(asciiKeys("A"));
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "a");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("a"));
 }
 
 }  // namespace McBopomofo
