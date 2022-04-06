@@ -99,7 +99,7 @@ class McBopomofoCandidateWord : public fcitx::CandidateWord {
   }
 
  private:
-  std::function<void(std::string)> callback_;
+  std::function<void(const std::string&)> callback_;
 };
 
 class KeyHandlerLocalizedString : public KeyHandler::LocalizedStrings {

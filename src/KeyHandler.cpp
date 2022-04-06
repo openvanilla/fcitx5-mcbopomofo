@@ -232,6 +232,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     return handleCursorKeys(key, state, stateCallback, errorCallback);
   }
 
+  // Backspace and Del.
   if (key.isDeleteKeys()) {
     return handleDeleteKeys(key, state, stateCallback, errorCallback);
   }

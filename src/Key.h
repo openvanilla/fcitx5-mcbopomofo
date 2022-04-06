@@ -41,23 +41,25 @@ struct Key {
   static constexpr char SPACE = 32;
   static constexpr char DELETE = 127;
 
-  char ascii = 0;
-  KeyName name = KeyName::UNKNOWN;
+  const char ascii;
+  const KeyName name;
 
   // Note that `ascii` takes precedence. If `ascii` is an uppercase letter or a
   // punctuation symbol produced via a shift combination, ascii is set to a
   // non-zero value and `shiftPressed` is always false. On the other hand,
   // "complex" keys such as Shift-Space will see both `ascii` and `shiftPressed`
   // set, since `ascii` alone is not sufficient to represent the key.
-  bool shiftPressed = false;
+  const bool shiftPressed;
+
+  Key(char c = 0, KeyName n = KeyName::UNKNOWN, bool isShift = false)
+      : ascii(c), name(n), shiftPressed(isShift) {}
 
   static Key asciiKey(char c, bool shiftPressed = false) {
-    return Key{
-        .ascii = c, .name = KeyName::ASCII, .shiftPressed = shiftPressed};
+    return Key(c, KeyName::ASCII, shiftPressed);
   }
 
   static Key namedKey(KeyName name, bool shiftPressed = false) {
-    return Key{.ascii = 0, .name = name, shiftPressed = shiftPressed};
+    return Key(0, name, shiftPressed);
   }
 
   // Regardless of the shift state.
