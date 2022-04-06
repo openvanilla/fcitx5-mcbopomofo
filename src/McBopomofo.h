@@ -71,10 +71,10 @@ enum class SelectPhrase { BeforeCursor, AfterCursor };
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(SelectPhrase, N_("before_cursor"),
                                  N_("after_cursor"));
 
-enum class ShiftLetterKeys { DirectlytOutputUppercase, PutLowercaseToBuffer };
-FCITX_CONFIG_ENUM_NAME_WITH_I18N(
-    ShiftLetterKeys, N_("Directly Output Uppercase Letters"),
-    N_("Put Lowercase Letters to Composing Buffer"));
+enum class ShiftLetterKeys { DirectlyOutputUppercase, PutLowercaseToBuffer };
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftLetterKeys,
+                                 N_("directly_output_uppercase"),
+                                 N_("put_lowercase_to_buffer"));
 
 FCITX_CONFIGURATION(
     McBopomofoConfig,
@@ -105,10 +105,10 @@ FCITX_CONFIGURATION(
         this, "EscKeyClearsEntireComposingBuffer",
         _("ESC key clears entire composing buffer"), false};
 
-    /// Shift + letter keys.
+    // Shift + letter keys.
     fcitx::OptionWithAnnotation<ShiftLetterKeys, ShiftLetterKeysI18NAnnotation>
         shiftLetterKeys{this, "ShiftLetterKeys", _("Shift + Letter Keys"),
-                        ShiftLetterKeys::DirectlytOutputUppercase};
+                        ShiftLetterKeys::DirectlyOutputUppercase};
 
 );
 

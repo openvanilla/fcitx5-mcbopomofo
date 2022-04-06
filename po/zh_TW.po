@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-05 00:08-0700\n"
+"POT-Creation-Date: 2022-04-05 23:41-0700\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -94,11 +94,11 @@ msgid "after_cursor"
 msgstr "游標後面（像微軟新注音）"
 
 #: src/McBopomofo.h:76
-msgid "Directly Output Uppercase Letters"
+msgid "directly_output_uppercase"
 msgstr "直接輸入大寫字母"
 
 #: src/McBopomofo.h:77
-msgid "Put Lowercase Letters to Composing Buffer"
+msgid "put_lowercase_to_buffer"
 msgstr "在輸入緩衝區中輸入小寫字母"
 
 #: src/McBopomofo.h:85

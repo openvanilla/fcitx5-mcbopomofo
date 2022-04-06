@@ -6,7 +6,7 @@ xgettext \
 	-k_ \
 	-kN_ \
 	-o po/fcitx5-mcbopomofo.pot \
-    src/McBopomofo.cpp src/McBopomofo.h src/KeyHandler.cpp src/KeyHandler.h
+    src/McBopomofo.cpp src/McBopomofo.h
 
 xgettext \
 	--package-name=fcitx5-mcbopomofo \

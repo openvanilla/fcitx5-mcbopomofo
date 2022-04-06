@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-05 00:08-0700\n"
+"POT-Creation-Date: 2022-04-05 23:41-0700\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -94,12 +94,12 @@ msgid "after_cursor"
 msgstr "After the Cursor (Like MS IME)"
 
 #: src/McBopomofo.h:76
-msgid "Directly Output Uppercase Letters"
-msgstr ""
+msgid "directly_output_uppercase"
+msgstr "Directly Output Uppercase Letters"
 
 #: src/McBopomofo.h:77
-msgid "Put Lowercase Letters to Composing Buffer"
-msgstr ""
+msgid "put_lowercase_to_buffer"
+msgstr "Put Lowercase Letters to Composing Buffer"
 
 #: src/McBopomofo.h:85
 msgid "Bopomofo Keyboard Layout"

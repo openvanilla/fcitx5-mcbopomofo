@@ -311,20 +311,25 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     if (simpleAscii >= 'A' && simpleAscii <= 'Z') {
       if (putLowercaseLettersToComposingBuffer_) {
         unigram = std::string(kLetterPrefix) + chrStr;
-        if (handlePunctuation(unigram, stateCallback, errorCallback)) {
-          return true;
-        }
+
+        // Ignore return value, since we always return true below.
+        handlePunctuation(unigram, stateCallback, errorCallback);
       } else {
-        if (builder_->length()) {
-          auto inputtingState = buildInputtingState();
-          // Steal the composingBuffer built by the inputting state.
-          auto committingState = std::make_unique<InputStates::Committing>(
-              inputtingState->composingBuffer);
-          stateCallback(std::move(committingState));
+        // If current state is *not* NonEmpty, it must be Empty.
+        if (maybeNotEmptyState == nullptr) {
+          // We don't need to handle this key.
+          return false;
         }
-        auto committingState =
-            std::make_unique<InputStates::Committing>(chrStr);
+
+        // First, commit what's already in the composing buffer.
+        auto inputtingState = buildInputtingState();
+        // Steal the composingBuffer built by the inputting state.
+        auto committingState = std::make_unique<InputStates::Committing>(
+            inputtingState->composingBuffer);
         stateCallback(std::move(committingState));
+
+        // Then we commit that single character.
+        stateCallback(std::make_unique<InputStates::Committing>(chrStr));
         reset();
       }
       return true;
