@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-04 03:20+0800\n"
+"POT-Creation-Date: 2022-04-05 23:41-0700\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,11 +17,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/McBopomofo.cpp:76
+#: src/McBopomofo.cpp:109
+msgid "Cursor is between syllables {0} and {1}"
+msgstr ""
+
+#: src/McBopomofo.cpp:114
+msgid "{0} syllables required"
+msgstr ""
+
+#: src/McBopomofo.cpp:118
+msgid "{0} syllables maximum"
+msgstr ""
+
+#: src/McBopomofo.cpp:122
+msgid "phrase already exists"
+msgstr ""
+
+#: src/McBopomofo.cpp:126
+msgid "press Enter to add the phrase"
+msgstr ""
+
+#: src/McBopomofo.cpp:132
+msgid "Marked: {0}, syllables: {1}, {2}"
+msgstr ""
+
+#: src/McBopomofo.cpp:147
 msgid "Edit User Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:85
+#: src/McBopomofo.cpp:156
 msgid "Edit Excluded Phrases"
 msgstr ""
 
@@ -70,12 +94,12 @@ msgid "after_cursor"
 msgstr "After the Cursor (Like MS IME)"
 
 #: src/McBopomofo.h:76
-msgid "Directly Output Uppercase Letters"
-msgstr ""
+msgid "directly_output_uppercase"
+msgstr "Directly Output Uppercase Letters"
 
 #: src/McBopomofo.h:77
-msgid "Put Lowercase Letters to Composing Buffer"
-msgstr ""
+msgid "put_lowercase_to_buffer"
+msgstr "Put Lowercase Letters to Composing Buffer"
 
 #: src/McBopomofo.h:85
 msgid "Bopomofo Keyboard Layout"
@@ -99,30 +123,6 @@ msgstr ""
 
 #: src/McBopomofo.h:110
 msgid "Shift + Letter Keys"
-msgstr ""
-
-#: src/KeyHandler.cpp:581
-msgid "Cursor is between syllables {0} and {1}"
-msgstr ""
-
-#: src/KeyHandler.cpp:673
-msgid "{0} syllables required"
-msgstr ""
-
-#: src/KeyHandler.cpp:676
-msgid "{0} syllables maximum"
-msgstr ""
-
-#: src/KeyHandler.cpp:679
-msgid "phrase already exists"
-msgstr ""
-
-#: src/KeyHandler.cpp:681
-msgid "press Enter to add the phrase"
-msgstr ""
-
-#: src/KeyHandler.cpp:685
-msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3

@@ -23,9 +23,6 @@
 
 #include "KeyHandler.h"
 
-#include <fcitx-utils/i18n.h>
-#include <fmt/format.h>
-
 #include <algorithm>
 #include <chrono>
 #include <utility>
@@ -35,7 +32,8 @@
 namespace McBopomofo {
 
 constexpr char kJoinSeparator[] = "-";
-constexpr char kPunctuationListKey[] = "_punctuation_list";
+constexpr char kPunctuationListKey = '`';  // Hit the key to bring up the list.
+constexpr char kPunctuationListUnigramKey[] = "_punctuation_list";
 constexpr char kPunctuationKeyPrefix[] = "_punctuation_";
 constexpr char kLetterPrefix[] = "_letter_";
 constexpr size_t kMinValidMarkingReadingCount = 2;
@@ -106,9 +104,11 @@ static double FindHighestScore(
 
 KeyHandler::KeyHandler(
     std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel,
-    std::shared_ptr<UserPhraseAdder> userPhraseAdder)
+    std::shared_ptr<UserPhraseAdder> userPhraseAdder,
+    std::unique_ptr<LocalizedStrings> localizedStrings)
     : languageModel_(std::move(languageModel)),
       userPhraseAdder_(std::move(userPhraseAdder)),
+      localizedStrings_(std::move(localizedStrings)),
       userOverrideModel_(kUserOverrideModelCapacity, kObservedOverrideHalfLife),
       reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {
   builder_ = std::make_unique<Formosa::Gramambular::BlockReadingBuilder>(
@@ -116,15 +116,16 @@ KeyHandler::KeyHandler(
   builder_->setJoinSeparator(kJoinSeparator);
 }
 
-bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
+bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                         const StateCallback& stateCallback,
                         const ErrorCallback& errorCallback) {
-  // key.isSimple() is true => key.sym() guaranteed to be printable ASCII.
-  char asciiChar = key.isSimple() ? key.sym() : 0;
+  // From Key's definition, if shiftPressed is true, it can't be a simple key
+  // that can be represented by ASCII.
+  char simpleAscii = key.shiftPressed ? 0 : key.ascii;
 
   // See if it's valid BPMF reading.
-  if (reading_.isValidKey(asciiChar)) {
-    reading_.combineKey(asciiChar);
+  if (reading_.isValidKey(simpleAscii)) {
+    reading_.combineKey(simpleAscii);
 
     // If asciiChar does not lead to a tone marker, we are done. Tone marker
     // would lead to composing of the reading, which is handled after this.
@@ -138,7 +139,7 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
   // not empty, and space is pressed.
   bool shouldComposeReading =
       reading_.hasToneMarker() ||
-      (!reading_.isEmpty() && key.check(FcitxKey_space));
+      (!reading_.isEmpty() && simpleAscii == Key::SPACE);
 
   if (shouldComposeReading) {
     std::string syllable = reading_.syllable().composedString();
@@ -170,8 +171,8 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     return true;
   }
 
-  // Shift + Space
-  if (key.check(FcitxKey_space, fcitx::KeyState::Shift)) {
+  // Shift + Space.
+  if (key.ascii == Key::SPACE && key.shiftPressed) {
     if (putLowercaseLettersToComposingBuffer_) {
       builder_->insertReadingAtCursor(" ");
       std::string evictedText = popEvictedTextAndWalk();
@@ -195,14 +196,14 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
 
   // Space hit: see if we should enter the candidate choosing state.
   auto maybeNotEmptyState = dynamic_cast<InputStates::NotEmpty*>(state);
-  if (key.check(FcitxKey_space) && maybeNotEmptyState != nullptr &&
+  if (simpleAscii == Key::SPACE && maybeNotEmptyState != nullptr &&
       reading_.isEmpty()) {
     stateCallback(buildChoosingCandidateState(maybeNotEmptyState));
     return true;
   }
 
   // Esc hit.
-  if (key.check(FcitxKey_Escape)) {
+  if (simpleAscii == Key::ESC) {
     if (maybeNotEmptyState == nullptr) {
       return false;
     }
@@ -227,25 +228,17 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
   }
 
   // Cursor keys.
-  auto shift = fcitx::KeyStates{fcitx::KeyState::Shift};
-  static std::array<fcitx::Key, 8> cursorKeys{
-      fcitx::Key(FcitxKey_Left),        fcitx::Key(FcitxKey_Right),
-      fcitx::Key(FcitxKey_Home),        fcitx::Key(FcitxKey_End),
-      fcitx::Key(FcitxKey_Left, shift), fcitx::Key(FcitxKey_Right, shift),
-      fcitx::Key(FcitxKey_Home, shift), fcitx::Key(FcitxKey_End, shift)};
-  if (key.checkKeyList(cursorKeys)) {
+  if (key.isCursorKeys()) {
     return handleCursorKeys(key, state, stateCallback, errorCallback);
   }
 
   // Backspace and Del.
-  static std::array<fcitx::Key, 2> deleteKeys{fcitx::Key(FcitxKey_BackSpace),
-                                              fcitx::Key(FcitxKey_Delete)};
-  if (key.checkKeyList(deleteKeys)) {
+  if (key.isDeleteKeys()) {
     return handleDeleteKeys(key, state, stateCallback, errorCallback);
   }
 
   // Enter.
-  if (key.check(FcitxKey_Return)) {
+  if (simpleAscii == Key::RETURN) {
     if (maybeNotEmptyState == nullptr) {
       return false;
     }
@@ -278,10 +271,10 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
   }
 
   // Punctuation key: backtick or grave accent.
-  if (key.check(FcitxKey_grave) &&
-      languageModel_->hasUnigramsForKey(kPunctuationListKey)) {
+  if (simpleAscii == kPunctuationListKey &&
+      languageModel_->hasUnigramsForKey(kPunctuationListUnigramKey)) {
     if (reading_.isEmpty()) {
-      builder_->insertReadingAtCursor(kPunctuationListKey);
+      builder_->insertReadingAtCursor(kPunctuationListUnigramKey);
 
       std::string evictedText = popEvictedTextAndWalk();
 
@@ -298,8 +291,8 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     return true;
   }
 
-  if (asciiChar != 0) {
-    std::string chrStr(1, asciiChar);
+  if (simpleAscii != 0) {
+    std::string chrStr(1, simpleAscii);
 
     // Bopomofo layout-specific punctuation handling.
     std::string unigram = std::string(kPunctuationKeyPrefix) +
@@ -316,23 +309,28 @@ bool KeyHandler::handle(fcitx::Key key, McBopomofo::InputState* state,
     }
 
     // Upper case letters.
-    if (asciiChar >= 'A' && asciiChar <= 'Z') {
+    if (simpleAscii >= 'A' && simpleAscii <= 'Z') {
       if (putLowercaseLettersToComposingBuffer_) {
         unigram = std::string(kLetterPrefix) + chrStr;
-        if (handlePunctuation(unigram, stateCallback, errorCallback)) {
-          return true;
-        }
+
+        // Ignore return value, since we always return true below.
+        handlePunctuation(unigram, stateCallback, errorCallback);
       } else {
-        if (builder_->length()) {
-          auto inputtingState = buildInputtingState();
-          // Steal the composingBuffer built by the inputting state.
-          auto committingState = std::make_unique<InputStates::Committing>(
-              inputtingState->composingBuffer);
-          stateCallback(std::move(committingState));
+        // If current state is *not* NonEmpty, it must be Empty.
+        if (maybeNotEmptyState == nullptr) {
+          // We don't need to handle this key.
+          return false;
         }
-        auto committingState =
-            std::make_unique<InputStates::Committing>(chrStr);
+
+        // First, commit what's already in the composing buffer.
+        auto inputtingState = buildInputtingState();
+        // Steal the composingBuffer built by the inputting state.
+        auto committingState = std::make_unique<InputStates::Committing>(
+            inputtingState->composingBuffer);
         stateCallback(std::move(committingState));
+
+        // Then we commit that single character.
+        stateCallback(std::make_unique<InputStates::Committing>(chrStr));
         reset();
       }
       return true;
@@ -386,7 +384,7 @@ void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
   escKeyClearsEntireComposingBuffer_ = flag;
 }
 
-bool KeyHandler::handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
+bool KeyHandler::handleCursorKeys(Key key, McBopomofo::InputState* state,
                                   const StateCallback& stateCallback,
                                   const ErrorCallback& errorCallback) {
   if (dynamic_cast<InputStates::Inputting*>(state) == nullptr &&
@@ -406,24 +404,24 @@ bool KeyHandler::handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
   }
 
   bool isValidMove = false;
-  switch (key.sym()) {
-    case FcitxKey_Left:
+  switch (key.name) {
+    case Key::KeyName::LEFT:
       if (builder_->cursorIndex() > 0) {
         builder_->setCursorIndex(builder_->cursorIndex() - 1);
         isValidMove = true;
       }
       break;
-    case FcitxKey_Right:
+    case Key::KeyName::RIGHT:
       if (builder_->cursorIndex() < builder_->length()) {
         builder_->setCursorIndex(builder_->cursorIndex() + 1);
         isValidMove = true;
       }
       break;
-    case FcitxKey_Home:
+    case Key::KeyName::HOME:
       builder_->setCursorIndex(0);
       isValidMove = true;
       break;
-    case FcitxKey_End:
+    case Key::KeyName::END:
       builder_->setCursorIndex(builder_->length());
       isValidMove = true;
       break;
@@ -436,8 +434,7 @@ bool KeyHandler::handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
     errorCallback();
   }
 
-  if (key.states() & fcitx::KeyState::Shift &&
-      builder_->cursorIndex() != markBeginCursorIndex) {
+  if (key.shiftPressed && builder_->cursorIndex() != markBeginCursorIndex) {
     stateCallback(buildMarkingState(markBeginCursorIndex));
   } else {
     stateCallback(buildInputtingState());
@@ -445,7 +442,7 @@ bool KeyHandler::handleCursorKeys(fcitx::Key key, McBopomofo::InputState* state,
   return true;
 }
 
-bool KeyHandler::handleDeleteKeys(fcitx::Key key, McBopomofo::InputState* state,
+bool KeyHandler::handleDeleteKeys(Key key, McBopomofo::InputState* state,
                                   const StateCallback& stateCallback,
                                   const ErrorCallback& errorCallback) {
   if (dynamic_cast<InputStates::NotEmpty*>(state) == nullptr) {
@@ -455,10 +452,10 @@ bool KeyHandler::handleDeleteKeys(fcitx::Key key, McBopomofo::InputState* state,
   if (reading_.isEmpty()) {
     bool isValidDelete = false;
 
-    if (key.check(FcitxKey_BackSpace) && builder_->cursorIndex() > 0) {
+    if (key.ascii == Key::BACKSPACE && builder_->cursorIndex() > 0) {
       builder_->deleteReadingBeforeCursor();
       isValidDelete = true;
-    } else if (key.check(FcitxKey_Delete) &&
+    } else if (key.ascii == Key::DELETE &&
                builder_->cursorIndex() < builder_->length()) {
       builder_->deleteReadingAfterCursor();
       isValidDelete = true;
@@ -470,7 +467,7 @@ bool KeyHandler::handleDeleteKeys(fcitx::Key key, McBopomofo::InputState* state,
     }
     walk();
   } else {
-    if (key.check(FcitxKey_BackSpace)) {
+    if (key.ascii == Key::BACKSPACE) {
       reading_.backspace();
     } else {
       // Del not supported when bopomofo reading is active.
@@ -576,8 +573,8 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
       const std::string& prevReading = builder_->readings()[builderCursor - 1];
       const std::string& nextReading = builder_->readings()[builderCursor];
 
-      tooltip = fmt::format(_("Cursor is between syllables {0} and {1}"),
-                            prevReading, nextReading);
+      tooltip =
+          localizedStrings_->cursorIsBetweenSyllables(prevReading, nextReading);
     }
   }
 
@@ -668,21 +665,18 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
   std::string status;
   // Validate the marking.
   if (readings.size() < kMinValidMarkingReadingCount) {
-    status = fmt::format(_("{0} syllables required"),
-                         std::to_string(kMinValidMarkingReadingCount));
+    status = localizedStrings_->syllablesRequired(kMinValidMarkingReadingCount);
   } else if (readings.size() > kMaxValidMarkingReadingCount) {
-    status = fmt::format(_("{0} syllables maximum"),
-                         std::to_string(kMaxValidMarkingReadingCount));
+    status = localizedStrings_->syllablesMaximum(kMaxValidMarkingReadingCount);
   } else if (MarkedPhraseExists(languageModel_.get(), readingValue, marked)) {
-    status = _("phrase already exists");
+    status = localizedStrings_->phraseAlreadyExists();
   } else {
-    status = _("press Enter to add the phrase");
+    status = localizedStrings_->pressEnterToAddThePhrase();
     isValid = true;
   }
 
-  std::string tooltip = fmt::format(_("Marked: {0}, syllables: {1}, {2}"),
-                                    marked, readingUiText, status);
-
+  std::string tooltip = localizedStrings_->markedWithSyllablesAndStatus(
+      marked, readingUiText, status);
   return std::make_unique<InputStates::Marking>(
       composed, composedStringCursorIndex, tooltip, beginCursorIndex, head,
       marked, tail, readingValue, isValid);

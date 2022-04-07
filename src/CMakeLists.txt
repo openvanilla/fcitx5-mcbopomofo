@@ -7,7 +7,7 @@ set(MCBOPOMOFO_LIB_SOURCES
  KeyHandler.cpp
  LanguageModelLoader.cpp
  UTF8Helper.cpp
- Log.cpp
+ Log.cpp  # Log is part of McBopomofoLib to facilitate debugging via logging.
  Engine/KeyValueBlobReader.cpp 
  Engine/McBopomofoLM.cpp
  Engine/ParselessLM.cpp
@@ -24,9 +24,8 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cmake")
 
 add_library(McBopomofoLib STATIC ${MCBOPOMOFO_LIB_SOURCES})
-target_include_directories(McBopomofoLib PRIVATE BEFORE Fcitx5::Core fmt::fmt)
-target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Core fmt::fmt)
-set_target_properties(McBopomofoLib PROPERTIES PREFIX "")
+target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils)
+target_include_directories(McBopomofoLib PRIVATE Fcitx5::Utils)
 target_compile_definitions(McBopomofoLib PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 
 include_directories(Engine)
@@ -40,8 +39,8 @@ if (USE_LEGACY_FCITX5_API)
     add_compile_definitions(mcbopomofo USE_LEGACY_FCITX5_API=1)
 endif()
 # target_compile_options(mcbopomofo PRIVATE -Wall -Wextra)
-target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core McBopomofoLib)
-target_include_directories(mcbopomofo PRIVATE Fcitx5::Core)
+target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core McBopomofoLib fmt::fmt)
+target_include_directories(mcbopomofo PRIVATE Fcitx5::Core fmt::fmt)
 set_target_properties(mcbopomofo PROPERTIES PREFIX "")
 target_compile_definitions(mcbopomofo PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 install(TARGETS mcbopomofo DESTINATION "${FCITX_INSTALL_LIBDIR}/fcitx5")

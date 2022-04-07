@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-04 03:20+0800\n"
+"POT-Creation-Date: 2022-04-05 23:41-0700\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,11 +17,35 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/McBopomofo.cpp:76
+#: src/McBopomofo.cpp:109
+msgid "Cursor is between syllables {0} and {1}"
+msgstr "游標在「{0}」與「{1}」之間"
+
+#: src/McBopomofo.cpp:114
+msgid "{0} syllables required"
+msgstr "至少需要選取{0}個字"
+
+#: src/McBopomofo.cpp:118
+msgid "{0} syllables maximum"
+msgstr "最多只能選取{0}個字"
+
+#: src/McBopomofo.cpp:122
+msgid "phrase already exists"
+msgstr "詞庫已經有這個詞"
+
+#: src/McBopomofo.cpp:126
+msgid "press Enter to add the phrase"
+msgstr "請按 Enter 加入自訂詞庫"
+
+#: src/McBopomofo.cpp:132
+msgid "Marked: {0}, syllables: {1}, {2}"
+msgstr "選取了「{0}」，注音「{1}」：{2}"
+
+#: src/McBopomofo.cpp:147
 msgid "Edit User Phrases"
 msgstr "編輯使用者詞彙"
 
-#: src/McBopomofo.cpp:85
+#: src/McBopomofo.cpp:156
 msgid "Edit Excluded Phrases"
 msgstr "編輯排除的詞彙"
 
@@ -70,11 +94,11 @@ msgid "after_cursor"
 msgstr "游標後面（像微軟新注音）"
 
 #: src/McBopomofo.h:76
-msgid "Directly Output Uppercase Letters"
+msgid "directly_output_uppercase"
 msgstr "直接輸入大寫字母"
 
 #: src/McBopomofo.h:77
-msgid "Put Lowercase Letters to Composing Buffer"
+msgid "put_lowercase_to_buffer"
 msgstr "在輸入緩衝區中輸入小寫字母"
 
 #: src/McBopomofo.h:85
@@ -100,30 +124,6 @@ msgstr "ESC 按鍵清除輸入緩衝區的所有內容"
 #: src/McBopomofo.h:110
 msgid "Shift + Letter Keys"
 msgstr "Shift + 字母按鍵"
-
-#: src/KeyHandler.cpp:581
-msgid "Cursor is between syllables {0} and {1}"
-msgstr "游標在「{0}」與「{1}」之間"
-
-#: src/KeyHandler.cpp:673
-msgid "{0} syllables required"
-msgstr "至少需要選取{0}個字"
-
-#: src/KeyHandler.cpp:676
-msgid "{0} syllables maximum"
-msgstr "最多只能選取{0}個字"
-
-#: src/KeyHandler.cpp:679
-msgid "phrase already exists"
-msgstr "詞庫已經有這個詞"
-
-#: src/KeyHandler.cpp:681
-msgid "press Enter to add the phrase"
-msgstr "請按 Enter 加入自訂詞庫"
-
-#: src/KeyHandler.cpp:685
-msgid "Marked: {0}, syllables: {1}, {2}"
-msgstr "選取了「{0}」，注音「{1}」：{2}"
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
 msgid "McBopomofo"
