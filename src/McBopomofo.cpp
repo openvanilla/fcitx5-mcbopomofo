@@ -57,10 +57,11 @@ static int64_t GetEpochNowInMicroseconds() {
 }
 
 static Key MapFcitxKey(const fcitx::Key& key) {
-  bool shiftPressed = key.states() & fcitx::KeyState::Shift;
   if (key.isSimple()) {
-    return Key::asciiKey(key.sym(), shiftPressed);
+    return Key::asciiKey(key.sym(), false);
   }
+
+  bool shiftPressed = key.states() & fcitx::KeyState::Shift;
 
   switch (key.sym()) {
     case FcitxKey_BackSpace:
