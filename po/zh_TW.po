@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-05 23:41-0700\n"
+"POT-Creation-Date: 2022-04-07 20:06-0700\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,35 +17,35 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/McBopomofo.cpp:109
+#: src/McBopomofo.cpp:110
 msgid "Cursor is between syllables {0} and {1}"
 msgstr "游標在「{0}」與「{1}」之間"
 
-#: src/McBopomofo.cpp:114
+#: src/McBopomofo.cpp:115
 msgid "{0} syllables required"
 msgstr "至少需要選取{0}個字"
 
-#: src/McBopomofo.cpp:118
+#: src/McBopomofo.cpp:119
 msgid "{0} syllables maximum"
 msgstr "最多只能選取{0}個字"
 
-#: src/McBopomofo.cpp:122
+#: src/McBopomofo.cpp:123
 msgid "phrase already exists"
 msgstr "詞庫已經有這個詞"
 
-#: src/McBopomofo.cpp:126
+#: src/McBopomofo.cpp:127
 msgid "press Enter to add the phrase"
 msgstr "請按 Enter 加入自訂詞庫"
 
-#: src/McBopomofo.cpp:132
+#: src/McBopomofo.cpp:133
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr "選取了「{0}」，注音「{1}」：{2}"
 
-#: src/McBopomofo.cpp:147
+#: src/McBopomofo.cpp:154
 msgid "Edit User Phrases"
 msgstr "編輯使用者詞彙"
 
-#: src/McBopomofo.cpp:156
+#: src/McBopomofo.cpp:164
 msgid "Edit Excluded Phrases"
 msgstr "編輯排除的詞彙"
 
@@ -101,29 +101,33 @@ msgstr "直接輸入大寫字母"
 msgid "put_lowercase_to_buffer"
 msgstr "在輸入緩衝區中輸入小寫字母"
 
-#: src/McBopomofo.h:85
+#: src/McBopomofo.h:87
 msgid "Bopomofo Keyboard Layout"
 msgstr "注音鍵盤配置"
 
-#: src/McBopomofo.h:90
+#: src/McBopomofo.h:92
 msgid "Selection Keys"
 msgstr "選字鍵"
 
-#: src/McBopomofo.h:95
+#: src/McBopomofo.h:97
 msgid "Show Candidate Phrase"
 msgstr "選字時，候選詞起算點"
 
-#: src/McBopomofo.h:100
+#: src/McBopomofo.h:102
 msgid "Move cursor after selection"
 msgstr "選字後自動移動游標"
 
-#: src/McBopomofo.h:106
+#: src/McBopomofo.h:108
 msgid "ESC key clears entire composing buffer"
 msgstr "ESC 按鍵清除輸入緩衝區的所有內容"
 
-#: src/McBopomofo.h:110
+#: src/McBopomofo.h:112
 msgid "Shift + Letter Keys"
 msgstr "Shift + 字母按鍵"
+
+#: src/McBopomofo.h:116
+msgid "Open user phrase files with"
+msgstr "開啟自訂詞庫檔案要用"
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
 msgid "McBopomofo"

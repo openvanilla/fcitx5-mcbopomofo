@@ -76,6 +76,8 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftLetterKeys,
                                  N_("directly_output_uppercase"),
                                  N_("put_lowercase_to_buffer"));
 
+constexpr char kDefaultOpenFileWith[] = "xdg-open";
+
 FCITX_CONFIGURATION(
     McBopomofoConfig,
     // Keyboard layout: standard, eten, etc.
@@ -110,7 +112,9 @@ FCITX_CONFIGURATION(
         shiftLetterKeys{this, "ShiftLetterKeys", _("Shift + Letter Keys"),
                         ShiftLetterKeys::DirectlyOutputUppercase};
 
-);
+    fcitx::Option<std::string> openUserPhraseFilesWith{
+        this, "OpenUserPhraseFilesWith", _("Open user phrase files with"),
+        kDefaultOpenFileWith};);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
