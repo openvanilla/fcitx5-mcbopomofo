@@ -135,6 +135,12 @@ class KeyHandlerLocalizedString : public KeyHandler::LocalizedStrings {
   }
 };
 
+static std::string GetOpenFileWith(const McBopomofoConfig& config) {
+  return config.openUserPhraseFilesWith.value().length() > 0
+             ? config.openUserPhraseFilesWith.value()
+             : kDefaultOpenFileWith;
+}
+
 McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
     : instance_(instance) {
   languageModelLoader_ = std::make_shared<LanguageModelLoader>();
@@ -146,10 +152,11 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
 
   editUserPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
   editUserPhreasesAction_->setShortText(_("Edit User Phrases"));
-  editUserPhreasesAction_->connect<
-      fcitx::SimpleAction::Activated>([this](fcitx::InputContext*) {
-    fcitx::startProcess({"xdg-open", languageModelLoader_->userPhrasesPath()});
-  });
+  editUserPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
+      [this](fcitx::InputContext*) {
+        fcitx::startProcess({GetOpenFileWith(config_),
+                             languageModelLoader_->userPhrasesPath()});
+      });
   instance_->userInterfaceManager().registerAction(
       "mcbopomofo-user-phrases-edit", editUserPhreasesAction_.get());
 
@@ -157,8 +164,8 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
   excludedPhreasesAction_->setShortText(_("Edit Excluded Phrases"));
   excludedPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
       [this](fcitx::InputContext*) {
-        fcitx::startProcess(
-            {"xdg-open", languageModelLoader_->excludedPhrasesPath()});
+        fcitx::startProcess({GetOpenFileWith(config_),
+                             languageModelLoader_->excludedPhrasesPath()});
       });
   instance_->userInterfaceManager().registerAction(
       "mcbopomofo-user-excluded-phrases-edit", excludedPhreasesAction_.get());

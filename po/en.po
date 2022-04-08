@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-05 23:41-0700\n"
+"POT-Creation-Date: 2022-04-07 20:06-0700\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,35 +17,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/McBopomofo.cpp:109
+#: src/McBopomofo.cpp:110
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
-#: src/McBopomofo.cpp:114
+#: src/McBopomofo.cpp:115
 msgid "{0} syllables required"
 msgstr ""
 
-#: src/McBopomofo.cpp:118
+#: src/McBopomofo.cpp:119
 msgid "{0} syllables maximum"
 msgstr ""
 
-#: src/McBopomofo.cpp:122
+#: src/McBopomofo.cpp:123
 msgid "phrase already exists"
 msgstr ""
 
-#: src/McBopomofo.cpp:126
+#: src/McBopomofo.cpp:127
 msgid "press Enter to add the phrase"
 msgstr ""
 
-#: src/McBopomofo.cpp:132
+#: src/McBopomofo.cpp:133
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
-#: src/McBopomofo.cpp:147
+#: src/McBopomofo.cpp:154
 msgid "Edit User Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:156
+#: src/McBopomofo.cpp:164
 msgid "Edit Excluded Phrases"
 msgstr ""
 
@@ -101,28 +101,32 @@ msgstr "Directly Output Uppercase Letters"
 msgid "put_lowercase_to_buffer"
 msgstr "Put Lowercase Letters to Composing Buffer"
 
-#: src/McBopomofo.h:85
+#: src/McBopomofo.h:87
 msgid "Bopomofo Keyboard Layout"
 msgstr ""
 
-#: src/McBopomofo.h:90
+#: src/McBopomofo.h:92
 msgid "Selection Keys"
 msgstr ""
 
-#: src/McBopomofo.h:95
+#: src/McBopomofo.h:97
 msgid "Show Candidate Phrase"
 msgstr "Show Candidates"
 
-#: src/McBopomofo.h:100
+#: src/McBopomofo.h:102
 msgid "Move cursor after selection"
 msgstr ""
 
-#: src/McBopomofo.h:106
+#: src/McBopomofo.h:108
 msgid "ESC key clears entire composing buffer"
 msgstr ""
 
-#: src/McBopomofo.h:110
+#: src/McBopomofo.h:112
 msgid "Shift + Letter Keys"
+msgstr ""
+
+#: src/McBopomofo.h:116
+msgid "Open user phrase files with"
 msgstr ""
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
