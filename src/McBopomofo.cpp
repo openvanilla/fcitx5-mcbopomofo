@@ -304,10 +304,14 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
       // TODO(unassigned): Just assert this.
       FCITX_MCBOPOMOFO_WARN() << "inconsistent state";
       enterNewState(context, std::make_unique<InputStates::Empty>());
+      context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+      context->updatePreedit();
       return;
     }
 
     handleCandidateKeyEvent(context, key, maybeCandidateList);
+    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+    context->updatePreedit();
     return;
   }
 
