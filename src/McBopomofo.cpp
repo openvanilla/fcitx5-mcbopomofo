@@ -345,6 +345,14 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
+  if (key.check(FcitxKey_Return)) {
+    idx = candidateList->cursorIndex();
+    if (idx < candidateList->size()) {
+      candidateList->candidate(idx).select(context);
+    }
+    return;
+  }
+
   if (key.check(FcitxKey_Escape) || key.check(FcitxKey_BackSpace)) {
     keyHandler_->candidatePanelCancelled(
         [this, context](std::unique_ptr<InputState> next) {
@@ -357,34 +365,76 @@ void McBopomofoEngine::handleCandidateKeyEvent(
   if (key.check(FcitxKey_space)) {
     if (candidateList->hasNext()) {
       candidateList->next();
+      candidateList->toCursorMovable()->nextCandidate();
     } else if (candidateList->currentPage() > 0) {
       candidateList->setPage(0);
+      candidateList->toCursorMovable()->nextCandidate();
     }
     context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
     return;
   }
 
-  static std::array<fcitx::Key, 3> nextKeys{fcitx::Key(FcitxKey_Page_Down),
-                                            fcitx::Key(FcitxKey_Right),
-                                            fcitx::Key(FcitxKey_Down)};
-  static std::array<fcitx::Key, 3> prevKeys{fcitx::Key(FcitxKey_Page_Up),
-                                            fcitx::Key(FcitxKey_Left),
-                                            fcitx::Key(FcitxKey_Up)};
+  fcitx::CandidateLayoutHint layoutHint = candidateList->layoutHint();
+  bool isVertical = (layoutHint == fcitx::CandidateLayoutHint::Vertical);
 
-  if ((key.checkKeyList(nextKeys) ||
-       key.checkKeyList(instance_->globalConfig().defaultNextPage())) &&
-      candidateList->hasNext()) {
-    candidateList->next();
-    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-    return;
-  }
-
-  if ((key.checkKeyList(prevKeys) ||
-       key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
-      candidateList->hasPrev()) {
-    candidateList->prev();
-    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-    return;
+  if (isVertical) {
+    if (key.check(fcitx::Key(FcitxKey_Down))) {
+      candidateList->toCursorMovable()->nextCandidate();
+      context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+      return;
+    }
+    if (key.check(fcitx::Key(FcitxKey_Up))) {
+      candidateList->toCursorMovable()->prevCandidate();
+      context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+      return;
+    }
+    if ((key.check(fcitx::Key(FcitxKey_Right)) ||
+         key.check(fcitx::Key(FcitxKey_Page_Down)) ||
+         key.checkKeyList(instance_->globalConfig().defaultNextPage())) &&
+        candidateList->hasNext()) {
+      candidateList->next();
+      candidateList->toCursorMovable()->nextCandidate();
+      context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+      return;
+    }
+    if ((key.check(fcitx::Key(FcitxKey_Left)) ||
+         key.check(fcitx::Key(FcitxKey_Page_Up)) ||
+         key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
+        candidateList->hasPrev()) {
+      candidateList->prev();
+      candidateList->toCursorMovable()->nextCandidate();
+      context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+      return;
+    }
+  } else {
+    if (key.check(fcitx::Key(FcitxKey_Right))) {
+      candidateList->toCursorMovable()->nextCandidate();
+      context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+      return;
+    }
+    if (key.check(fcitx::Key(FcitxKey_Left))) {
+      candidateList->toCursorMovable()->prevCandidate();
+      context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+      return;
+    }
+    if ((key.check(fcitx::Key(FcitxKey_Down)) ||
+         key.check(fcitx::Key(FcitxKey_Page_Down)) ||
+         key.checkKeyList(instance_->globalConfig().defaultNextPage())) &&
+        candidateList->hasNext()) {
+      candidateList->next();
+      candidateList->toCursorMovable()->nextCandidate();
+      context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+      return;
+    }
+    if ((key.check(fcitx::Key(FcitxKey_Up)) ||
+         key.check(fcitx::Key(FcitxKey_Page_Up)) ||
+         key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
+        candidateList->hasPrev()) {
+      candidateList->prev();
+      candidateList->toCursorMovable()->nextCandidate();
+      context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+      return;
+    }
   }
 
   // TODO(unassigned): All else... beep?
@@ -534,6 +584,7 @@ void McBopomofoEngine::handleCandidatesState(
     candidateList->append(std::move(candidate));
 #endif
   }
+  candidateList->toCursorMovable()->nextCandidate();
   context->inputPanel().reset();
   context->inputPanel().setCandidateList(std::move(candidateList));
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
