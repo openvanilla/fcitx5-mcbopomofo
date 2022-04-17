@@ -348,7 +348,11 @@ void McBopomofoEngine::handleCandidateKeyEvent(
   if (key.check(FcitxKey_Return)) {
     idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
+#ifdef USE_LEGACY_FCITX5_API
+      candidateList->candidate(idx)->select(context);
+#else
       candidateList->candidate(idx).select(context);
+#endif
     }
     return;
   }
