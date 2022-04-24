@@ -117,15 +117,13 @@ FCITX_CONFIGURATION(
         shiftLetterKeys{this, "ShiftLetterKeys", _("Shift + Letter Keys"),
                         ShiftLetterKeys::DirectlyOutputUppercase};
 
-    fcitx::Option<std::string> openUserPhraseFilesWith{
-        this, "OpenUserPhraseFilesWith", _("Open user phrase files with"),
-        kDefaultOpenFileWith};
-
     fcitx::OptionWithAnnotation<CtrlEnterKey, CtrlEnterKeyI18NAnnotation>
         ctrlEnterKeys{this, "CtrlEnterKey", _("Control + Enter Key"),
                       CtrlEnterKey::Disabled};
 
-);
+    fcitx::Option<std::string> openUserPhraseFilesWith{
+        this, "OpenUserPhraseFilesWith", _("Open User Phrase Files With"),
+        kDefaultOpenFileWith};);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:

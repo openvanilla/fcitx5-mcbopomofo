@@ -399,6 +399,8 @@ void KeyHandler::reset() {
   walkedNodes_.clear();
 }
 
+#pragma region Settings
+
 void KeyHandler::setKeyboardLayout(
     const Formosa::Mandarin::BopomofoKeyboardLayout* layout) {
   reading_.setKeyboardLayout(layout);
@@ -423,6 +425,10 @@ void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
 void KeyHandler::setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior) {
   ctrlEnterKey_ = behavior;
 }
+
+#pragma endregion Settings
+
+#pragma region Key_Handling
 
 bool KeyHandler::handleCursorKeys(Key key, McBopomofo::InputState* state,
                                   const StateCallback& stateCallback,
@@ -546,6 +552,10 @@ bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
   return true;
 }
 
+#pragma endregion Key_Handling
+
+#pragma region Output
+
 std::string KeyHandler::getHTMLRubyText() {
   std::string composed;
   for (const Formosa::Gramambular::NodeAnchor& anchor : walkedNodes_) {
@@ -554,11 +564,18 @@ std::string KeyHandler::getHTMLRubyText() {
       continue;
     }
 
-    std::string key = "" + node->currentKeyValue().key;
+    std::string key = node->currentKeyValue().key;
     std::replace(key.begin(), key.end(), kJoinSeparator[0], kSpaceSeparator[0]);
     const std::string& value = node->currentKeyValue().value;
-    composed += value;
-    composed += "<rp>(</rp><rt>" + key + "</rt><rp>)</rp>";
+
+    if (key.rfind(std::string("_"), 0) == 0) {
+      composed += value;
+    } else {
+      composed += "<ruby>";
+      composed += value;
+      composed += "<rp>(</rp><rt>" + key + "</rt><rp>)</rp>";
+      composed += "</ruby>";
+    }
   }
   return composed;
 }
@@ -641,6 +658,10 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
   return KeyHandler::ComposedString{
       .head = head, .tail = tail, .tooltip = tooltip};
 }
+
+#pragma endregion Output
+
+#pragma region Build_States
 
 std::unique_ptr<InputStates::Inputting> KeyHandler::buildInputtingState() {
   auto composedString = getComposedString(builder_->cursorIndex());
@@ -754,6 +775,8 @@ size_t KeyHandler::actualCandidateCursorIndex() {
   }
   return cursorIndex;
 }
+
+#pragma endregion Build_States
 
 std::string KeyHandler::popEvictedTextAndWalk() {
   // in an ideal world, we can as well let the user type forever,
