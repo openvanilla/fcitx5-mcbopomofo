@@ -78,6 +78,10 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftLetterKeys,
 
 constexpr char kDefaultOpenFileWith[] = "xdg-open";
 
+enum class CtrlEnterKey { Disabled, InputReading };
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(CtrlEnterKey, N_("disabled"),
+                                 N_("input_bpmf_reading"));
+
 FCITX_CONFIGURATION(
     McBopomofoConfig,
     // Keyboard layout: standard, eten, etc.
@@ -114,7 +118,13 @@ FCITX_CONFIGURATION(
 
     fcitx::Option<std::string> openUserPhraseFilesWith{
         this, "OpenUserPhraseFilesWith", _("Open user phrase files with"),
-        kDefaultOpenFileWith};);
+        kDefaultOpenFileWith};
+
+    fcitx::OptionWithAnnotation<CtrlEnterKey, CtrlEnterKeyI18NAnnotation>
+        ctrlEnterKeys{this, "CtrlEnterKey", _("Control + Enter Key"),
+                      CtrlEnterKey::Disabled};
+
+);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:

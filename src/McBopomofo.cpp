@@ -62,30 +62,51 @@ static Key MapFcitxKey(const fcitx::Key& key) {
   }
 
   bool shiftPressed = key.states() & fcitx::KeyState::Shift;
+  bool ctrlPressed = key.states() & fcitx::KeyState::Ctrl;
+
+  if (ctrlPressed && !shiftPressed) {
+    switch (key.sym()) {
+      case FcitxKey_comma:
+        return Key::asciiKey(',', shiftPressed, ctrlPressed);
+      case FcitxKey_period:
+        return Key::asciiKey('.', shiftPressed, ctrlPressed);
+      case FcitxKey_1:
+        return Key::asciiKey('!', shiftPressed, ctrlPressed);
+      case FcitxKey_slash:
+        return Key::asciiKey('/', shiftPressed, ctrlPressed);
+      case FcitxKey_semicolon:
+        return Key::asciiKey(';', shiftPressed, ctrlPressed);
+      case FcitxKey_apostrophe:
+        return Key::asciiKey('\'', shiftPressed, ctrlPressed);
+      default:
+        break;
+    }
+  }
 
   switch (key.sym()) {
     case FcitxKey_BackSpace:
-      return Key::asciiKey(Key::BACKSPACE, shiftPressed);
+      return Key::asciiKey(Key::BACKSPACE, shiftPressed, ctrlPressed);
     case FcitxKey_Return:
-      return Key::asciiKey(Key::RETURN, shiftPressed);
+      return Key::asciiKey(Key::RETURN, shiftPressed, ctrlPressed);
     case FcitxKey_Escape:
-      return Key::asciiKey(Key::ESC, shiftPressed);
+      return Key::asciiKey(Key::ESC, shiftPressed, ctrlPressed);
     case FcitxKey_space:
       // This path is taken when Shift is pressed--no longer a "simple" key.
-      return Key::asciiKey(Key::SPACE, shiftPressed);
+      return Key::asciiKey(Key::SPACE, shiftPressed, ctrlPressed);
     case FcitxKey_Delete:
-      return Key::asciiKey(Key::DELETE, shiftPressed);
+      return Key::asciiKey(Key::DELETE, shiftPressed, ctrlPressed);
     case FcitxKey_Left:
-      return Key::namedKey(Key::KeyName::LEFT, shiftPressed);
+      return Key::namedKey(Key::KeyName::LEFT, shiftPressed, ctrlPressed);
     case FcitxKey_Right:
-      return Key::namedKey(Key::KeyName::RIGHT, shiftPressed);
+      return Key::namedKey(Key::KeyName::RIGHT, shiftPressed, ctrlPressed);
     case FcitxKey_Home:
-      return Key::namedKey(Key::KeyName::HOME, shiftPressed);
+      return Key::namedKey(Key::KeyName::HOME, shiftPressed, ctrlPressed);
     case FcitxKey_End:
-      return Key::namedKey(Key::KeyName::END, shiftPressed);
+      return Key::namedKey(Key::KeyName::END, shiftPressed, ctrlPressed);
     default:
-      return Key();
+      break;
   }
+  return Key();
 }
 
 class McBopomofoCandidateWord : public fcitx::CandidateWord {
@@ -238,6 +259,13 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
   keyHandler_->setPutLowercaseLettersToComposingBuffer(
       config_.shiftLetterKeys.value() == ShiftLetterKeys::PutLowercaseToBuffer);
 
+  if (config_.ctrlEnterKeys.value() == CtrlEnterKey::Disabled) {
+    keyHandler_->setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter::Disabled);
+  } else if (config_.ctrlEnterKeys.value() == CtrlEnterKey::InputReading) {
+    keyHandler_->setCtrlEnterKeyBehavior(
+        KeyHandlerCtrlEnter::InputBpmfReadings);
+  }
+
   languageModelLoader_->reloadUserModelsIfNeeded();
 }
 
@@ -282,8 +310,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
   fcitx::InputContext* context = keyEvent.inputContext();
   fcitx::Key key = keyEvent.key();
 
-  if (key.states() & fcitx::KeyState::Ctrl ||
-      key.states() & fcitx::KeyState::Alt ||
+  if (key.states() & fcitx::KeyState::Alt ||
       key.states() & fcitx::KeyState::Super ||
       key.states() & fcitx::KeyState::CapsLock) {
     return;

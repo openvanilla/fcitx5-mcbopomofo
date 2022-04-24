@@ -35,6 +35,7 @@ constexpr char kJoinSeparator[] = "-";
 constexpr char kPunctuationListKey = '`';  // Hit the key to bring up the list.
 constexpr char kPunctuationListUnigramKey[] = "_punctuation_list";
 constexpr char kPunctuationKeyPrefix[] = "_punctuation_";
+constexpr char kCtrlPunctuationKeyPrefix[] = "_ctrl_punctuation_";
 constexpr char kLetterPrefix[] = "_letter_";
 constexpr size_t kMinValidMarkingReadingCount = 2;
 constexpr size_t kMaxValidMarkingReadingCount = 6;
@@ -121,7 +122,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                         const ErrorCallback& errorCallback) {
   // From Key's definition, if shiftPressed is true, it can't be a simple key
   // that can be represented by ASCII.
-  char simpleAscii = key.shiftPressed ? 0 : key.ascii;
+  char simpleAscii = (key.ctrlPressed || key.shiftPressed) ? 0 : key.ascii;
 
   // See if it's valid BPMF reading.
   if (reading_.isValidKey(simpleAscii)) {
@@ -238,7 +239,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   }
 
   // Enter.
-  if (simpleAscii == Key::RETURN) {
+  if (key.ascii == Key::RETURN) {
     if (maybeNotEmptyState == nullptr) {
       return false;
     }
@@ -247,6 +248,26 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       errorCallback();
       stateCallback(buildInputtingState());
       return true;
+    }
+
+    if (key.ctrlPressed) {
+      if (ctrlEnterKey_ == KeyHandlerCtrlEnter::InputBpmfReadings) {
+        std::vector<std::string> readings = builder_->readings();
+        std::string readingValue;
+        for (auto it = readings.begin(); it != readings.end(); ++it) {
+          readingValue += *it;
+          if (it + 1 != readings.end()) {
+            readingValue += kJoinSeparator;
+          }
+        }
+
+        auto committingState =
+            std::make_unique<InputStates::Committing>(readingValue);
+        stateCallback(std::move(committingState));
+        reset();
+        return true;
+      }
+      return false;
     }
 
     // See if we are in Marking state, and, if a valid mark, accept it.
@@ -291,13 +312,20 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     return true;
   }
 
-  if (simpleAscii != 0) {
-    std::string chrStr(1, simpleAscii);
+  if (key.ascii != 0) {
+    std::string chrStr(1, key.ascii);
+    std::string unigram;
+    if (key.ctrlPressed) {
+      unigram = std::string(kCtrlPunctuationKeyPrefix) + chrStr;
+      if (handlePunctuation(unigram, stateCallback, errorCallback)) {
+        return true;
+      }
+      return false;
+    }
 
     // Bopomofo layout-specific punctuation handling.
-    std::string unigram = std::string(kPunctuationKeyPrefix) +
-                          GetKeyboardLayoutName(reading_.keyboardLayout()) +
-                          "_" + chrStr;
+    unigram = std::string(kPunctuationKeyPrefix) +
+              GetKeyboardLayoutName(reading_.keyboardLayout()) + "_" + chrStr;
     if (handlePunctuation(unigram, stateCallback, errorCallback)) {
       return true;
     }
@@ -382,6 +410,10 @@ void KeyHandler::setPutLowercaseLettersToComposingBuffer(bool flag) {
 
 void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
   escKeyClearsEntireComposingBuffer_ = flag;
+}
+
+void KeyHandler::setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior) {
+  ctrlEnterKey_ = behavior;
 }
 
 bool KeyHandler::handleCursorKeys(Key key, McBopomofo::InputState* state,

@@ -39,6 +39,8 @@
 
 namespace McBopomofo {
 
+enum class KeyHandlerCtrlEnter { Disabled, InputBpmfReadings};
+
 class KeyHandler {
  public:
   class LocalizedStrings;
@@ -81,8 +83,10 @@ class KeyHandler {
   // Sets if we should put lowercasesd letters into the composing buffer.
   void setPutLowercaseLettersToComposingBuffer(bool flag);
 
-  /// Sets if the ESC key clears enture composing buffer.
+  /// Sets if the ESC key clears entire composing buffer.
   void setEscKeyClearsEntireComposingBuffer(bool flag);
+
+  void setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior);
 
  private:
   bool handleCursorKeys(Key key, McBopomofo::InputState* state,
@@ -143,6 +147,7 @@ class KeyHandler {
   bool moveCursorAfterSelection_;
   bool putLowercaseLettersToComposingBuffer_;
   bool escKeyClearsEntireComposingBuffer_;
+  KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
 
  public:
   // Localization helper. We use dependency injection, that is, passing an
