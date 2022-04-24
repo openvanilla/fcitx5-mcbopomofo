@@ -39,7 +39,11 @@
 
 namespace McBopomofo {
 
-enum class KeyHandlerCtrlEnter { Disabled, InputBpmfReadings};
+enum class KeyHandlerCtrlEnter {
+  Disabled,
+  InputBpmfReadings,
+  InputHTMLRubyText
+};
 
 class KeyHandler {
  public:
@@ -108,6 +112,7 @@ class KeyHandler {
     std::string tooltip;
   };
   ComposedString getComposedString(size_t builderCursor);
+  std::string getHTMLRubyText();
 
   std::unique_ptr<InputStates::Inputting> buildInputtingState();
   std::unique_ptr<InputStates::ChoosingCandidate> buildChoosingCandidateState(

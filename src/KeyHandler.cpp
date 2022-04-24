@@ -32,6 +32,7 @@
 namespace McBopomofo {
 
 constexpr char kJoinSeparator[] = "-";
+constexpr char kSpaceSeparator[] = " ";
 constexpr char kPunctuationListKey = '`';  // Hit the key to bring up the list.
 constexpr char kPunctuationListUnigramKey[] = "_punctuation_list";
 constexpr char kPunctuationKeyPrefix[] = "_punctuation_";
@@ -263,6 +264,13 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
         auto committingState =
             std::make_unique<InputStates::Committing>(readingValue);
+        stateCallback(std::move(committingState));
+        reset();
+        return true;
+      } else if (ctrlEnterKey_ == KeyHandlerCtrlEnter::InputHTMLRubyText) {
+        auto output = getHTMLRubyText();
+        auto committingState =
+            std::make_unique<InputStates::Committing>(output);
         stateCallback(std::move(committingState));
         reset();
         return true;
@@ -536,6 +544,23 @@ bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
   inputtingState->evictedText = evictedText;
   stateCallback(std::move(inputtingState));
   return true;
+}
+
+std::string KeyHandler::getHTMLRubyText() {
+  std::string composed;
+  for (const Formosa::Gramambular::NodeAnchor& anchor : walkedNodes_) {
+    const Formosa::Gramambular::Node* node = anchor.node;
+    if (node == nullptr) {
+      continue;
+    }
+
+    std::string key = "" + node->currentKeyValue().key;
+    std::replace(key.begin(), key.end(), kJoinSeparator[0], kSpaceSeparator[0]);
+    const std::string& value = node->currentKeyValue().value;
+    composed += value;
+    composed += "<rp>(</rp><rt>" + key + "</rt><rp>)</rp>";
+  }
+  return composed;
 }
 
 KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {

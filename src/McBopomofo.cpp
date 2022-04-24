@@ -264,6 +264,9 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
   } else if (config_.ctrlEnterKeys.value() == CtrlEnterKey::InputReading) {
     keyHandler_->setCtrlEnterKeyBehavior(
         KeyHandlerCtrlEnter::InputBpmfReadings);
+  } else if (config_.ctrlEnterKeys.value() == CtrlEnterKey::InputHTMLRubyText) {
+    keyHandler_->setCtrlEnterKeyBehavior(
+        KeyHandlerCtrlEnter::InputHTMLRubyText);
   }
 
   languageModelLoader_->reloadUserModelsIfNeeded();
