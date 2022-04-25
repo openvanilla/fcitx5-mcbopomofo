@@ -79,8 +79,8 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftLetterKeys,
 constexpr char kDefaultOpenFileWith[] = "xdg-open";
 
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(KeyHandlerCtrlEnter, N_("disabled"),
-                                 N_("input_bpmf_reading"),
-                                 N_("input_html_ruby_text"));
+                                 N_("output_bpmf_reading"),
+                                 N_("output_html_ruby_text"));
 
 FCITX_CONFIGURATION(
     McBopomofoConfig,

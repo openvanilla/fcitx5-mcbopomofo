@@ -41,8 +41,8 @@ namespace McBopomofo {
 
 enum class KeyHandlerCtrlEnter {
   Disabled,
-  InputBpmfReadings,
-  InputHTMLRubyText
+  OutputBpmfReadings,
+  OutputHTMLRubyText
 };
 
 class KeyHandler {

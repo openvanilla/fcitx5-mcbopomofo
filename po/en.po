@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-24 19:35+0800\n"
+"POT-Creation-Date: 2022-04-25 20:59+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -101,48 +101,48 @@ msgstr "Directly Output Uppercase Letters"
 msgid "put_lowercase_to_buffer"
 msgstr "Put Lowercase Letters to Composing Buffer"
 
-#: src/McBopomofo.h:82
+#: src/McBopomofo.h:81
 msgid "disabled"
 msgstr "Disabled"
 
-#: src/McBopomofo.h:83
-msgid "input_bpmf_reading"
+#: src/McBopomofo.h:82
+msgid "output_bpmf_reading"
 msgstr "Input Bofomofo Readings"
 
-#: src/McBopomofo.h:84
-msgid "input_html_ruby_text"
+#: src/McBopomofo.h:83
+msgid "output_html_ruby_text"
 msgstr "Input HTML Ruby Text"
 
-#: src/McBopomofo.h:92
+#: src/McBopomofo.h:91
 msgid "Bopomofo Keyboard Layout"
 msgstr ""
 
-#: src/McBopomofo.h:97
+#: src/McBopomofo.h:96
 msgid "Selection Keys"
 msgstr ""
 
-#: src/McBopomofo.h:102
+#: src/McBopomofo.h:101
 msgid "Show Candidate Phrase"
 msgstr "Show Candidates"
 
-#: src/McBopomofo.h:107
+#: src/McBopomofo.h:106
 msgid "Move cursor after selection"
 msgstr ""
 
-#: src/McBopomofo.h:113
+#: src/McBopomofo.h:112
 msgid "ESC key clears entire composing buffer"
 msgstr ""
 
-#: src/McBopomofo.h:117
+#: src/McBopomofo.h:116
 msgid "Shift + Letter Keys"
 msgstr ""
 
 #: src/McBopomofo.h:121
-msgid "Open User Phrase Files With"
+msgid "Control + Enter Key"
 msgstr ""
 
 #: src/McBopomofo.h:125
-msgid "Control + Enter Key"
+msgid "Open User Phrase Files With"
 msgstr ""
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3

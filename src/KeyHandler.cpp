@@ -252,7 +252,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     }
 
     if (key.ctrlPressed) {
-      if (ctrlEnterKey_ == KeyHandlerCtrlEnter::InputBpmfReadings) {
+      if (ctrlEnterKey_ == KeyHandlerCtrlEnter::OutputBpmfReadings) {
         std::vector<std::string> readings = builder_->readings();
         std::string readingValue;
         for (auto it = readings.begin(); it != readings.end(); ++it) {
@@ -267,7 +267,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         stateCallback(std::move(committingState));
         reset();
         return true;
-      } else if (ctrlEnterKey_ == KeyHandlerCtrlEnter::InputHTMLRubyText) {
+      } else if (ctrlEnterKey_ == KeyHandlerCtrlEnter::OutputHTMLRubyText) {
         auto output = getHTMLRubyText();
         auto committingState =
             std::make_unique<InputStates::Committing>(output);

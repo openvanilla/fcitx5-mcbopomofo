@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-24 19:35+0800\n"
+"POT-Creation-Date: 2022-04-25 20:59+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -101,49 +101,49 @@ msgstr "直接輸入大寫字母"
 msgid "put_lowercase_to_buffer"
 msgstr "在輸入緩衝區中輸入小寫字母"
 
-#: src/McBopomofo.h:82
+#: src/McBopomofo.h:81
 msgid "disabled"
-msgstr "停用"
+msgstr "無作用"
+
+#: src/McBopomofo.h:82
+msgid "output_bpmf_reading"
+msgstr "輸出整個句子的注音符號"
 
 #: src/McBopomofo.h:83
-msgid "input_bpmf_reading"
-msgstr "輸入整個句子的注音符號"
+msgid "output_html_ruby_text"
+msgstr "輸出加上注音標示的 HTML (Ruby Text)"
 
-#: src/McBopomofo.h:84
-msgid "input_html_ruby_text"
-msgstr "輸入加上注音標示的 HTML (Ruby Text)"
-
-#: src/McBopomofo.h:92
+#: src/McBopomofo.h:91
 msgid "Bopomofo Keyboard Layout"
 msgstr "注音鍵盤配置"
 
-#: src/McBopomofo.h:97
+#: src/McBopomofo.h:96
 msgid "Selection Keys"
 msgstr "選字鍵"
 
-#: src/McBopomofo.h:102
+#: src/McBopomofo.h:101
 msgid "Show Candidate Phrase"
 msgstr "選字時，候選詞起算點"
 
-#: src/McBopomofo.h:107
+#: src/McBopomofo.h:106
 msgid "Move cursor after selection"
 msgstr "選字後自動移動游標"
 
-#: src/McBopomofo.h:113
+#: src/McBopomofo.h:112
 msgid "ESC key clears entire composing buffer"
 msgstr "ESC 按鍵清除輸入緩衝區的所有內容"
 
-#: src/McBopomofo.h:117
+#: src/McBopomofo.h:116
 msgid "Shift + Letter Keys"
 msgstr "Shift + 字母按鍵"
 
 #: src/McBopomofo.h:121
-msgid "Open User Phrase Files With"
-msgstr "開啟自訂詞庫檔案要用"
+msgid "Control + Enter Key"
+msgstr "Control + Enter 按鍵"
 
 #: src/McBopomofo.h:125
-msgid "Control + Enter Key"
-msgstr ""
+msgid "Open User Phrase Files With"
+msgstr "開啟自訂詞庫檔案要用"
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
 msgid "McBopomofo"
