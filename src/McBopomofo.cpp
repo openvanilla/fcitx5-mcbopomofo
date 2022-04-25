@@ -259,15 +259,7 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
   keyHandler_->setPutLowercaseLettersToComposingBuffer(
       config_.shiftLetterKeys.value() == ShiftLetterKeys::PutLowercaseToBuffer);
 
-  if (config_.ctrlEnterKeys.value() == CtrlEnterKey::Disabled) {
-    keyHandler_->setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter::Disabled);
-  } else if (config_.ctrlEnterKeys.value() == CtrlEnterKey::InputReading) {
-    keyHandler_->setCtrlEnterKeyBehavior(
-        KeyHandlerCtrlEnter::InputBpmfReadings);
-  } else if (config_.ctrlEnterKeys.value() == CtrlEnterKey::InputHTMLRubyText) {
-    keyHandler_->setCtrlEnterKeyBehavior(
-        KeyHandlerCtrlEnter::InputHTMLRubyText);
-  }
+  keyHandler_->setCtrlEnterKeyBehavior(config_.ctrlEnterKeys.value());
 
   languageModelLoader_->reloadUserModelsIfNeeded();
 }

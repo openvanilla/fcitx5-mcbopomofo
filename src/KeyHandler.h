@@ -74,6 +74,8 @@ class KeyHandler {
 
   void reset();
 
+#pragma region Settings
+
   // Sets the Bopomofo keyboard layout.
   void setKeyboardLayout(
       const Formosa::Mandarin::BopomofoKeyboardLayout* layout);
@@ -91,6 +93,8 @@ class KeyHandler {
   void setEscKeyClearsEntireComposingBuffer(bool flag);
 
   void setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior);
+
+#pragma endregion Settings
 
  private:
   bool handleCursorKeys(Key key, McBopomofo::InputState* state,
@@ -148,11 +152,15 @@ class KeyHandler {
   // latest walked path (trellis) using the Viterbi algorithm
   std::vector<Formosa::Gramambular::NodeAnchor> walkedNodes_;
 
+#pragma region Settings
+
   bool selectPhraseAfterCursorAsCandidate_;
   bool moveCursorAfterSelection_;
   bool putLowercaseLettersToComposingBuffer_;
   bool escKeyClearsEntireComposingBuffer_;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
+
+#pragma endregion Settings
 
  public:
   // Localization helper. We use dependency injection, that is, passing an

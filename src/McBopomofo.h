@@ -78,8 +78,7 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftLetterKeys,
 
 constexpr char kDefaultOpenFileWith[] = "xdg-open";
 
-enum class CtrlEnterKey { Disabled, InputReading, InputHTMLRubyText };
-FCITX_CONFIG_ENUM_NAME_WITH_I18N(CtrlEnterKey, N_("disabled"),
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(KeyHandlerCtrlEnter, N_("disabled"),
                                  N_("input_bpmf_reading"),
                                  N_("input_html_ruby_text"));
 
@@ -117,9 +116,10 @@ FCITX_CONFIGURATION(
         shiftLetterKeys{this, "ShiftLetterKeys", _("Shift + Letter Keys"),
                         ShiftLetterKeys::DirectlyOutputUppercase};
 
-    fcitx::OptionWithAnnotation<CtrlEnterKey, CtrlEnterKeyI18NAnnotation>
-        ctrlEnterKeys{this, "CtrlEnterKey", _("Control + Enter Key"),
-                      CtrlEnterKey::Disabled};
+    fcitx::OptionWithAnnotation<KeyHandlerCtrlEnter,
+                                KeyHandlerCtrlEnterI18NAnnotation>
+        ctrlEnterKeys{this, "KeyHandlerCtrlEnter", _("Control + Enter Key"),
+                      KeyHandlerCtrlEnter::Disabled};
 
     fcitx::Option<std::string> openUserPhraseFilesWith{
         this, "OpenUserPhraseFilesWith", _("Open User Phrase Files With"),

@@ -52,14 +52,17 @@ struct Key {
   const bool shiftPressed;
   const bool ctrlPressed;
 
-  Key(char c = 0, KeyName n = KeyName::UNKNOWN, bool isShift = false, bool isCtrl = false)
+  Key(char c = 0, KeyName n = KeyName::UNKNOWN, bool isShift = false,
+      bool isCtrl = false)
       : ascii(c), name(n), shiftPressed(isShift), ctrlPressed(isCtrl) {}
 
-  static Key asciiKey(char c, bool shiftPressed = false, bool ctrlPressed = false) {
+  static Key asciiKey(char c, bool shiftPressed = false,
+                      bool ctrlPressed = false) {
     return Key(c, KeyName::ASCII, shiftPressed, ctrlPressed);
   }
 
-  static Key namedKey(KeyName name, bool shiftPressed = false, bool ctrlPressed = false) {
+  static Key namedKey(KeyName name, bool shiftPressed = false,
+                      bool ctrlPressed = false) {
     return Key(0, name, shiftPressed, ctrlPressed);
   }
 
