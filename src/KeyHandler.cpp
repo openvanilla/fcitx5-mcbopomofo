@@ -568,6 +568,8 @@ std::string KeyHandler::getHTMLRubyText() {
     std::replace(key.begin(), key.end(), kJoinSeparator[0], kSpaceSeparator[0]);
     const std::string& value = node->currentKeyValue().value;
 
+    // If a key starts with underscore, it is usually for a punctuation or a
+    // symbol but not a Bopomofo reading so we just ignore such case.
     if (key.rfind(std::string("_"), 0) == 0) {
       composed += value;
     } else {
