@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-07 20:06-0700\n"
+"POT-Creation-Date: 2022-04-25 20:59+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,35 +17,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/McBopomofo.cpp:110
+#: src/McBopomofo.cpp:131
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
-#: src/McBopomofo.cpp:115
+#: src/McBopomofo.cpp:136
 msgid "{0} syllables required"
 msgstr ""
 
-#: src/McBopomofo.cpp:119
+#: src/McBopomofo.cpp:140
 msgid "{0} syllables maximum"
 msgstr ""
 
-#: src/McBopomofo.cpp:123
+#: src/McBopomofo.cpp:144
 msgid "phrase already exists"
 msgstr ""
 
-#: src/McBopomofo.cpp:127
+#: src/McBopomofo.cpp:148
 msgid "press Enter to add the phrase"
 msgstr ""
 
-#: src/McBopomofo.cpp:133
+#: src/McBopomofo.cpp:154
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
-#: src/McBopomofo.cpp:154
+#: src/McBopomofo.cpp:175
 msgid "Edit User Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:164
+#: src/McBopomofo.cpp:185
 msgid "Edit Excluded Phrases"
 msgstr ""
 
@@ -101,32 +101,48 @@ msgstr "Directly Output Uppercase Letters"
 msgid "put_lowercase_to_buffer"
 msgstr "Put Lowercase Letters to Composing Buffer"
 
-#: src/McBopomofo.h:87
+#: src/McBopomofo.h:81
+msgid "disabled"
+msgstr "Disabled"
+
+#: src/McBopomofo.h:82
+msgid "output_bpmf_reading"
+msgstr "Input Bofomofo Readings"
+
+#: src/McBopomofo.h:83
+msgid "output_html_ruby_text"
+msgstr "Input HTML Ruby Text"
+
+#: src/McBopomofo.h:91
 msgid "Bopomofo Keyboard Layout"
 msgstr ""
 
-#: src/McBopomofo.h:92
+#: src/McBopomofo.h:96
 msgid "Selection Keys"
 msgstr ""
 
-#: src/McBopomofo.h:97
+#: src/McBopomofo.h:101
 msgid "Show Candidate Phrase"
 msgstr "Show Candidates"
 
-#: src/McBopomofo.h:102
+#: src/McBopomofo.h:106
 msgid "Move cursor after selection"
 msgstr ""
 
-#: src/McBopomofo.h:108
+#: src/McBopomofo.h:112
 msgid "ESC key clears entire composing buffer"
 msgstr ""
 
-#: src/McBopomofo.h:112
+#: src/McBopomofo.h:116
 msgid "Shift + Letter Keys"
 msgstr ""
 
-#: src/McBopomofo.h:116
-msgid "Open user phrase files with"
+#: src/McBopomofo.h:121
+msgid "Control + Enter Key"
+msgstr ""
+
+#: src/McBopomofo.h:125
+msgid "Open User Phrase Files With"
 msgstr ""
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3

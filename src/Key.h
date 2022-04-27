@@ -50,16 +50,20 @@ struct Key {
   // "complex" keys such as Shift-Space will see both `ascii` and `shiftPressed`
   // set, since `ascii` alone is not sufficient to represent the key.
   const bool shiftPressed;
+  const bool ctrlPressed;
 
-  Key(char c = 0, KeyName n = KeyName::UNKNOWN, bool isShift = false)
-      : ascii(c), name(n), shiftPressed(isShift) {}
+  Key(char c = 0, KeyName n = KeyName::UNKNOWN, bool isShift = false,
+      bool isCtrl = false)
+      : ascii(c), name(n), shiftPressed(isShift), ctrlPressed(isCtrl) {}
 
-  static Key asciiKey(char c, bool shiftPressed = false) {
-    return Key(c, KeyName::ASCII, shiftPressed);
+  static Key asciiKey(char c, bool shiftPressed = false,
+                      bool ctrlPressed = false) {
+    return Key(c, KeyName::ASCII, shiftPressed, ctrlPressed);
   }
 
-  static Key namedKey(KeyName name, bool shiftPressed = false) {
-    return Key(0, name, shiftPressed);
+  static Key namedKey(KeyName name, bool shiftPressed = false,
+                      bool ctrlPressed = false) {
+    return Key(0, name, shiftPressed, ctrlPressed);
   }
 
   // Regardless of the shift state.

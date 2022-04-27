@@ -39,6 +39,12 @@
 
 namespace McBopomofo {
 
+enum class KeyHandlerCtrlEnter {
+  Disabled,
+  OutputBpmfReadings,
+  OutputHTMLRubyText
+};
+
 class KeyHandler {
  public:
   class LocalizedStrings;
@@ -68,6 +74,8 @@ class KeyHandler {
 
   void reset();
 
+#pragma region Settings
+
   // Sets the Bopomofo keyboard layout.
   void setKeyboardLayout(
       const Formosa::Mandarin::BopomofoKeyboardLayout* layout);
@@ -81,8 +89,12 @@ class KeyHandler {
   // Sets if we should put lowercasesd letters into the composing buffer.
   void setPutLowercaseLettersToComposingBuffer(bool flag);
 
-  /// Sets if the ESC key clears enture composing buffer.
+  /// Sets if the ESC key clears entire composing buffer.
   void setEscKeyClearsEntireComposingBuffer(bool flag);
+
+  void setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior);
+
+#pragma endregion Settings
 
  private:
   bool handleCursorKeys(Key key, McBopomofo::InputState* state,
@@ -104,6 +116,7 @@ class KeyHandler {
     std::string tooltip;
   };
   ComposedString getComposedString(size_t builderCursor);
+  std::string getHTMLRubyText();
 
   std::unique_ptr<InputStates::Inputting> buildInputtingState();
   std::unique_ptr<InputStates::ChoosingCandidate> buildChoosingCandidateState(
@@ -139,10 +152,15 @@ class KeyHandler {
   // latest walked path (trellis) using the Viterbi algorithm
   std::vector<Formosa::Gramambular::NodeAnchor> walkedNodes_;
 
+#pragma region Settings
+
   bool selectPhraseAfterCursorAsCandidate_;
   bool moveCursorAfterSelection_;
   bool putLowercaseLettersToComposingBuffer_;
   bool escKeyClearsEntireComposingBuffer_;
+  KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
+
+#pragma endregion Settings
 
  public:
   // Localization helper. We use dependency injection, that is, passing an

@@ -78,6 +78,10 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftLetterKeys,
 
 constexpr char kDefaultOpenFileWith[] = "xdg-open";
 
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(KeyHandlerCtrlEnter, N_("disabled"),
+                                 N_("output_bpmf_reading"),
+                                 N_("output_html_ruby_text"));
+
 FCITX_CONFIGURATION(
     McBopomofoConfig,
     // Keyboard layout: standard, eten, etc.
@@ -112,8 +116,13 @@ FCITX_CONFIGURATION(
         shiftLetterKeys{this, "ShiftLetterKeys", _("Shift + Letter Keys"),
                         ShiftLetterKeys::DirectlyOutputUppercase};
 
+    fcitx::OptionWithAnnotation<KeyHandlerCtrlEnter,
+                                KeyHandlerCtrlEnterI18NAnnotation>
+        ctrlEnterKeys{this, "KeyHandlerCtrlEnter", _("Control + Enter Key"),
+                      KeyHandlerCtrlEnter::Disabled};
+
     fcitx::Option<std::string> openUserPhraseFilesWith{
-        this, "OpenUserPhraseFilesWith", _("Open user phrase files with"),
+        this, "OpenUserPhraseFilesWith", _("Open User Phrase Files With"),
         kDefaultOpenFileWith};);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
