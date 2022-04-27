@@ -2,17 +2,18 @@
 
 ![Build](https://github.com/openvanilla/fcitx5-mcbopomofo/actions/workflows/ci.yaml/badge.svg)
 
-本專案是[小麥注音](https://github.com/openvanilla/McBopomofo)開發者為了能在 Linux 上使用而開發，目前是 MVP (minimum viable product)，功能做到小麥注音 2.2 的程度：
+本專案是[小麥注音](https://github.com/openvanilla/McBopomofo)的 Linux 版本，功能與小麥注音 macOS 版 2.2 同步：
 
 - 提供自動選字注音
 - 用戶自訂詞功能：可在組字區加詞，亦可直接修改用戶詞庫檔案及刪詞設定檔
 - 記憶使用者最近選字
 - 支援標準、倚天、許氏鍵盤、倚天 26 鍵等常見注音鍵盤排列
+- 便捷輸入各種中文標點符號
 - 支援微軟新注音式「游標後」跟漢音式「游標前」選字
 
 與 macOS 版的主要差別及功能限制如下：
 
-- 目前只支援最常用的按鍵，例如注音組字只支援空白鍵，選字也只支援空白鍵
+- 注音組字目前只支援空白鍵，選字也只支援空白鍵
 - 使用 fcitx5 內建選字窗
 - 繁簡轉換使用 fcitx5 內建 chttrans 模組
 
@@ -23,7 +24,7 @@
 
 ## 安裝方式
 
-以下說明如何在 Ubuntu 21 上面編譯安裝。
+以下說明如何在 Ubuntu 21.10 以及 22.04 LTS 上面編譯安裝。
 
 請先安裝 fcitx5, CMake, 以及以下開發用模組：
 
@@ -50,7 +51,7 @@ sudo update-icon-caches /usr/share/icons/*
 
 ### Ubuntu 20.04 LTS 上的編譯方式
 
-Ubuntu 20.04 LTS 安裝的 fcitx5 版本老舊。如果要編譯，請使用以下 `cmake` 指令即可：
+Ubuntu 20.04 LTS 安裝的 fcitx5 版本老舊。如果要編譯，在使用 `cmake` 指令時，要加上 `-DUSE_LEGACY_FCITX5_API=1` 才能用舊式 API：
 
 ```
 mkdir -p build
