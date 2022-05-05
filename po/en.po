@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-25 20:59+0800\n"
+"POT-Creation-Date: 2022-05-05 21:09+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -41,11 +41,11 @@ msgstr ""
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
-#: src/McBopomofo.cpp:175
+#: src/McBopomofo.cpp:193
 msgid "Edit User Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:185
+#: src/McBopomofo.cpp:203
 msgid "Edit Excluded Phrases"
 msgstr ""
 
@@ -101,48 +101,60 @@ msgstr "Directly Output Uppercase Letters"
 msgid "put_lowercase_to_buffer"
 msgstr "Put Lowercase Letters to Composing Buffer"
 
-#: src/McBopomofo.h:81
+#: src/McBopomofo.h:83
 msgid "disabled"
 msgstr "Disabled"
 
-#: src/McBopomofo.h:82
+#: src/McBopomofo.h:84
 msgid "output_bpmf_reading"
 msgstr "Input Bofomofo Readings"
 
-#: src/McBopomofo.h:83
+#: src/McBopomofo.h:85
 msgid "output_html_ruby_text"
 msgstr "Input HTML Ruby Text"
 
-#: src/McBopomofo.h:91
+#: src/McBopomofo.h:93
 msgid "Bopomofo Keyboard Layout"
 msgstr ""
 
-#: src/McBopomofo.h:96
+#: src/McBopomofo.h:98
 msgid "Selection Keys"
 msgstr ""
 
-#: src/McBopomofo.h:101
+#: src/McBopomofo.h:103
 msgid "Show Candidate Phrase"
 msgstr "Show Candidates"
 
-#: src/McBopomofo.h:106
+#: src/McBopomofo.h:108
 msgid "Move cursor after selection"
 msgstr ""
 
-#: src/McBopomofo.h:112
+#: src/McBopomofo.h:114
 msgid "ESC key clears entire composing buffer"
 msgstr ""
 
-#: src/McBopomofo.h:116
+#: src/McBopomofo.h:118
 msgid "Shift + Letter Keys"
 msgstr ""
 
-#: src/McBopomofo.h:121
+#: src/McBopomofo.h:123
 msgid "Control + Enter Key"
 msgstr ""
 
-#: src/McBopomofo.h:125
+#: src/McBopomofo.h:127
 msgid "Open User Phrase Files With"
+msgstr ""
+
+#: src/McBopomofo.h:130
+msgid "Git Path"
+msgstr ""
+
+#: src/McBopomofo.h:135
+msgid "Create Git commit after adding a new phrase"
+msgstr ""
+
+#: src/McBopomofo.h:139
+msgid "Also push to remote Git repository"
 msgstr ""
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3

@@ -168,6 +168,24 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
   keyHandler_ = std::make_unique<KeyHandler>(
       languageModelLoader_->getLM(), languageModelLoader_,
       std::make_unique<KeyHandlerLocalizedString>());
+
+  keyHandler_->setOnAddNewPhrase([this](std::string message) {
+    auto useGitCommit = config_.gitCommitAfterAddingNewPhrase.value();
+    if (!useGitCommit) return;
+    auto location = languageModelLoader_->userDataPath();
+    auto gitPath = config_.gitPath.value().length() > 0
+                       ? config_.gitPath.value()
+                       : kGitPath;
+    fcitx::startProcess({gitPath, "init", "-b", "master"}, location);
+    fcitx::startProcess({gitPath, "add", "."}, location);
+    fcitx::startProcess({gitPath, "commit", "-m", "Add " + message}, location);
+
+    auto useGitPush = config_.gitPushAfterAddingNewPhrase.value();
+    if (!useGitPush) return;
+    fcitx::startProcess({gitPath, "pull", "--rebase"}, location);
+    fcitx::startProcess({gitPath, "push"}, location);
+  });
+
   state_ = std::make_unique<InputStates::Empty>();
   stateCommittedTimestampMicroseconds_ = GetEpochNowInMicroseconds();
 

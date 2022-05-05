@@ -51,6 +51,8 @@ class LanguageModelLoader : public UserPhraseAdder {
 
   void reloadUserModelsIfNeeded();
 
+  std::string userDataPath() { return userDataPath_; };
+
   std::string userPhrasesPath() { return userPhrasesPath_; }
 
   std::string excludedPhrasesPath() { return excludedPhrasesPath_; };
@@ -59,6 +61,8 @@ class LanguageModelLoader : public UserPhraseAdder {
   void populateUserDataFilesIfNeeded();
 
   std::shared_ptr<McBopomofoLM> lm_;
+
+  std::string userDataPath_;
   std::string userPhrasesPath_;
   std::filesystem::file_time_type userPhrasesTimestamp_;
   std::string excludedPhrasesPath_;

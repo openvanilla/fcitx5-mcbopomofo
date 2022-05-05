@@ -297,6 +297,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     if (auto marking = dynamic_cast<InputStates::Marking*>(state)) {
       if (marking->acceptable) {
         userPhraseAdder_->addUserPhrase(marking->reading, marking->markedText);
+        onAddNewPhrase_(marking->markedText);
         stateCallback(buildInputtingState());
       } else {
         errorCallback();
@@ -439,6 +440,11 @@ void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
 
 void KeyHandler::setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior) {
   ctrlEnterKey_ = behavior;
+}
+
+void KeyHandler::setOnAddNewPhrase(
+    std::function<void(const std::string&)> onAddNewPhrase) {
+  onAddNewPhrase_ = onAddNewPhrase;
 }
 
 #pragma endregion Settings

@@ -69,6 +69,7 @@ LanguageModelLoader::LanguageModelLoader()
   }
 
   // We just use very simple file handling routines.
+  userDataPath_ = userDataPath;
   userPhrasesPath_ = userDataPath + "/" + kUserPhraseFilename;
   excludedPhrasesPath_ = userDataPath + "/" + kExcludedPhraseFilename;
   populateUserDataFilesIfNeeded();

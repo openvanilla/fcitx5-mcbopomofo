@@ -78,6 +78,8 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftLetterKeys,
 
 constexpr char kDefaultOpenFileWith[] = "xdg-open";
 
+constexpr char kGitPath[] = "/usr/bin/git";
+
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(KeyHandlerCtrlEnter, N_("disabled"),
                                  N_("output_bpmf_reading"),
                                  N_("output_html_ruby_text"));
@@ -123,7 +125,20 @@ FCITX_CONFIGURATION(
 
     fcitx::Option<std::string> openUserPhraseFilesWith{
         this, "OpenUserPhraseFilesWith", _("Open User Phrase Files With"),
-        kDefaultOpenFileWith};);
+        kDefaultOpenFileWith};
+
+    fcitx::Option<std::string> gitPath{this, "GitPath", _("Git Path"),
+                                       kGitPath};
+
+    fcitx::Option<bool> gitCommitAfterAddingNewPhrase{
+        this, "GitCommitAfterAddingNewPhrase",
+        _("Create Git commit after adding a new phrase"), false};
+
+    fcitx::Option<bool> gitPushAfterAddingNewPhrase{
+        this, "GitPushCommitAfterAddingNewPhrase",
+        _("Also push to remote Git repository"), false};
+
+);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
