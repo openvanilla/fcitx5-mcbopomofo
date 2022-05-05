@@ -269,4 +269,105 @@ TEST_F(KeyHandlerTest,
   ASSERT_EQ(inputtingState->cursorIndex, strlen("a"));
 }
 
+TEST_F(KeyHandlerTest, ToneMarkOnlyStaysInReadingState) {
+  auto keys = asciiKeys("6");
+  keys.emplace_back(Key::namedKey(Key::KeyName::HOME));
+  auto endState = handleKeySequence(keys, /*expectHandled=*/true,
+                                    /*expectErrorCallbackAtEnd=*/true);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "ˊ");
+  // Cursor must not move.
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("ˊ"));
+}
+
+TEST_F(KeyHandlerTest, ToneMarkAndToneMarkStaysInReadingState) {
+  auto keys = asciiKeys("63");
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "ˇ");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("ˇ"));
+}
+
+TEST_F(KeyHandlerTest, ToneMarkOnlyRequiresExtraSpaceToCompose) {
+  auto keys = asciiKeys("6 ");
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "ˊ");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("ˊ"));
+}
+
+TEST_F(KeyHandlerTest,
+       ToneMarkThenNonToneComponentCombinesReadingButDoesNotCompose) {
+  auto keys = asciiKeys("6u");
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "ㄧˊ");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("ㄧˊ"));
+}
+
+TEST_F(KeyHandlerTest,
+       ToneMarkThenNonToneComponentOnlyComposesWithAnotherTone) {
+  auto keys = asciiKeys("6u3");
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "以");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("以"));
+}
+
+TEST_F(KeyHandlerTest, ToneMarkThenNonToneComponentOnlyComposesWithSameTone) {
+  auto keys = asciiKeys("3u3");
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "以");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("以"));
+}
+
+TEST_F(KeyHandlerTest, ToneMarkThenNonToneComponentOnlyComposesWithSpace) {
+  auto keys = asciiKeys("3u ");
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "以");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("以"));
+}
+
+TEST_F(
+    KeyHandlerTest,
+    NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase1) {
+  auto keys = asciiKeys("13");
+  // ㄅˇ is not a viable composition.
+  auto endState = handleKeySequence(keys, /*expectHandled=*/true,
+                                    /*expectErrorCallbackAtEnd=*/true);
+  auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
+  ASSERT_TRUE(emptyState != nullptr);
+}
+
+TEST_F(
+    KeyHandlerTest,
+    NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase2) {
+  auto keys = asciiKeys("313");
+  // ㄅˇ is not a viable composition.
+  auto endState = handleKeySequence(keys, /*expectHandled=*/true,
+                                    /*expectErrorCallbackAtEnd=*/true);
+  auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
+  ASSERT_TRUE(emptyState != nullptr);
+}
+
+TEST_F(
+    KeyHandlerTest,
+    NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase3) {
+  auto keys = asciiKeys("31 ");
+  // ㄅˇ is not a viable composition.
+  auto endState = handleKeySequence(keys, /*expectHandled=*/true,
+                                    /*expectErrorCallbackAtEnd=*/true);
+  auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
+  ASSERT_TRUE(emptyState != nullptr);
+}
+
 }  // namespace McBopomofo

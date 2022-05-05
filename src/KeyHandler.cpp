@@ -126,12 +126,22 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   char simpleAscii = (key.ctrlPressed || key.shiftPressed) ? 0 : key.ascii;
 
   // See if it's valid BPMF reading.
+  bool keyConsumedByReading = false;
   if (reading_.isValidKey(simpleAscii)) {
     reading_.combineKey(simpleAscii);
-
+    keyConsumedByReading = true;
     // If asciiChar does not lead to a tone marker, we are done. Tone marker
     // would lead to composing of the reading, which is handled after this.
     if (!reading_.hasToneMarker()) {
+      stateCallback(buildInputtingState());
+      return true;
+    }
+
+    // Check if reading *only* has the tone component. If so, stay in the
+    // current state. This is to prevent tone marks from being accidentally
+    // placed into the composing buffer. If you intend to place a tone marker
+    // to the composing buffer, type an extra space.
+    if (reading_.hasToneMarkerOnly()) {
       stateCallback(buildInputtingState());
       return true;
     }
@@ -140,7 +150,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   // Compose the reading if either there's a tone marker, or if the reading is
   // not empty, and space is pressed.
   bool shouldComposeReading =
-      reading_.hasToneMarker() ||
+      reading_.isToneMarkerKey(simpleAscii) ||
       (!reading_.isEmpty() && simpleAscii == Key::SPACE);
 
   if (shouldComposeReading) {
@@ -149,7 +159,11 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     if (!languageModel_->hasUnigramsForKey(syllable)) {
       errorCallback();
-      stateCallback(buildInputtingState());
+      if (!builder_->length()) {
+        stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+      } else {
+        stateCallback(buildInputtingState());
+      }
       return true;
     }
 
@@ -170,6 +184,16 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     auto inputtingState = buildInputtingState();
     inputtingState->evictedText = evictedText;
     stateCallback(std::move(inputtingState));
+    return true;
+  }
+
+  // The only possibility for this to be true is that the Bopomofo reading
+  // already has a tone marker but the last key is *not* a tone marker key. An
+  // example is the sequence "6u" with the Standard layout, which produces "ㄧˊ"
+  // but does not compose. Only sequences such as "u6", "6u6", "6u3", or "6u "
+  // would compose.
+  if (keyConsumedByReading) {
+    stateCallback(buildInputtingState());
     return true;
   }
 
@@ -219,7 +243,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     if (!reading_.isEmpty()) {
       reading_.clear();
       if (!builder_->length()) {
-        stateCallback(std::make_unique<InputStates::Empty>());
+        stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
       } else {
         stateCallback(buildInputtingState());
       }
