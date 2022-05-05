@@ -407,17 +407,6 @@ class BopomofoReadingBuffer {
     return false;
   }
 
-  bool isToneMarkerKey(char k) {
-    // Use another reading buffer to check if k is a tone marker key. This
-    // ensures that the function is layout-agnostic.
-    BopomofoReadingBuffer buf(layout_);
-    if (!buf.isValidKey(k)) {
-      return false;
-    }
-    buf.combineKey(k);
-    return buf.hasToneMarker();
-  }
-
   bool combineKey(char k) {
     if (!isValidKey(k)) return false;
 
