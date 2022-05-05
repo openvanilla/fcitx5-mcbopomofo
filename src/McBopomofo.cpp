@@ -176,14 +176,17 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
     auto gitPath = config_.gitPath.value().length() > 0
                        ? config_.gitPath.value()
                        : kGitPath;
-    fcitx::startProcess({gitPath, "init", "-b", "master"}, location);
-    fcitx::startProcess({gitPath, "add", "."}, location);
-    fcitx::startProcess({gitPath, "commit", "-m", "Add " + message}, location);
-
+    std::string command = "";
+    command += gitPath + " init -b master;";
+    command += gitPath + " add .;";
+    command += gitPath + " commit -m \"Add " + message + "\";";
     auto useGitPush = config_.gitPushAfterAddingNewPhrase.value();
-    if (!useGitPush) return;
-    fcitx::startProcess({gitPath, "pull", "--rebase"}, location);
-    fcitx::startProcess({gitPath, "push"}, location);
+    if (useGitPush) {
+      command += gitPath + " pull --rebase origin master;";
+      command += gitPath + " push origin master;";
+    }
+
+    fcitx::startProcess({"/bin/sh", "-c", command}, location);
   });
 
   state_ = std::make_unique<InputStates::Empty>();
