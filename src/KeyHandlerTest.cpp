@@ -305,8 +305,8 @@ TEST_F(KeyHandlerTest,
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
-  ASSERT_EQ(inputtingState->composingBuffer, "ㄧˊ");
-  ASSERT_EQ(inputtingState->cursorIndex, strlen("ㄧˊ"));
+  ASSERT_EQ(inputtingState->composingBuffer, "一");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("一"));
 }
 
 TEST_F(KeyHandlerTest,
@@ -315,8 +315,8 @@ TEST_F(KeyHandlerTest,
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
-  ASSERT_EQ(inputtingState->composingBuffer, "以");
-  ASSERT_EQ(inputtingState->cursorIndex, strlen("以"));
+  ASSERT_EQ(inputtingState->composingBuffer, "一ˇ");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("一ˇ"));
 }
 
 TEST_F(KeyHandlerTest, ToneMarkThenNonToneComponentOnlyComposesWithSameTone) {
@@ -324,14 +324,15 @@ TEST_F(KeyHandlerTest, ToneMarkThenNonToneComponentOnlyComposesWithSameTone) {
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
-  ASSERT_EQ(inputtingState->composingBuffer, "以");
-  ASSERT_EQ(inputtingState->cursorIndex, strlen("以"));
+  ASSERT_EQ(inputtingState->composingBuffer, "以ˇ");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("以ˇ"));
 }
 
 TEST_F(KeyHandlerTest, ToneMarkThenNonToneComponentOnlyComposesWithSpace) {
   auto keys = asciiKeys("3u ");
   auto endState = handleKeySequence(keys);
-  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  auto inputtingState =
+      dynamic_cast<InputStates::ChoosingCandidate*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
   ASSERT_EQ(inputtingState->composingBuffer, "以");
   ASSERT_EQ(inputtingState->cursorIndex, strlen("以"));
@@ -354,9 +355,10 @@ TEST_F(
   auto keys = asciiKeys("313");
   // ㄅˇ is not a viable composition.
   auto endState = handleKeySequence(keys, /*expectHandled=*/true,
-                                    /*expectErrorCallbackAtEnd=*/true);
-  auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
-  ASSERT_TRUE(emptyState != nullptr);
+                                    /*expectErrorCallbackAtEnd=*/false);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "ˇ");
 }
 
 TEST_F(
@@ -364,8 +366,8 @@ TEST_F(
     NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase3) {
   auto keys = asciiKeys("31 ");
   // ㄅˇ is not a viable composition.
-  auto endState = handleKeySequence(keys, /*expectHandled=*/true,
-                                    /*expectErrorCallbackAtEnd=*/true);
+  auto endState = handleKeySequence(keys, /*expectHandled=*/false,
+                                    /*expectErrorCallbackAtEnd=*/false);
   auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
   ASSERT_TRUE(emptyState != nullptr);
 }
