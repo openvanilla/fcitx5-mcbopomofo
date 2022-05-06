@@ -354,7 +354,9 @@ TEST_F(
     KeyHandlerTest,
     NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase2) {
   auto keys = asciiKeys("313");
-  // ㄅˇ is not a viable composition.
+  // "ˇㄅ" is not valid in McBopomofo. We are tolerant for some cases, such as
+  // we accpet "ˇ一"  to be "以" since it is usually a user just want to type
+  // "一ˇ". However, typing "ˇㄅ" does not make sense.
   auto endState = handleKeySequence(keys, /*expectHandled=*/true,
                                     /*expectErrorCallbackAtEnd=*/false);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
@@ -366,7 +368,9 @@ TEST_F(
     KeyHandlerTest,
     NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase3) {
   auto keys = asciiKeys("31 ");
-  // ㄅˇ is not a viable composition.
+  // "ˇㄅ" is not valid in McBopomofo. We are tolerant for some cases, such as
+  // we accpet "ˇ一"  to be "以" since it is usually a user just want to type
+  // "一ˇ". However, typing "ˇㄅ" does not make sense.
   auto endState = handleKeySequence(keys, /*expectHandled=*/false,
                                     /*expectErrorCallbackAtEnd=*/false);
   auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
