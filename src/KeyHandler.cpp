@@ -136,21 +136,12 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       stateCallback(buildInputtingState());
       return true;
     }
-
-    // Check if reading *only* has the tone component. If so, stay in the
-    // current state. This is to prevent tone marks from being accidentally
-    // placed into the composing buffer. If you intend to place a tone marker
-    // to the composing buffer, type an extra space.
-    if (reading_.hasToneMarkerOnly()) {
-      stateCallback(buildInputtingState());
-      return true;
-    }
   }
 
   // Compose the reading if either there's a tone marker, or if the reading is
   // not empty, and space is pressed.
   bool shouldComposeReading =
-      reading_.isToneMarkerKey(simpleAscii) ||
+      (reading_.hasToneMarker() && !reading_.hasToneMarkerOnly()) ||
       (!reading_.isEmpty() && simpleAscii == Key::SPACE);
 
   if (shouldComposeReading) {
@@ -519,7 +510,9 @@ bool KeyHandler::handleDeleteKeys(Key key, McBopomofo::InputState* state,
     return false;
   }
 
-  if (reading_.isEmpty()) {
+  if (reading_.hasToneMarkerOnly()) {
+    reading_.clear();
+  } else if (reading_.isEmpty()) {
     bool isValidDelete = false;
 
     if (key.ascii == Key::BACKSPACE && builder_->cursorIndex() > 0) {

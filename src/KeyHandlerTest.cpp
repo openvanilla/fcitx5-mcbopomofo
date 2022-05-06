@@ -300,38 +300,42 @@ TEST_F(KeyHandlerTest, ToneMarkOnlyRequiresExtraSpaceToCompose) {
 }
 
 TEST_F(KeyHandlerTest,
-       ToneMarkThenNonToneComponentCombinesReadingButDoesNotCompose) {
+       ToneMarkThenNonToneComponentResultingInCompositionCase1) {
   auto keys = asciiKeys("6u");
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
-  ASSERT_EQ(inputtingState->composingBuffer, "ㄧˊ");
-  ASSERT_EQ(inputtingState->cursorIndex, strlen("ㄧˊ"));
+  ASSERT_EQ(inputtingState->composingBuffer, "一");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("一"));
 }
 
 TEST_F(KeyHandlerTest,
-       ToneMarkThenNonToneComponentOnlyComposesWithAnotherTone) {
+       ToneMarkThenNonToneComponentResultingInCompositionCase2) {
   auto keys = asciiKeys("6u3");
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
-  ASSERT_EQ(inputtingState->composingBuffer, "以");
-  ASSERT_EQ(inputtingState->cursorIndex, strlen("以"));
+  ASSERT_EQ(inputtingState->composingBuffer, "一ˇ");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("一ˇ"));
 }
 
-TEST_F(KeyHandlerTest, ToneMarkThenNonToneComponentOnlyComposesWithSameTone) {
+TEST_F(KeyHandlerTest,
+       ToneMarkThenNonToneComponentResultingInCompositionCase3) {
   auto keys = asciiKeys("3u3");
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
-  ASSERT_EQ(inputtingState->composingBuffer, "以");
-  ASSERT_EQ(inputtingState->cursorIndex, strlen("以"));
+  ASSERT_EQ(inputtingState->composingBuffer, "以ˇ");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("以ˇ"));
 }
 
-TEST_F(KeyHandlerTest, ToneMarkThenNonToneComponentOnlyComposesWithSpace) {
+TEST_F(KeyHandlerTest,
+       ToneMarkThenNonToneComponentResultingInCompositionCase4) {
+  // The last space key composes a ChoosingCandidate.
   auto keys = asciiKeys("3u ");
   auto endState = handleKeySequence(keys);
-  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  auto inputtingState =
+      dynamic_cast<InputStates::ChoosingCandidate*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
   ASSERT_EQ(inputtingState->composingBuffer, "以");
   ASSERT_EQ(inputtingState->cursorIndex, strlen("以"));
@@ -352,20 +356,24 @@ TEST_F(
     KeyHandlerTest,
     NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase2) {
   auto keys = asciiKeys("313");
-  // ㄅˇ is not a viable composition.
-  auto endState = handleKeySequence(keys, /*expectHandled=*/true,
-                                    /*expectErrorCallbackAtEnd=*/true);
-  auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
-  ASSERT_TRUE(emptyState != nullptr);
+  // "ˇㄅ" is not valid in McBopomofo. We are tolerant for some cases, such as
+  // we accpet "ˇ一"  to be "以" since it is usually a user just want to type
+  // "一ˇ". However, typing "ˇㄅ" does not make sense.
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "ˇ");
 }
 
 TEST_F(
     KeyHandlerTest,
     NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase3) {
   auto keys = asciiKeys("31 ");
-  // ㄅˇ is not a viable composition.
-  auto endState = handleKeySequence(keys, /*expectHandled=*/true,
-                                    /*expectErrorCallbackAtEnd=*/true);
+  // "ˇㄅ" is not valid in McBopomofo. We are tolerant for some cases, such as
+  // we accpet "ˇ一"  to be "以" since it is usually a user just want to type
+  // "一ˇ". However, typing "ˇㄅ" does not make sense.
+  auto endState = handleKeySequence(keys, /*expectHandled=*/false,
+                                    /*expectErrorCallbackAtEnd=*/false);
   auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
   ASSERT_TRUE(emptyState != nullptr);
 }
