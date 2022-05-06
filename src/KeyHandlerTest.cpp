@@ -300,7 +300,7 @@ TEST_F(KeyHandlerTest, ToneMarkOnlyRequiresExtraSpaceToCompose) {
 }
 
 TEST_F(KeyHandlerTest,
-       ToneMarkThenNonToneComponentCombinesReadingButDoesNotCompose) {
+       ToneMarkThenNonToneComponentResultingInCompositionCase1) {
   auto keys = asciiKeys("6u");
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
@@ -310,7 +310,7 @@ TEST_F(KeyHandlerTest,
 }
 
 TEST_F(KeyHandlerTest,
-       ToneMarkThenNonToneComponentOnlyComposesWithAnotherTone) {
+       ToneMarkThenNonToneComponentResultingInCompositionCase2) {
   auto keys = asciiKeys("6u3");
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
@@ -319,7 +319,8 @@ TEST_F(KeyHandlerTest,
   ASSERT_EQ(inputtingState->cursorIndex, strlen("一ˇ"));
 }
 
-TEST_F(KeyHandlerTest, ToneMarkThenNonToneComponentOnlyComposesWithSameTone) {
+TEST_F(KeyHandlerTest,
+       ToneMarkThenNonToneComponentResultingInCompositionCase3) {
   auto keys = asciiKeys("3u3");
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
