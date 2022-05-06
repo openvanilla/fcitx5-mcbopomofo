@@ -231,7 +231,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       return true;
     }
 
-    if (!reading_.isEmpty() || reading_.hasToneMarkerOnly()) {
+    if (!reading_.isEmpty()) {
       reading_.clear();
       if (!builder_->length()) {
         stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
