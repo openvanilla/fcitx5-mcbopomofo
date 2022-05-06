@@ -359,8 +359,7 @@ TEST_F(
   // "ˇㄅ" is not valid in McBopomofo. We are tolerant for some cases, such as
   // we accpet "ˇ一"  to be "以" since it is usually a user just want to type
   // "一ˇ". However, typing "ˇㄅ" does not make sense.
-  auto endState = handleKeySequence(keys, /*expectHandled=*/true,
-                                    /*expectErrorCallbackAtEnd=*/false);
+  auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
   ASSERT_EQ(inputtingState->composingBuffer, "ˇ");
