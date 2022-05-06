@@ -329,7 +329,9 @@ TEST_F(KeyHandlerTest,
   ASSERT_EQ(inputtingState->cursorIndex, strlen("以ˇ"));
 }
 
-TEST_F(KeyHandlerTest, ToneMarkThenNonToneComponentOnlyComposesWithSpace) {
+TEST_F(KeyHandlerTest,
+       ToneMarkThenNonToneComponentResultingInCompositionCase4) {
+  // The last space key composes a ChoosingCandidate.
   auto keys = asciiKeys("3u ");
   auto endState = handleKeySequence(keys);
   auto inputtingState =
