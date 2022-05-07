@@ -77,8 +77,8 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftLetterKeys,
                                  N_("put_lowercase_to_buffer"));
 
 constexpr char kDefaultOpenFileWith[] = "xdg-open";
-
-constexpr char kGitPath[] = "/usr/bin/git";
+constexpr char kDefaultAddPhraseHookPath[] =
+    "/usr/share/fcitx5/data/mcbopomofo-add-phrase-hook.sh";
 
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(KeyHandlerCtrlEnter, N_("disabled"),
                                  N_("output_bpmf_reading"),
@@ -127,16 +127,13 @@ FCITX_CONFIGURATION(
         this, "OpenUserPhraseFilesWith", _("Open User Phrase Files With"),
         kDefaultOpenFileWith};
 
-    fcitx::Option<std::string> gitPath{this, "GitPath", _("Git Path"),
-                                       kGitPath};
+    fcitx::Option<std::string> addScriptHookPath{this, "AddScriptHookPath",
+                                                 _("Add Phrase Hook Path"),
+                                                 kDefaultAddPhraseHookPath};
 
-    fcitx::Option<bool> gitCommitAfterAddingNewPhrase{
-        this, "GitCommitAfterAddingNewPhrase",
-        _("Create Git commit after adding a new phrase"), false};
-
-    fcitx::Option<bool> gitPushAfterAddingNewPhrase{
-        this, "GitPushCommitAfterAddingNewPhrase",
-        _("Also push to remote Git repository"), false};
+    fcitx::Option<bool> addScriptHookEnabled{
+        this, "AddScriptHookEnabled",
+        _("Run the hook script after adding a phrase"), false};
 
 );
 

@@ -169,24 +169,18 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
       languageModelLoader_->getLM(), languageModelLoader_,
       std::make_unique<KeyHandlerLocalizedString>());
 
-  keyHandler_->setOnAddNewPhrase([this](std::string message) {
-    auto useGitCommit = config_.gitCommitAfterAddingNewPhrase.value();
-    if (!useGitCommit) return;
-    auto location = languageModelLoader_->userDataPath();
-    auto gitPath = config_.gitPath.value().length() > 0
-                       ? config_.gitPath.value()
-                       : kGitPath;
-    std::string command = "";
-    command += gitPath + " init -b master;";
-    command += gitPath + " add .;";
-    command += gitPath + " commit -m \"Add " + message + "\";";
-    auto useGitPush = config_.gitPushAfterAddingNewPhrase.value();
-    if (useGitPush) {
-      command += gitPath + " pull --rebase origin master;";
-      command += gitPath + " push origin master;";
+  keyHandler_->setOnAddNewPhrase([this](std::string newPhrase) {
+    auto addScriptHookEnabled = config_.addScriptHookEnabled.value();
+    if (!addScriptHookEnabled) {
+      return;
+    }
+    auto scriptPath = config_.addScriptHookPath.value();
+    if (scriptPath.empty()) {
+      scriptPath = kDefaultAddPhraseHookPath;
     }
 
-    fcitx::startProcess({"/bin/sh", "-c", command}, location);
+    auto userDataPath = languageModelLoader_->userDataPath();
+    fcitx::startProcess({"/bin/sh", scriptPath, newPhrase}, userDataPath);
   });
 
   state_ = std::make_unique<InputStates::Empty>();
