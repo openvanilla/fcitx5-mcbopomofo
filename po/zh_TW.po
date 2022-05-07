@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-05 21:09+0800\n"
+"POT-Creation-Date: 2022-05-07 16:12+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -41,11 +41,11 @@ msgstr "請按 Enter 加入自訂詞庫"
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr "選取了「{0}」，注音「{1}」：{2}"
 
-#: src/McBopomofo.cpp:193
+#: src/McBopomofo.cpp:190
 msgid "Edit User Phrases"
 msgstr "編輯使用者詞彙"
 
-#: src/McBopomofo.cpp:203
+#: src/McBopomofo.cpp:200
 msgid "Edit Excluded Phrases"
 msgstr "編輯排除的詞彙"
 
@@ -145,17 +145,13 @@ msgstr "Control + Enter 按鍵"
 msgid "Open User Phrase Files With"
 msgstr "開啟自訂詞庫檔案要用"
 
-#: src/McBopomofo.h:130
-msgid "Git Path"
-msgstr "Git 路徑"
+#: src/McBopomofo.h:131
+msgid "Add Phrase Hook Path"
+msgstr "加詞腳本路徑"
 
-#: src/McBopomofo.h:135
-msgid "Create Git commit after adding a new phrase"
-msgstr "加入新詞後自動建立 git commit"
-
-#: src/McBopomofo.h:139
-msgid "Also push to remote Git repository"
-msgstr "加入新詞後同時執行 git push"
+#: src/McBopomofo.h:136
+msgid "Run the hook script after adding a phrase"
+msgstr "在加入新詞之後執行加詞腳本"
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
 msgid "McBopomofo"
