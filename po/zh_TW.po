@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-25 20:59+0800\n"
+"POT-Creation-Date: 2022-05-07 16:12+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -41,11 +41,11 @@ msgstr "請按 Enter 加入自訂詞庫"
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr "選取了「{0}」，注音「{1}」：{2}"
 
-#: src/McBopomofo.cpp:175
+#: src/McBopomofo.cpp:190
 msgid "Edit User Phrases"
 msgstr "編輯使用者詞彙"
 
-#: src/McBopomofo.cpp:185
+#: src/McBopomofo.cpp:200
 msgid "Edit Excluded Phrases"
 msgstr "編輯排除的詞彙"
 
@@ -101,49 +101,57 @@ msgstr "直接輸入大寫字母"
 msgid "put_lowercase_to_buffer"
 msgstr "在輸入緩衝區中輸入小寫字母"
 
-#: src/McBopomofo.h:81
+#: src/McBopomofo.h:83
 msgid "disabled"
 msgstr "無作用"
 
-#: src/McBopomofo.h:82
+#: src/McBopomofo.h:84
 msgid "output_bpmf_reading"
 msgstr "輸出整個句子的注音符號"
 
-#: src/McBopomofo.h:83
+#: src/McBopomofo.h:85
 msgid "output_html_ruby_text"
 msgstr "輸出加上注音標示的 HTML (Ruby Text)"
 
-#: src/McBopomofo.h:91
+#: src/McBopomofo.h:93
 msgid "Bopomofo Keyboard Layout"
 msgstr "注音鍵盤配置"
 
-#: src/McBopomofo.h:96
+#: src/McBopomofo.h:98
 msgid "Selection Keys"
 msgstr "選字鍵"
 
-#: src/McBopomofo.h:101
+#: src/McBopomofo.h:103
 msgid "Show Candidate Phrase"
 msgstr "選字時，候選詞起算點"
 
-#: src/McBopomofo.h:106
+#: src/McBopomofo.h:108
 msgid "Move cursor after selection"
 msgstr "選字後自動移動游標"
 
-#: src/McBopomofo.h:112
+#: src/McBopomofo.h:114
 msgid "ESC key clears entire composing buffer"
 msgstr "ESC 按鍵清除輸入緩衝區的所有內容"
 
-#: src/McBopomofo.h:116
+#: src/McBopomofo.h:118
 msgid "Shift + Letter Keys"
 msgstr "Shift + 字母按鍵"
 
-#: src/McBopomofo.h:121
+#: src/McBopomofo.h:123
 msgid "Control + Enter Key"
 msgstr "Control + Enter 按鍵"
 
-#: src/McBopomofo.h:125
+#: src/McBopomofo.h:127
 msgid "Open User Phrase Files With"
 msgstr "開啟自訂詞庫檔案要用"
+
+#: src/McBopomofo.h:131
+msgid "Add Phrase Hook Path"
+msgstr "加詞腳本路徑"
+
+#: src/McBopomofo.h:136
+msgid "Run the hook script after adding a phrase"
+msgstr "在加入新詞之後執行加詞腳本"
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
 msgid "McBopomofo"

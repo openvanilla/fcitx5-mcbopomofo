@@ -77,6 +77,8 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftLetterKeys,
                                  N_("put_lowercase_to_buffer"));
 
 constexpr char kDefaultOpenFileWith[] = "xdg-open";
+constexpr char kDefaultAddPhraseHookPath[] =
+    "/usr/share/fcitx5/data/mcbopomofo-add-phrase-hook.sh";
 
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(KeyHandlerCtrlEnter, N_("disabled"),
                                  N_("output_bpmf_reading"),
@@ -123,7 +125,17 @@ FCITX_CONFIGURATION(
 
     fcitx::Option<std::string> openUserPhraseFilesWith{
         this, "OpenUserPhraseFilesWith", _("Open User Phrase Files With"),
-        kDefaultOpenFileWith};);
+        kDefaultOpenFileWith};
+
+    fcitx::Option<std::string> addScriptHookPath{this, "AddScriptHookPath",
+                                                 _("Add Phrase Hook Path"),
+                                                 kDefaultAddPhraseHookPath};
+
+    fcitx::Option<bool> addScriptHookEnabled{
+        this, "AddScriptHookEnabled",
+        _("Run the hook script after adding a phrase"), false};
+
+);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:

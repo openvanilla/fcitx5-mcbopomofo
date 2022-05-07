@@ -94,6 +94,9 @@ class KeyHandler {
 
   void setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior);
 
+  void setOnAddNewPhrase(
+      std::function<void(const std::string&)> onAddNewPhrase);
+
 #pragma endregion Settings
 
  private:
@@ -159,6 +162,7 @@ class KeyHandler {
   bool putLowercaseLettersToComposingBuffer_;
   bool escKeyClearsEntireComposingBuffer_;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
+  std::function<void(const std::string&)> onAddNewPhrase_;
 
 #pragma endregion Settings
 

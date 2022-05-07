@@ -168,6 +168,21 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
   keyHandler_ = std::make_unique<KeyHandler>(
       languageModelLoader_->getLM(), languageModelLoader_,
       std::make_unique<KeyHandlerLocalizedString>());
+
+  keyHandler_->setOnAddNewPhrase([this](std::string newPhrase) {
+    auto addScriptHookEnabled = config_.addScriptHookEnabled.value();
+    if (!addScriptHookEnabled) {
+      return;
+    }
+    auto scriptPath = config_.addScriptHookPath.value();
+    if (scriptPath.empty()) {
+      scriptPath = kDefaultAddPhraseHookPath;
+    }
+
+    auto userDataPath = languageModelLoader_->userDataPath();
+    fcitx::startProcess({"/bin/sh", scriptPath, newPhrase}, userDataPath);
+  });
+
   state_ = std::make_unique<InputStates::Empty>();
   stateCommittedTimestampMicroseconds_ = GetEpochNowInMicroseconds();
 

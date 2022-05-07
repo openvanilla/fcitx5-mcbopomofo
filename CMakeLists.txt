@@ -31,4 +31,6 @@ message(STATUS "CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR}")
 
 # McBopomofo data
 configure_file(data/data.txt mcbopomofo-data.txt)
+configure_file(data/add-phrase-hook.sh mcbopomofo-add-phrase-hook.sh)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-data.txt" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-add-phrase-hook.sh" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
