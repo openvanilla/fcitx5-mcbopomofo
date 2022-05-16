@@ -23,10 +23,10 @@
 
 #include "UserPhrasesLM.h"
 
-#include <sys/mman.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <fstream>
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "KeyValueBlobReader.h"
@@ -55,7 +55,7 @@ bool UserPhrasesLM::isLoaded()
     return false;
 }
 
-bool UserPhrasesLM::open(const char *path)
+bool UserPhrasesLM::open(const char* path)
 {
     if (data) {
         return false;
@@ -112,11 +112,6 @@ void UserPhrasesLM::dump()
     }
 }
 
-const std::vector<Formosa::Gramambular::Bigram> UserPhrasesLM::bigramsForKeys(const std::string&, const std::string&)
-{
-    return std::vector<Formosa::Gramambular::Bigram>();
-}
-
 const std::vector<Formosa::Gramambular::Unigram> UserPhrasesLM::unigramsForKey(const std::string& key)
 {
     std::vector<Formosa::Gramambular::Unigram> v;
@@ -140,4 +135,4 @@ bool UserPhrasesLM::hasUnigramsForKey(const std::string& key)
     return keyRowMap.find(key) != keyRowMap.end();
 }
 
-};  // namespace McBopomofo
+}; // namespace McBopomofo
