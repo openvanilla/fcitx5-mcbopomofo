@@ -95,6 +95,8 @@ static Key MapFcitxKey(const fcitx::Key& key) {
       return Key::asciiKey(Key::SPACE, shiftPressed, ctrlPressed);
     case FcitxKey_Delete:
       return Key::asciiKey(Key::DELETE, shiftPressed, ctrlPressed);
+    case FcitxKey_Tab:
+      return Key::asciiKey(Key::TAB, shiftPressed, ctrlPressed);
     case FcitxKey_Left:
       return Key::namedKey(Key::KeyName::LEFT, shiftPressed, ctrlPressed);
     case FcitxKey_Right:

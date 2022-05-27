@@ -100,6 +100,9 @@ class KeyHandler {
 #pragma endregion Settings
 
  private:
+  bool handleTabKey(McBopomofo::InputState* state,
+                    const StateCallback& stateCallback,
+                    const ErrorCallback& errorCallback);
   bool handleCursorKeys(Key key, McBopomofo::InputState* state,
                         const StateCallback& stateCallback,
                         const ErrorCallback& errorCallback);
@@ -140,7 +143,8 @@ class KeyHandler {
   size_t actualCandidateCursorIndex();
 
   // Pin a node with a fixed unigram value, usually a candidate.
-  void pinNode(const std::string& candidate);
+  void pinNode(const std::string& candidate,
+               const bool useMoveCursorAfterSelectionSetting = true);
 
   void walk();
 

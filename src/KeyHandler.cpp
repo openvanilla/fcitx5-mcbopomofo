@@ -244,6 +244,11 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     return true;
   }
 
+  // Tab key.
+  if (simpleAscii == Key::TAB) {
+    return handleTabKey(state, stateCallback, errorCallback);
+  }
+
   // Cursor keys.
   if (key.isCursorKeys()) {
     return handleCursorKeys(key, state, stateCallback, errorCallback);
@@ -450,6 +455,57 @@ void KeyHandler::setOnAddNewPhrase(
 #pragma endregion Settings
 
 #pragma region Key_Handling
+
+bool KeyHandler::handleTabKey(McBopomofo::InputState* state,
+                              const StateCallback& stateCallback,
+                              const ErrorCallback& errorCallback) {
+  auto inputting = dynamic_cast<InputStates::Inputting*>(state);
+
+  if (inputting == nullptr) {
+    errorCallback();
+    return true;
+  }
+
+  if (!reading_.isEmpty()) {
+    errorCallback();
+    return true;
+  }
+
+  auto candidates = buildChoosingCandidateState(inputting)->candidates;
+  if (candidates.empty()) {
+    errorCallback();
+    return true;
+  }
+
+  size_t cursorIndex = actualCandidateCursorIndex();
+  size_t length = 0;
+  Formosa::Gramambular::NodeAnchor currentNode;
+
+  for (auto node : walkedNodes_) {
+    length += node.spanningLength;
+    if (length >= cursorIndex) {
+      currentNode = node;
+      break;
+    }
+  }
+
+  size_t currentIndex = 0;
+  for (auto candidate : candidates) {
+    if (candidate == currentNode.node->currentKeyValue().value) {
+      currentIndex++;
+      break;
+    }
+    currentIndex++;
+  }
+
+  if (currentIndex >= candidates.size()) {
+    currentIndex = 0;
+  }
+
+  pinNode(candidates[currentIndex], false);
+  stateCallback(buildInputtingState());
+  return true;
+}
 
 bool KeyHandler::handleCursorKeys(Key key, McBopomofo::InputState* state,
                                   const StateCallback& stateCallback,
@@ -824,7 +880,8 @@ std::string KeyHandler::popEvictedTextAndWalk() {
   return evictedText;
 }
 
-void KeyHandler::pinNode(const std::string& candidate) {
+void KeyHandler::pinNode(const std::string& candidate,
+                         const bool useMoveCursorAfterSelectionSetting) {
   size_t cursorIndex = actualCandidateCursorIndex();
   Formosa::Gramambular::NodeAnchor selectedNode =
       builder_->grid().fixNodeSelectedCandidate(cursorIndex, candidate);
@@ -836,7 +893,7 @@ void KeyHandler::pinNode(const std::string& candidate) {
 
   walk();
 
-  if (moveCursorAfterSelection_) {
+  if (useMoveCursorAfterSelectionSetting && moveCursorAfterSelection_) {
     size_t nextPosition = 0;
     for (auto node : walkedNodes_) {
       if (nextPosition >= cursorIndex) {
