@@ -49,7 +49,7 @@ constexpr double kEpsilon = 0.000001;
 
 // Maximum composing buffer size, roughly in codepoints.
 // TODO(unassigned): maybe make this configurable.
-constexpr size_t kComposingBufferSize = 10;
+constexpr size_t kComposingBufferSize = 40;
 
 static const char* GetKeyboardLayoutName(
     const Formosa::Mandarin::BopomofoKeyboardLayout* layout) {
