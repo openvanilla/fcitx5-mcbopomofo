@@ -490,19 +490,35 @@ bool KeyHandler::handleTabKey(McBopomofo::InputState* state,
   }
 
   size_t currentIndex = 0;
-  for (auto candidate : candidates) {
-    if (candidate == currentNode.node->currentKeyValue().value) {
-      currentIndex++;
-      break;
+  if (currentNode.node->score() < 99) {
+    // Once the user never select a candidate for the node, we start from the
+    // first candidate, so the user has a chance to use the unigram with two or
+    // more characters when type the tab key for the first time.
+    //
+    // In other words, if a user type two BPMF readings, but the score of seeing
+    // them as two unigrams is higher than a phrase with two characters, the
+    // user can just use the longer phrase by typing the tab key.
+    if (candidates[0] == currentNode.node->currentKeyValue().value) {
+      // If the first candidate is the value of the current node, we use next
+      // one.
+      currentIndex = 1;
     }
-    currentIndex++;
+  } else {
+    for (auto candidate : candidates) {
+      if (candidate == currentNode.node->currentKeyValue().value) {
+        currentIndex++;
+        break;
+      }
+      currentIndex++;
+    }
   }
 
   if (currentIndex >= candidates.size()) {
     currentIndex = 0;
   }
 
-  pinNode(candidates[currentIndex], false);
+  pinNode(candidates[currentIndex],
+          /*useMoveCursorAfterSelectionSetting=*/false);
   stateCallback(buildInputtingState());
   return true;
 }
