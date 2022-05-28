@@ -35,6 +35,7 @@ namespace McBopomofo {
 struct Key {
   enum class KeyName { ASCII, LEFT, RIGHT, HOME, END, UNKNOWN };
 
+  static constexpr char TAB = 9;
   static constexpr char BACKSPACE = 8;
   static constexpr char RETURN = 13;
   static constexpr char ESC = 27;
