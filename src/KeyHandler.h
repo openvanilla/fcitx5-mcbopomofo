@@ -100,7 +100,7 @@ class KeyHandler {
 #pragma endregion Settings
 
  private:
-  bool handleTabKey(McBopomofo::InputState* state,
+  bool handleTabKey(Key key, McBopomofo::InputState* state,
                     const StateCallback& stateCallback,
                     const ErrorCallback& errorCallback);
   bool handleCursorKeys(Key key, McBopomofo::InputState* state,

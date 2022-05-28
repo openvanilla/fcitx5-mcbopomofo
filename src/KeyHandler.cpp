@@ -245,8 +245,8 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   }
 
   // Tab key.
-  if (simpleAscii == Key::TAB) {
-    return handleTabKey(state, stateCallback, errorCallback);
+  if (key.ascii == Key::TAB) {
+    return handleTabKey(key, state, stateCallback, errorCallback);
   }
 
   // Cursor keys.
@@ -456,7 +456,7 @@ void KeyHandler::setOnAddNewPhrase(
 
 #pragma region Key_Handling
 
-bool KeyHandler::handleTabKey(McBopomofo::InputState* state,
+bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
                               const StateCallback& stateCallback,
                               const ErrorCallback& errorCallback) {
   auto inputting = dynamic_cast<InputStates::Inputting*>(state);
@@ -501,12 +501,21 @@ bool KeyHandler::handleTabKey(McBopomofo::InputState* state,
     if (candidates[0] == currentNode.node->currentKeyValue().value) {
       // If the first candidate is the value of the current node, we use next
       // one.
-      currentIndex = 1;
+      if (key.shiftPressed) {
+        currentIndex = candidates.size() - 1;
+      } else {
+        currentIndex = 1;
+      }
     }
   } else {
     for (auto candidate : candidates) {
       if (candidate == currentNode.node->currentKeyValue().value) {
-        currentIndex++;
+        if (key.shiftPressed) {
+          currentIndex == 0 ? currentIndex = candidates.size() - 1
+                            : currentIndex--;
+        } else {
+          currentIndex++;
+        }
         break;
       }
       currentIndex++;
@@ -679,16 +688,16 @@ std::string KeyHandler::getHTMLRubyText() {
 
 KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
   // To construct an Inputting state, we need to first retrieve the entire
-  // composing buffer from the current grid, then split the composed string into
-  // head and tail, so that we can insert the current reading (if not-empty)
-  // between them.
+  // composing buffer from the current grid, then split the composed string
+  // into head and tail, so that we can insert the current reading (if
+  // not-empty) between them.
   //
-  // We'll also need to compute the UTF-8 cursor index. The idea here is we use
-  // a "running" index that will eventually catch the cursor index in the
+  // We'll also need to compute the UTF-8 cursor index. The idea here is we
+  // use a "running" index that will eventually catch the cursor index in the
   // builder. The tricky part is that if the spanning length of the node that
   // the cursor is at does not agree with the actual codepoint count of the
-  // node's value, we'll need to move the cursor at the end of the node to avoid
-  // confusions.
+  // node's value, we'll need to move the cursor at the end of the node to
+  // avoid confusions.
 
   size_t runningCursor = 0;  // spanning-length-based, like the builder cursor
 
@@ -801,8 +810,8 @@ KeyHandler::buildChoosingCandidateState(InputStates::NotEmpty* nonEmptyState) {
 
 std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
     size_t beginCursorIndex) {
-  // We simply build two composed strings and use the delta between the shorter
-  // and the longer one as the marked text.
+  // We simply build two composed strings and use the delta between the
+  // shorter and the longer one as the marked text.
   ComposedString from = getComposedString(beginCursorIndex);
   ComposedString to = getComposedString(builder_->cursorIndex());
   size_t composedStringCursorIndex = to.head.length();
