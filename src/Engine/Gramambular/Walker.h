@@ -80,6 +80,8 @@ inline const std::vector<NodeAnchor> Walker::reverseWalk(
     path.insert(path.begin(), node);
     paths.push_back(path);
   } else if (longPhrases.size() > 0) {
+    std::vector<NodeAnchor> path;
+
     for (std::vector<NodeAnchor>::iterator ni = nodes.begin();
          ni != nodes.end(); ++ni) {
       if (!ni->node) {
@@ -96,15 +98,13 @@ inline const std::vector<NodeAnchor> Walker::reverseWalk(
       // "我/這/樣/覺/得" are excatly the same for the users.
       if (std::find(longPhrases.begin(), longPhrases.end(), joinedValue) !=
           longPhrases.end()) {
-        std::vector<NodeAnchor> path;
         ni->accumulatedScore = kDroppedPathScore;
         path.insert(path.begin(), *ni);
         paths.push_back(path);
         continue;
       }
 
-      ni->accumulatedScore = accumulatedScore + (*ni).node->score();
-      std::vector<NodeAnchor> path;
+      ni->accumulatedScore = accumulatedScore + ni->node->score();
 
       if (joinedValue.size() >= longPhrases[0].size()) {
         path = reverseWalk(location - ni->spanningLength, ni->accumulatedScore,
@@ -121,7 +121,7 @@ inline const std::vector<NodeAnchor> Walker::reverseWalk(
     std::vector<std::string> longPhrases;
     for (std::vector<NodeAnchor>::iterator ni = nodes.begin();
          ni != nodes.end(); ++ni) {
-      if (!(*ni).node) {
+      if (!ni->node) {
         continue;
       }
       if (ni->spanningLength > 1) {
@@ -139,7 +139,7 @@ inline const std::vector<NodeAnchor> Walker::reverseWalk(
         continue;
       }
 
-      (*ni).accumulatedScore = accumulatedScore + (*ni).node->score();
+      ni->accumulatedScore = accumulatedScore + ni->node->score();
       std::vector<NodeAnchor> path;
       if (ni->spanningLength > 1) {
         path = reverseWalk(location - ni->spanningLength, ni->accumulatedScore,

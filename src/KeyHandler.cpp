@@ -48,8 +48,8 @@ constexpr double kNoOverrideThreshold = -8.0;
 constexpr double kEpsilon = 0.000001;
 
 // Maximum composing buffer size, roughly in codepoints.
-// TODO(unassigned): maybe make this configurable.
-constexpr size_t kComposingBufferSize = 40;
+constexpr size_t kMaxComposingBufferSize = 40;
+constexpr size_t kDefaultComposingBufferSize = 10;
 
 static const char* GetKeyboardLayoutName(
     const Formosa::Mandarin::BopomofoKeyboardLayout* layout) {
@@ -112,7 +112,8 @@ KeyHandler::KeyHandler(
       userPhraseAdder_(std::move(userPhraseAdder)),
       localizedStrings_(std::move(localizedStrings)),
       userOverrideModel_(kUserOverrideModelCapacity, kObservedOverrideHalfLife),
-      reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {
+      reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()),
+      composingBufferSize_(kDefaultComposingBufferSize) {
   builder_ = std::make_unique<Formosa::Gramambular::BlockReadingBuilder>(
       languageModel_.get());
   builder_->setJoinSeparator(kJoinSeparator);
@@ -439,6 +440,10 @@ void KeyHandler::setPutLowercaseLettersToComposingBuffer(bool flag) {
   putLowercaseLettersToComposingBuffer_ = flag;
 }
 
+void KeyHandler::setComposingBufferSize(size_t size) {
+  composingBufferSize_ = size;
+};
+
 void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
   escKeyClearsEntireComposingBuffer_ = flag;
 }
@@ -490,7 +495,8 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
   }
 
   size_t currentIndex = 0;
-  if (currentNode.node->score() < 99) {
+  if (currentNode.node->score() <
+      Formosa::Gramambular::kSelectedCandidateScore) {
     // Once the user never select a candidate for the node, we start from the
     // first candidate, so the user has a chance to use the unigram with two or
     // more characters when type the tab key for the first time.
@@ -892,10 +898,10 @@ std::string KeyHandler::popEvictedTextAndWalk() {
   // lose their influence over the whole MLE anyway -- so that when
   // the user type along, the already composed text at front will
   // be popped out
-  // TODO(unassigned): Is the algorithm really O(n^2)? Audit.
   std::string evictedText;
-  if (builder_->grid().width() > kComposingBufferSize &&
-      !walkedNodes_.empty()) {
+  size_t composingBufferSize =
+      std::min(kMaxComposingBufferSize, composingBufferSize_);
+  if (builder_->grid().width() > composingBufferSize && !walkedNodes_.empty()) {
     Formosa::Gramambular::NodeAnchor& anchor = walkedNodes_[0];
     evictedText = anchor.node->currentKeyValue().value;
     builder_->removeHeadReadings(anchor.spanningLength);

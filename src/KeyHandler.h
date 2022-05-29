@@ -92,6 +92,9 @@ class KeyHandler {
   /// Sets if the ESC key clears entire composing buffer.
   void setEscKeyClearsEntireComposingBuffer(bool flag);
 
+  // Sets composing buffer size.
+  void setComposingBufferSize(size_t size);
+
   void setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior);
 
   void setOnAddNewPhrase(
@@ -165,6 +168,7 @@ class KeyHandler {
   bool moveCursorAfterSelection_;
   bool putLowercaseLettersToComposingBuffer_;
   bool escKeyClearsEntireComposingBuffer_;
+  size_t composingBufferSize_;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
   std::function<void(const std::string&)> onAddNewPhrase_;
 
