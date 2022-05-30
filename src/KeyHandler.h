@@ -141,6 +141,7 @@ class KeyHandler {
   // grid now being overflown with the recently added reading, then walk the
   // grid.
   std::string popEvictedTextAndWalk();
+  void fixNodesIfRequired();
 
   // Compute the actual candidate cursor index.
   size_t actualCandidateCursorIndex();
