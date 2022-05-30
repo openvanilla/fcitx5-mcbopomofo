@@ -50,6 +50,7 @@ class Grid {
   void shrinkGridByOneAtLocation(size_t location);
 
   size_t width() const;
+  std::vector<NodeAnchor> nodesAt(size_t location);
   std::vector<NodeAnchor> nodesEndingAt(size_t location);
   std::vector<NodeAnchor> nodesCrossingOrEndingAt(size_t location);
 
@@ -130,6 +131,28 @@ inline void Grid::shrinkGridByOneAtLocation(size_t location) {
 
 inline size_t Grid::width() const { return m_spans.size(); }
 
+inline std::vector<NodeAnchor> Grid::nodesAt(size_t location) {
+  std::vector<NodeAnchor> result;
+
+  size_t spanSize = m_spans.size();
+  if (m_spans.size() && location < spanSize) {
+    Span& span = m_spans[location];
+
+    for (size_t i = 1; i <= 6; i++) {
+      Node* np = span.nodeOfLength(i);
+      if (np) {
+        NodeAnchor na;
+        na.node = np;
+        na.location = location;
+        na.spanningLength = i;
+        result.push_back(na);
+      }
+    }
+  }
+
+  return result;
+};
+
 inline std::vector<NodeAnchor> Grid::nodesEndingAt(size_t location) {
   std::vector<NodeAnchor> result;
 
@@ -183,8 +206,8 @@ inline std::vector<NodeAnchor> Grid::nodesCrossingOrEndingAt(size_t location) {
   return result;
 }
 
-// For nodes found at the location, fix their currently-selected candidate using
-// the supplied string value.
+// For nodes found at the location, fix their currently-selected candidate
+// using the supplied string value.
 inline NodeAnchor Grid::fixNodeSelectedCandidate(size_t location,
                                                  const std::string& value) {
   std::vector<NodeAnchor> nodes = nodesCrossingOrEndingAt(location);

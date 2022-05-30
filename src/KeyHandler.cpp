@@ -945,10 +945,11 @@ void KeyHandler::walk() {
   Formosa::Gramambular::Walker walker(&builder_->grid());
 
   // the reverse walk traces the trellis from the end
-  walkedNodes_ = walker.reverseWalk(builder_->grid().width());
+  // walkedNodes_ = walker.reverseWalk(builder_->grid().width());
+  walkedNodes_ = walker.walk(0);
 
   // then we reverse the nodes so that we get the forward-walked nodes
-  std::reverse(walkedNodes_.begin(), walkedNodes_.end());
+  // std::reverse(walkedNodes_.begin(), walkedNodes_.end());
 }
 
 }  // namespace McBopomofo

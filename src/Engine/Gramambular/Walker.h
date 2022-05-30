@@ -41,8 +41,8 @@ constexpr int kDroppedPathScore = -999;
 class Walker {
  public:
   explicit Walker(Grid* inGrid);
-  const std::vector<NodeAnchor> reverseWalk(
-      size_t location, double accumulatedScore = 0.0,
+  const std::vector<NodeAnchor> walk(
+      size_t location = 1, double accumulatedScore = 0.0,
       std::string joinedPhrase = "",
       std::vector<std::string> longPhrases = std::vector<std::string>());
 
@@ -52,16 +52,16 @@ class Walker {
 
 inline Walker::Walker(Grid* inGrid) : m_grid(inGrid) {}
 
-inline const std::vector<NodeAnchor> Walker::reverseWalk(
+inline const std::vector<NodeAnchor> Walker::walk(
     size_t location, double accumulatedScore, std::string joinedPhrase,
     std::vector<std::string> longPhrases) {
-  if (!location || location > m_grid->width()) {
+  if (location >= m_grid->width()) {
     return std::vector<NodeAnchor>();
   }
 
   std::vector<std::vector<NodeAnchor> > paths;
 
-  std::vector<NodeAnchor> nodes = m_grid->nodesEndingAt(location);
+  std::vector<NodeAnchor> nodes = m_grid->nodesAt(location);
 
   stable_sort(nodes.begin(), nodes.end(),
               [](const Formosa::Gramambular::NodeAnchor& a,
@@ -76,7 +76,7 @@ inline const std::vector<NodeAnchor> Walker::reverseWalk(
 
     node.accumulatedScore = accumulatedScore + node.node->score();
     std::vector<NodeAnchor> path =
-        reverseWalk(location - node.spanningLength, (node).accumulatedScore);
+        walk(location + node.spanningLength, (node).accumulatedScore);
     path.insert(path.begin(), node);
     paths.push_back(path);
   } else if (longPhrases.size() > 0) {
@@ -88,7 +88,7 @@ inline const std::vector<NodeAnchor> Walker::reverseWalk(
         continue;
       }
       std::string joinedValue = joinedPhrase;
-      joinedValue.insert(0, ni->node->currentKeyValue().value);
+      joinedValue.insert(joinedValue.size(), ni->node->currentKeyValue().value);
       // If some nodes with only a character composed a result as a long phrase,
       // we just give up the path and give it a really low score.
       //
@@ -105,13 +105,12 @@ inline const std::vector<NodeAnchor> Walker::reverseWalk(
       }
 
       ni->accumulatedScore = accumulatedScore + ni->node->score();
-
       if (joinedValue.size() >= longPhrases[0].size()) {
-        path = reverseWalk(location - ni->spanningLength, ni->accumulatedScore,
-                           "", std::vector<std::string>());
+        path = walk(location + ni->spanningLength, ni->accumulatedScore, "",
+                    std::vector<std::string>());
       } else {
-        path = reverseWalk(location - ni->spanningLength, ni->accumulatedScore,
-                           joinedValue, longPhrases);
+        path = walk(location + ni->spanningLength, ni->accumulatedScore,
+                    joinedValue, longPhrases);
       }
       path.insert(path.begin(), *ni);
       paths.push_back(path);
@@ -141,12 +140,13 @@ inline const std::vector<NodeAnchor> Walker::reverseWalk(
 
       ni->accumulatedScore = accumulatedScore + ni->node->score();
       std::vector<NodeAnchor> path;
+
       if (ni->spanningLength > 1) {
-        path = reverseWalk(location - ni->spanningLength, ni->accumulatedScore,
-                           "", std::vector<std::string>());
+        path = walk(location + ni->spanningLength, ni->accumulatedScore, "",
+                    std::vector<std::string>());
       } else {
-        path = reverseWalk(location - ni->spanningLength, ni->accumulatedScore,
-                           ni->node->currentKeyValue().value, longPhrases);
+        path = walk(location + 1, ni->accumulatedScore,
+                    ni->node->currentKeyValue().value, longPhrases);
       }
       path.insert(path.begin(), *ni);
       paths.push_back(path);
@@ -166,7 +166,8 @@ inline const std::vector<NodeAnchor> Walker::reverseWalk(
   }
 
   return *result;
-}
+};
+
 }  // namespace Gramambular
 }  // namespace Formosa
 
