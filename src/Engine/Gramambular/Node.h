@@ -39,6 +39,8 @@
 namespace Formosa {
 namespace Gramambular {
 
+constexpr int kSelectedCandidateScore = 99;
+
 class Node {
  public:
   Node() {}
@@ -110,7 +112,7 @@ inline void Node::selectCandidateAtIndex(size_t index) {
     m_selectedUnigramIndex = index;
   }
 
-  m_score = 99;
+  m_score = kSelectedCandidateScore;
 }
 
 inline void Node::resetCandidate() {

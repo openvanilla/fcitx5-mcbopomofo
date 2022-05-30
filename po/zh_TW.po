@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-07 16:12+0800\n"
+"POT-Creation-Date: 2022-05-29 13:28+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,35 +17,35 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/McBopomofo.cpp:131
+#: src/McBopomofo.cpp:133
 msgid "Cursor is between syllables {0} and {1}"
 msgstr "游標在「{0}」與「{1}」之間"
 
-#: src/McBopomofo.cpp:136
+#: src/McBopomofo.cpp:138
 msgid "{0} syllables required"
 msgstr "至少需要選取{0}個字"
 
-#: src/McBopomofo.cpp:140
+#: src/McBopomofo.cpp:142
 msgid "{0} syllables maximum"
 msgstr "最多只能選取{0}個字"
 
-#: src/McBopomofo.cpp:144
+#: src/McBopomofo.cpp:146
 msgid "phrase already exists"
 msgstr "詞庫已經有這個詞"
 
-#: src/McBopomofo.cpp:148
+#: src/McBopomofo.cpp:150
 msgid "press Enter to add the phrase"
 msgstr "請按 Enter 加入自訂詞庫"
 
-#: src/McBopomofo.cpp:154
+#: src/McBopomofo.cpp:156
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr "選取了「{0}」，注音「{1}」：{2}"
 
-#: src/McBopomofo.cpp:190
+#: src/McBopomofo.cpp:192
 msgid "Edit User Phrases"
 msgstr "編輯使用者詞彙"
 
-#: src/McBopomofo.cpp:200
+#: src/McBopomofo.cpp:202
 msgid "Edit Excluded Phrases"
 msgstr "編輯排除的詞彙"
 
@@ -86,70 +86,90 @@ msgid "asdfzxcvb"
 msgstr ""
 
 #: src/McBopomofo.h:71
+msgid "Not Set"
+msgstr "尚未設置"
+
+#: src/McBopomofo.h:72
+msgid "Vertical"
+msgstr "垂直選字窗"
+
+#: src/McBopomofo.h:72
+msgid "Horizontal"
+msgstr "水平選字窗"
+
+#: src/McBopomofo.h:75
 msgid "before_cursor"
 msgstr "游標前面（像漢音輸入法）"
 
-#: src/McBopomofo.h:72
+#: src/McBopomofo.h:76
 msgid "after_cursor"
 msgstr "游標後面（像微軟新注音）"
 
-#: src/McBopomofo.h:76
+#: src/McBopomofo.h:80
 msgid "directly_output_uppercase"
 msgstr "直接輸入大寫字母"
 
-#: src/McBopomofo.h:77
+#: src/McBopomofo.h:81
 msgid "put_lowercase_to_buffer"
 msgstr "在輸入緩衝區中輸入小寫字母"
 
-#: src/McBopomofo.h:83
+#: src/McBopomofo.h:87
 msgid "disabled"
 msgstr "無作用"
 
-#: src/McBopomofo.h:84
+#: src/McBopomofo.h:88
 msgid "output_bpmf_reading"
 msgstr "輸出整個句子的注音符號"
 
-#: src/McBopomofo.h:85
+#: src/McBopomofo.h:89
 msgid "output_html_ruby_text"
 msgstr "輸出加上注音標示的 HTML (Ruby Text)"
 
-#: src/McBopomofo.h:93
+#: src/McBopomofo.h:97
 msgid "Bopomofo Keyboard Layout"
 msgstr "注音鍵盤配置"
 
-#: src/McBopomofo.h:98
+#: src/McBopomofo.h:103
+msgid "Candidate List Layout"
+msgstr "選字窗樣式"
+
+#: src/McBopomofo.h:108
 msgid "Selection Keys"
 msgstr "選字鍵"
 
-#: src/McBopomofo.h:103
+#: src/McBopomofo.h:113
 msgid "Show Candidate Phrase"
 msgstr "選字時，候選詞起算點"
 
-#: src/McBopomofo.h:108
+#: src/McBopomofo.h:118
 msgid "Move cursor after selection"
 msgstr "選字後自動移動游標"
 
-#: src/McBopomofo.h:114
+#: src/McBopomofo.h:124
 msgid "ESC key clears entire composing buffer"
 msgstr "ESC 按鍵清除輸入緩衝區的所有內容"
 
-#: src/McBopomofo.h:118
+#: src/McBopomofo.h:128
+msgid "Composing Buffer Size"
+msgstr "輸入緩衝區大小"
+
+#: src/McBopomofo.h:133
 msgid "Shift + Letter Keys"
 msgstr "Shift + 字母按鍵"
 
-#: src/McBopomofo.h:123
+#: src/McBopomofo.h:139
 msgid "Control + Enter Key"
 msgstr "Control + Enter 按鍵"
 
-#: src/McBopomofo.h:127
+#: src/McBopomofo.h:144
 msgid "Open User Phrase Files With"
 msgstr "開啟自訂詞庫檔案要用"
 
-#: src/McBopomofo.h:131
+#: src/McBopomofo.h:149
 msgid "Add Phrase Hook Path"
 msgstr "加詞腳本路徑"
 
-#: src/McBopomofo.h:136
+#: src/McBopomofo.h:154
 msgid "Run the hook script after adding a phrase"
 msgstr "在加入新詞之後執行加詞腳本"
 

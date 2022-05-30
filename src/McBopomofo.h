@@ -67,6 +67,10 @@ enum class SelectionKeys {
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(SelectionKeys, N_("123456789"),
                                  N_("asdfghjkl"), N_("asdfzxcvb"));
 
+enum class CandidateLayoutHint { NotSet, Vertical, Horizontal };
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(CandidateLayoutHint, N_("Not Set"),
+                                 N_("Vertical"), N_("Horizontal"));
+
 enum class SelectPhrase { BeforeCursor, AfterCursor };
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(SelectPhrase, N_("before_cursor"),
                                  N_("after_cursor"));
@@ -93,6 +97,12 @@ FCITX_CONFIGURATION(
                                _("Bopomofo Keyboard Layout"),
                                BopomofoKeyboardLayout::Standard};
 
+    // Candidate layout.
+    fcitx::OptionWithAnnotation<CandidateLayoutHint,
+                                CandidateLayoutHintI18NAnnotation>
+        candidateLayout{this, "CandidateLayout", _("Candidate List Layout"),
+                        CandidateLayoutHint::NotSet};
+
     // Select selection keys.
     fcitx::OptionWithAnnotation<SelectionKeys, SelectionKeysI18NAnnotation>
         selectionKeys{this, "SelectionKeys", _("Selection Keys"),
@@ -113,20 +123,28 @@ FCITX_CONFIGURATION(
         this, "EscKeyClearsEntireComposingBuffer",
         _("ESC key clears entire composing buffer"), false};
 
+    // Composing buffer size.
+    fcitx::Option<int, fcitx::IntConstrain> composingBufferSize{
+        this, "ComposingBufferSize", _("Composing Buffer Size"), 10,
+        fcitx::IntConstrain(4, 40)};
+
     // Shift + letter keys.
     fcitx::OptionWithAnnotation<ShiftLetterKeys, ShiftLetterKeysI18NAnnotation>
         shiftLetterKeys{this, "ShiftLetterKeys", _("Shift + Letter Keys"),
                         ShiftLetterKeys::DirectlyOutputUppercase};
 
+    // Ctrl + enter keys.
     fcitx::OptionWithAnnotation<KeyHandlerCtrlEnter,
                                 KeyHandlerCtrlEnterI18NAnnotation>
         ctrlEnterKeys{this, "KeyHandlerCtrlEnter", _("Control + Enter Key"),
                       KeyHandlerCtrlEnter::Disabled};
 
+    // The app to open custom phrase text files.
     fcitx::Option<std::string> openUserPhraseFilesWith{
         this, "OpenUserPhraseFilesWith", _("Open User Phrase Files With"),
         kDefaultOpenFileWith};
 
+    // The path of the hook-script to add a phrase.
     fcitx::Option<std::string> addScriptHookPath{this, "AddScriptHookPath",
                                                  _("Add Phrase Hook Path"),
                                                  kDefaultAddPhraseHookPath};

@@ -278,6 +278,8 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
 
   keyHandler_->setCtrlEnterKeyBehavior(config_.ctrlEnterKeys.value());
 
+  keyHandler_->setComposingBufferSize(config_.composingBufferSize.value());
+
   languageModelLoader_->reloadUserModelsIfNeeded();
 }
 
@@ -421,7 +423,22 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     return;
   }
 
-  fcitx::CandidateLayoutHint layoutHint = candidateList->layoutHint();
+  fcitx::CandidateLayoutHint layoutHint;
+  switch (config_.candidateLayout.value()) {
+    case McBopomofo::CandidateLayoutHint::Vertical:
+      layoutHint = fcitx::CandidateLayoutHint::Vertical;
+      break;
+    case McBopomofo::CandidateLayoutHint::Horizontal:
+      layoutHint = fcitx::CandidateLayoutHint::Horizontal;
+      break;
+    case McBopomofo::CandidateLayoutHint::NotSet:
+      layoutHint = fcitx::CandidateLayoutHint::NotSet;
+      break;
+    default:
+      break;
+  }
+
+  candidateList->setLayoutHint(layoutHint);
   bool isVertical = (layoutHint == fcitx::CandidateLayoutHint::Vertical);
 
   if (isVertical) {
