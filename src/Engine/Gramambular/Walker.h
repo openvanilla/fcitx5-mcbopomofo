@@ -89,13 +89,13 @@ inline const std::vector<NodeAnchor> Walker::reverseWalk(
       }
       std::string joinedValue = joinedPhrase;
       joinedValue.insert(0, ni->node->currentKeyValue().value);
-      // If some nodes with only a character composed a result as a long phease,
+      // If some nodes with only a character composed a result as a long phrase,
       // we just give up the path and give it a really low score.
       //
-      // For example, in a sentense "我這樣覺得", we have a longer phrase
+      // For example, in a sentence "我這樣覺得", we have a longer phrase
       // 覺得, and we found there is another path may ends with "覺" and
       // "得", we just ignore the path since finally "我/這樣/覺得" and
-      // "我/這/樣/覺/得" are excatly the same for the users.
+      // "我/這/樣/覺/得" are exactly the same for the users.
       if (std::find(longPhrases.begin(), longPhrases.end(), joinedValue) !=
           longPhrases.end()) {
         ni->accumulatedScore = kDroppedPathScore;
