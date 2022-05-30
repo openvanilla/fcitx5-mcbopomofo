@@ -126,7 +126,7 @@ FCITX_CONFIGURATION(
     // Composing buffer size.
     fcitx::Option<int, fcitx::IntConstrain> composingBufferSize{
         this, "ComposingBufferSize", _("Composing Buffer Size"), 10,
-        fcitx::IntConstrain(4, 40)};
+        fcitx::IntConstrain(4, 100)};
 
     // Shift + letter keys.
     fcitx::OptionWithAnnotation<ShiftLetterKeys, ShiftLetterKeysI18NAnnotation>

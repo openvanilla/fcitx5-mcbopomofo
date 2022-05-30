@@ -51,7 +51,6 @@ class Grid {
 
   size_t width() const;
   std::vector<NodeAnchor> nodesAt(size_t location);
-  std::vector<NodeAnchor> nodesEndingAt(size_t location);
   std::vector<NodeAnchor> nodesCrossingOrEndingAt(size_t location);
 
   // "Freeze" the node with the unigram that represents the selected candidate
@@ -152,29 +151,6 @@ inline std::vector<NodeAnchor> Grid::nodesAt(size_t location) {
 
   return result;
 };
-
-inline std::vector<NodeAnchor> Grid::nodesEndingAt(size_t location) {
-  std::vector<NodeAnchor> result;
-
-  if (m_spans.size() && location <= m_spans.size()) {
-    for (size_t i = 0; i < location; i++) {
-      Span& span = m_spans[i];
-      if (i + span.maximumLength() >= location) {
-        Node* np = span.nodeOfLength(location - i);
-        if (np) {
-          NodeAnchor na;
-          na.node = np;
-          na.location = i;
-          na.spanningLength = location - i;
-
-          result.push_back(na);
-        }
-      }
-    }
-  }
-
-  return result;
-}
 
 inline std::vector<NodeAnchor> Grid::nodesCrossingOrEndingAt(size_t location) {
   std::vector<NodeAnchor> result;

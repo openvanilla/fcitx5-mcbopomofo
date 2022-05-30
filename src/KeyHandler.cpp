@@ -27,6 +27,7 @@
 #include <chrono>
 #include <utility>
 
+#include "Log.h"
 #include "UTF8Helper.h"
 
 namespace McBopomofo {
@@ -48,8 +49,9 @@ constexpr double kNoOverrideThreshold = -8.0;
 constexpr double kEpsilon = 0.000001;
 
 // Maximum composing buffer size, roughly in codepoints.
-constexpr size_t kMaxComposingBufferSize = 40;
+constexpr size_t kMaxComposingBufferSize = 100;
 constexpr size_t kDefaultComposingBufferSize = 10;
+constexpr size_t kMaxComposingBufferNeedsToWalkSize = 10;
 
 static const char* GetKeyboardLayoutName(
     const Formosa::Mandarin::BopomofoKeyboardLayout* layout) {
@@ -161,6 +163,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     builder_->insertReadingAtCursor(syllable);
     std::string evictedText = popEvictedTextAndWalk();
+    fixNodesIfRequired();
 
     std::string overrideValue = userOverrideModel_.suggest(
         walkedNodes_, builder_->cursorIndex(), GetEpochNowInSeconds());
@@ -911,6 +914,23 @@ std::string KeyHandler::popEvictedTextAndWalk() {
   return evictedText;
 }
 
+void KeyHandler::fixNodesIfRequired() {
+  size_t width = builder_->grid().width();
+  if (width > kMaxComposingBufferNeedsToWalkSize) {
+    size_t index = 0;
+    for (auto node : walkedNodes_) {
+      if (index >= width - kMaxComposingBufferNeedsToWalkSize) {
+        break;
+      }
+      if (node.node->score() < Formosa::Gramambular::kSelectedCandidateScore) {
+        auto candidate = node.node->currentKeyValue().value;
+        builder_->grid().fixNodeSelectedCandidate(index + 1, candidate);
+      }
+      index += node.spanningLength;
+    }
+  }
+}
+
 void KeyHandler::pinNode(const std::string& candidate,
                          const bool useMoveCursorAfterSelectionSetting) {
   size_t cursorIndex = actualCandidateCursorIndex();
@@ -944,12 +964,8 @@ void KeyHandler::walk() {
   // using the Viterbi algorithm implemented in the Gramambular library.
   Formosa::Gramambular::Walker walker(&builder_->grid());
 
-  // the reverse walk traces the trellis from the end
-  // walkedNodes_ = walker.reverseWalk(builder_->grid().width());
+  // the walker traces the trellis from the end
   walkedNodes_ = walker.walk(0);
-
-  // then we reverse the nodes so that we get the forward-walked nodes
-  // std::reverse(walkedNodes_.begin(), walkedNodes_.end());
 }
 
 }  // namespace McBopomofo
