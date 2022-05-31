@@ -28,7 +28,6 @@
 #ifndef GRID_H_
 #define GRID_H_
 
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
