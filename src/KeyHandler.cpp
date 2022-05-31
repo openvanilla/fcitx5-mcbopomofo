@@ -163,7 +163,6 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     builder_->insertReadingAtCursor(syllable);
     std::string evictedText = popEvictedTextAndWalk();
-    fixNodesIfRequired();
 
     std::string overrideValue = userOverrideModel_.suggest(
         walkedNodes_, builder_->cursorIndex(), GetEpochNowInSeconds());
@@ -175,6 +174,8 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       builder_->grid().overrideNodeScoreForSelectedCandidate(
           cursorIndex, overrideValue, static_cast<float>(highestScore));
     }
+
+    fixNodesIfRequired();
 
     auto inputtingState = buildInputtingState();
     inputtingState->evictedText = evictedText;
@@ -924,7 +925,8 @@ void KeyHandler::fixNodesIfRequired() {
       }
       if (node.node->score() < Formosa::Gramambular::kSelectedCandidateScore) {
         auto candidate = node.node->currentKeyValue().value;
-        builder_->grid().fixNodeSelectedCandidate(index + 1, candidate);
+        builder_->grid().fixNodeSelectedCandidate(index + node.spanningLength,
+                                                  candidate);
       }
       index += node.spanningLength;
     }
