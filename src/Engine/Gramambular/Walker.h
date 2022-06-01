@@ -70,7 +70,7 @@ inline const std::vector<NodeAnchor> Walker::walk(
               });
 
   if (nodes[0].node->score() >= kSelectedCandidateScore) {
-    // If the user ever choosed a candidate on a node, we should only use the
+    // If the user ever chosen a candidate on a node, we should only use the
     // path based on the selected candidate and ignore other paths.
     auto node = nodes[0];
 
