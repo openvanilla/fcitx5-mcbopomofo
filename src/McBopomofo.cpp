@@ -453,6 +453,9 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     return;
   }
 
+  fcitx::CandidateLayoutHint layoutHint = getCandidateLayoutHint();
+  candidateList->setLayoutHint(layoutHint);
+
   // Space goes to next page or wraps to the first if at the end.
   if (key.check(FcitxKey_space)) {
     if (candidateList->hasNext()) {
@@ -466,22 +469,6 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     return;
   }
 
-  fcitx::CandidateLayoutHint layoutHint;
-  switch (config_.candidateLayout.value()) {
-    case McBopomofo::CandidateLayoutHint::Vertical:
-      layoutHint = fcitx::CandidateLayoutHint::Vertical;
-      break;
-    case McBopomofo::CandidateLayoutHint::Horizontal:
-      layoutHint = fcitx::CandidateLayoutHint::Horizontal;
-      break;
-    case McBopomofo::CandidateLayoutHint::NotSet:
-      layoutHint = fcitx::CandidateLayoutHint::NotSet;
-      break;
-    default:
-      break;
-  }
-
-  candidateList->setLayoutHint(layoutHint);
   bool isVertical = (layoutHint == fcitx::CandidateLayoutHint::Vertical);
 
   if (isVertical) {
@@ -666,6 +653,9 @@ void McBopomofoEngine::handleCandidatesState(
   candidateList->setSelectionKey(selectionKeys_);
   candidateList->setPageSize(selectionKeys_.size());
 
+  fcitx::CandidateLayoutHint layoutHint = getCandidateLayoutHint();
+  candidateList->setLayoutHint(layoutHint);
+
   for (const std::string& candidateStr : current->candidates) {
 #ifdef USE_LEGACY_FCITX5_API
     fcitx::CandidateWord* candidate = new McBopomofoCandidateWord(
@@ -705,6 +695,25 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   updatePreedit(context, current);
+}
+
+fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() {
+  fcitx::CandidateLayoutHint layoutHint;
+  switch (config_.candidateLayout.value()) {
+    case McBopomofo::CandidateLayoutHint::Vertical:
+      layoutHint = fcitx::CandidateLayoutHint::Vertical;
+      break;
+    case McBopomofo::CandidateLayoutHint::Horizontal:
+      layoutHint = fcitx::CandidateLayoutHint::Horizontal;
+      break;
+    case McBopomofo::CandidateLayoutHint::NotSet:
+      layoutHint = fcitx::CandidateLayoutHint::NotSet;
+      break;
+    default:
+      break;
+  }
+
+  return layoutHint;
 }
 
 void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
