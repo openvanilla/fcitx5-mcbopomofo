@@ -410,19 +410,6 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     return;
   }
 
-  // Space goes to next page or wraps to the first if at the end.
-  if (key.check(FcitxKey_space)) {
-    if (candidateList->hasNext()) {
-      candidateList->next();
-      candidateList->toCursorMovable()->nextCandidate();
-    } else if (candidateList->currentPage() > 0) {
-      candidateList->setPage(0);
-      candidateList->toCursorMovable()->nextCandidate();
-    }
-    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-    return;
-  }
-
   fcitx::CandidateLayoutHint layoutHint;
   switch (config_.candidateLayout.value()) {
     case McBopomofo::CandidateLayoutHint::Vertical:
@@ -439,6 +426,20 @@ void McBopomofoEngine::handleCandidateKeyEvent(
   }
 
   candidateList->setLayoutHint(layoutHint);
+
+  // Space goes to next page or wraps to the first if at the end.
+  if (key.check(FcitxKey_space)) {
+    if (candidateList->hasNext()) {
+      candidateList->next();
+      candidateList->toCursorMovable()->nextCandidate();
+    } else if (candidateList->currentPage() > 0) {
+      candidateList->setPage(0);
+      candidateList->toCursorMovable()->nextCandidate();
+    }
+    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+    return;
+  }
+
   bool isVertical = (layoutHint == fcitx::CandidateLayoutHint::Vertical);
 
   if (isVertical) {
@@ -622,6 +623,23 @@ void McBopomofoEngine::handleCandidatesState(
 
   candidateList->setSelectionKey(selectionKeys_);
   candidateList->setPageSize(selectionKeys_.size());
+
+  fcitx::CandidateLayoutHint layoutHint;
+  switch (config_.candidateLayout.value()) {
+    case McBopomofo::CandidateLayoutHint::Vertical:
+      layoutHint = fcitx::CandidateLayoutHint::Vertical;
+      break;
+    case McBopomofo::CandidateLayoutHint::Horizontal:
+      layoutHint = fcitx::CandidateLayoutHint::Horizontal;
+      break;
+    case McBopomofo::CandidateLayoutHint::NotSet:
+      layoutHint = fcitx::CandidateLayoutHint::NotSet;
+      break;
+    default:
+      break;
+  }
+
+  candidateList->setLayoutHint(layoutHint);
 
   for (const std::string& candidateStr : current->candidates) {
 #ifdef USE_LEGACY_FCITX5_API
