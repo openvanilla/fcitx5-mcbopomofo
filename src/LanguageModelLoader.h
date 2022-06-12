@@ -42,7 +42,10 @@ class UserPhraseAdder {
 
 class LanguageModelLoader : public UserPhraseAdder {
  public:
-  LanguageModelLoader();
+  class LocalizedStrings;
+
+  explicit LanguageModelLoader(
+      std::unique_ptr<LocalizedStrings> localizedStrings);
 
   std::shared_ptr<McBopomofoLM> getLM() { return lm_; }
 
@@ -60,6 +63,8 @@ class LanguageModelLoader : public UserPhraseAdder {
  private:
   void populateUserDataFilesIfNeeded();
 
+  std::unique_ptr<LocalizedStrings> localizedStrings_;
+
   std::shared_ptr<McBopomofoLM> lm_;
 
   std::string userDataPath_;
@@ -67,6 +72,13 @@ class LanguageModelLoader : public UserPhraseAdder {
   std::filesystem::file_time_type userPhrasesTimestamp_;
   std::string excludedPhrasesPath_;
   std::filesystem::file_time_type excludedPhrasesTimestamp_;
+
+ public:
+  class LocalizedStrings {
+   public:
+    virtual std::string userPhraseFileHeader() = 0;
+    virtual std::string excludedPhraseFileHeader() = 0;
+  };
 };
 
 }  // namespace McBopomofo

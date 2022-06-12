@@ -37,8 +37,10 @@ constexpr char kDataPath[] = "data/mcbopomofo-data.txt";
 constexpr char kUserPhraseFilename[] = "data.txt";  // same as macOS version
 constexpr char kExcludedPhraseFilename[] = "exclude-phrases.txt";  // ditto
 
-LanguageModelLoader::LanguageModelLoader()
-    : lm_(std::make_shared<McBopomofoLM>()) {
+LanguageModelLoader::LanguageModelLoader(
+    std::unique_ptr<LocalizedStrings> localizedStrings)
+    : localizedStrings_(std::move(localizedStrings)),
+      lm_(std::make_shared<McBopomofoLM>()) {
   std::string buildInLMPath = fcitx::StandardPath::global().locate(
       fcitx::StandardPath::Type::PkgData, kDataPath);
   FCITX_MCBOPOMOFO_INFO() << "Built-in LM: " << buildInLMPath;
@@ -132,9 +134,7 @@ void LanguageModelLoader::populateUserDataFilesIfNeeded() {
     std::ofstream ofs(userPhrasesPath_);
     if (ofs) {
       FCITX_MCBOPOMOFO_INFO() << "Creating: " << userPhrasesPath_;
-
-      // TODO(unassigned): Populate date here
-      ofs << "# user phrases file\n";
+      ofs << localizedStrings_->userPhraseFileHeader();
       ofs.close();
     }
   }
@@ -144,9 +144,7 @@ void LanguageModelLoader::populateUserDataFilesIfNeeded() {
     std::ofstream ofs(excludedPhrasesPath_);
     if (ofs) {
       FCITX_MCBOPOMOFO_INFO() << "Creating: " << excludedPhrasesPath_;
-
-      // TODO(unassigned): Populate date here
-      ofs << "# excluded phrases file\n";
+      ofs << localizedStrings_->excludedPhraseFileHeader();
       ofs.close();
     }
   }
