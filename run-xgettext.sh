@@ -3,6 +3,7 @@ xgettext \
 	--package-version=v0.1 \
 	--copyright-holder=OpenVanilla \
 	--c++ \
+	--from-code=UTF-8 \
 	-k_ \
 	-kN_ \
 	-o po/fcitx5-mcbopomofo.pot \

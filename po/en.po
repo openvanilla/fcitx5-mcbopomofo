@@ -7,13 +7,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-29 13:28+0800\n"
+"POT-Creation-Date: 2022-06-12 13:02-0700\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -41,11 +41,56 @@ msgstr ""
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
-#: src/McBopomofo.cpp:192
+#: src/McBopomofo.cpp:168
+msgid "# Custom Phrases or Characters."
+msgstr ""
+
+#: src/McBopomofo.cpp:170
+msgid ""
+"# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動加詞 for "
+"usage."
+msgstr ""
+
+#: src/McBopomofo.cpp:172
+msgid ""
+"# Add your phrases and their respective Bopomofo reading below. Use hyphen "
+"(\"-\")"
+msgstr ""
+
+#: src/McBopomofo.cpp:173
+msgid "# to connect the Bopomofo syllables."
+msgstr ""
+
+#: src/McBopomofo.cpp:177 src/McBopomofo.cpp:196
+msgid "# Any line that starts with \"#\" is treated as comment."
+msgstr ""
+
+#: src/McBopomofo.cpp:186
+msgid "# Custom Excluded Phrases or Characters."
+msgstr ""
+
+#: src/McBopomofo.cpp:188
+msgid ""
+"# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動刪詞 for "
+"usage."
+msgstr ""
+
+#: src/McBopomofo.cpp:190
+msgid ""
+"# For example, the line below will prevent the phrase \"家祠\" from showing "
+"up anywhere:"
+msgstr ""
+
+#: src/McBopomofo.cpp:194
+msgid ""
+"# Note that you need to use a hyphen (\"-\") between Bopomofo syllables."
+msgstr ""
+
+#: src/McBopomofo.cpp:235
 msgid "Edit User Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:202
+#: src/McBopomofo.cpp:245
 msgid "Edit Excluded Phrases"
 msgstr ""
 

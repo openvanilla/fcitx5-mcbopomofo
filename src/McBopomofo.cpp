@@ -158,6 +158,48 @@ class KeyHandlerLocalizedString : public KeyHandler::LocalizedStrings {
   }
 };
 
+class LanguageModelLoaderLocalizedStrings
+    : public LanguageModelLoader::LocalizedStrings {
+ public:
+  virtual std::string userPhraseFileHeader() {
+    std::stringstream sst;
+    // clang-format off
+    sst
+      << _("# Custom Phrases or Characters.") << "\n"
+      << "#\n"
+      << _("# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動加詞 for usage.") << "\n"
+      << "#\n"
+      << _("# Add your phrases and their respective Bopomofo reading below. Use hyphen (\"-\")") << "\n"
+      << _("# to connect the Bopomofo syllables.") << "\n"
+      << "#\n"
+      << "#   小麥注音 ㄒㄧㄠˇ-ㄇㄞˋ-ㄓㄨˋ-ㄧㄣ" << "\n"
+      << "#\n"
+      << _("# Any line that starts with \"#\" is treated as comment.") << "\n"
+      << "\n";
+    // clang-format on
+    return sst.str();
+  }
+  virtual std::string excludedPhraseFileHeader() {
+    std::stringstream sst;
+    // clang-format off
+    sst
+      << _("# Custom Excluded Phrases or Characters.") << "\n"
+      << "#\n"
+      << _("# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動刪詞 for usage.") << "\n"
+      << "#\n"
+      << _("# For example, the line below will prevent the phrase \"家祠\" from showing up anywhere:") << "\n"
+      << "#\n"
+      << "#   家祠 ㄐㄧㄚ-ㄘˊ" << "\n"
+      << "#\n"
+      << _("# Note that you need to use a hyphen (\"-\") between Bopomofo syllables.") << "\n"
+      << "#\n"
+      << _("# Any line that starts with \"#\" is treated as comment.") << "\n"
+      << "\n";
+    // clang-format on
+    return sst.str();
+  }
+};
+
 static std::string GetOpenFileWith(const McBopomofoConfig& config) {
   return config.openUserPhraseFilesWith.value().length() > 0
              ? config.openUserPhraseFilesWith.value()
@@ -166,7 +208,8 @@ static std::string GetOpenFileWith(const McBopomofoConfig& config) {
 
 McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
     : instance_(instance) {
-  languageModelLoader_ = std::make_shared<LanguageModelLoader>();
+  languageModelLoader_ = std::make_shared<LanguageModelLoader>(
+      std::make_unique<LanguageModelLoaderLocalizedStrings>());
   keyHandler_ = std::make_unique<KeyHandler>(
       languageModelLoader_->getLM(), languageModelLoader_,
       std::make_unique<KeyHandlerLocalizedString>());
