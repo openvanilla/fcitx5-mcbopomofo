@@ -468,6 +468,10 @@ void KeyHandler::setOnAddNewPhrase(
 bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
                               const StateCallback& stateCallback,
                               const ErrorCallback& errorCallback) {
+  if (reading_.isEmpty() && walkedNodes_.empty()) {
+    return false;
+  }
+
   auto inputting = dynamic_cast<InputStates::Inputting*>(state);
 
   if (inputting == nullptr) {
