@@ -22,10 +22,17 @@ jobs:
           cd build
           cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
           make -j
+          cd ../
+          mkdir -p src/Engine/build
+          cd src/Engine/build
+          cmake ../
+          make -j
       - name: Test
         run: |
           cd build
           make runTest
+          cd ../src/Engine/build
+          make runMcBopomofoLMLibTest
 
   build_ubuntu_20:
     runs-on: ubuntu-latest
