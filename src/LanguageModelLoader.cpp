@@ -57,15 +57,28 @@ LanguageModelLoader::LanguageModelLoader(
     return;
   }
 
+  if (!std::filesystem::exists(userDataPath)) {
+    bool result = std::filesystem::create_directory(userDataPath);
+    if (result) {
+      FCITX_MCBOPOMOFO_INFO()
+          << "Created fcitx5 user data directory: " << userDataPath;
+    } else {
+      FCITX_MCBOPOMOFO_WARN()
+          << "Failed to create fcitx5 user data directory: " << userDataPath;
+      return;
+    }
+  }
+
   userDataPath += "/mcbopomofo";
   if (!std::filesystem::exists(userDataPath)) {
     bool result = std::filesystem::create_directory(userDataPath);
     if (result) {
       FCITX_MCBOPOMOFO_INFO()
-          << "Created user data directory: " << userDataPath;
+          << "Created mcbopomofo user data directory: " << userDataPath;
     } else {
       FCITX_MCBOPOMOFO_WARN()
-          << "Failed to create user data directory: " << userDataPath;
+          << "Failed to create mcbopomofo user data directory: "
+          << userDataPath;
       return;
     }
   }
