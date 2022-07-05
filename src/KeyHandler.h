@@ -29,7 +29,8 @@
 #include <string>
 #include <vector>
 
-#include "Gramambular.h"
+#include "Engine/gramambular2/language_model.h"
+#include "Engine/gramambular2/reading_grid.h"
 #include "InputState.h"
 #include "Key.h"
 #include "LanguageModelLoader.h"
@@ -50,7 +51,7 @@ class KeyHandler {
   class LocalizedStrings;
 
   explicit KeyHandler(
-      std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel,
+      std::shared_ptr<Formosa::Gramambular2::LanguageModel> languageModel,
       std::shared_ptr<UserPhraseAdder> userPhraseAdder,
       std::unique_ptr<LocalizedStrings> localizedStrings);
 
@@ -91,9 +92,6 @@ class KeyHandler {
 
   /// Sets if the ESC key clears entire composing buffer.
   void setEscKeyClearsEntireComposingBuffer(bool flag);
-
-  // Sets composing buffer size.
-  void setComposingBufferSize(size_t size);
 
   void setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior);
 
@@ -137,12 +135,6 @@ class KeyHandler {
   std::unique_ptr<InputStates::Marking> buildMarkingState(
       size_t beginCursorIndex);
 
-  // Returns the text that needs to be evicted from the walked grid due to the
-  // grid now being overflown with the recently added reading, then walk the
-  // grid.
-  std::string popEvictedTextAndWalk();
-  void fixNodesIfRequired();
-
   // Compute the actual candidate cursor index.
   size_t actualCandidateCursorIndex();
 
@@ -152,24 +144,21 @@ class KeyHandler {
 
   void walk();
 
-  std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel_;
+  std::shared_ptr<Formosa::Gramambular2::LanguageModel> lm_;
+  Formosa::Gramambular2::ReadingGrid grid_;
   std::shared_ptr<UserPhraseAdder> userPhraseAdder_;
   std::unique_ptr<LocalizedStrings> localizedStrings_;
 
   UserOverrideModel userOverrideModel_;
   Formosa::Mandarin::BopomofoReadingBuffer reading_;
-  std::unique_ptr<Formosa::Gramambular::BlockReadingBuilder> builder_;
-
-  // latest walked path (trellis) using the Viterbi algorithm
-  std::vector<Formosa::Gramambular::NodeAnchor> walkedNodes_;
+  Formosa::Gramambular2::ReadingGrid::WalkResult latestWalk_;
 
 #pragma region Settings
 
-  bool selectPhraseAfterCursorAsCandidate_;
-  bool moveCursorAfterSelection_;
-  bool putLowercaseLettersToComposingBuffer_;
-  bool escKeyClearsEntireComposingBuffer_;
-  size_t composingBufferSize_;
+  bool selectPhraseAfterCursorAsCandidate_ = false;
+  bool moveCursorAfterSelection_ = false;
+  bool putLowercaseLettersToComposingBuffer_ = false;
+  bool escKeyClearsEntireComposingBuffer_ = false;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
   std::function<void(const std::string&)> onAddNewPhrase_;
 

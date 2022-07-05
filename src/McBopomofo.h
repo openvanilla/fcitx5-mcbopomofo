@@ -123,11 +123,6 @@ FCITX_CONFIGURATION(
         this, "EscKeyClearsEntireComposingBuffer",
         _("ESC key clears entire composing buffer"), false};
 
-    // Composing buffer size.
-    fcitx::Option<int, fcitx::IntConstrain> composingBufferSize{
-        this, "ComposingBufferSize", _("Composing Buffer Size"), 10,
-        fcitx::IntConstrain(4, 100)};
-
     // Shift + letter keys.
     fcitx::OptionWithAnnotation<ShiftLetterKeys, ShiftLetterKeysI18NAnnotation>
         shiftLetterKeys{this, "ShiftLetterKeys", _("Shift + Letter Keys"),
@@ -209,12 +204,11 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   std::shared_ptr<LanguageModelLoader> languageModelLoader_;
   std::unique_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
-  int64_t stateCommittedTimestampMicroseconds_;
   McBopomofoConfig config_;
   fcitx::KeyList selectionKeys_;
 
-  std::unique_ptr<fcitx::SimpleAction> editUserPhreasesAction_;
-  std::unique_ptr<fcitx::SimpleAction> excludedPhreasesAction_;
+  std::unique_ptr<fcitx::SimpleAction> editUserPhrasesAction_;
+  std::unique_ptr<fcitx::SimpleAction> excludedPhrasesAction_;
 };
 
 class McBopomofoEngineFactory : public fcitx::AddonFactory {

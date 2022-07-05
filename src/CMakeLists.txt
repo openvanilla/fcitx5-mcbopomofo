@@ -1,7 +1,12 @@
+cmake_minimum_required(VERSION 3.6)
+project(mcbopomofo VERSION 2.3)
+
 find_package(Fcitx5Core REQUIRED)
 find_package(Fcitx5Utils REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
+
+add_subdirectory(Engine/gramambular2)
 
 set(MCBOPOMOFO_LIB_SOURCES
  KeyHandler.cpp
@@ -25,7 +30,7 @@ include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cma
 
 add_library(McBopomofoLib STATIC ${MCBOPOMOFO_LIB_SOURCES})
 target_compile_options(McBopomofoLib PRIVATE -Wno-unknown-pragmas)
-target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils)
+target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils gramambular2_lib)
 target_include_directories(McBopomofoLib PRIVATE Fcitx5::Utils)
 target_compile_definitions(McBopomofoLib PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 

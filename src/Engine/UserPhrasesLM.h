@@ -24,25 +24,25 @@
 #ifndef USERPHRASESLM_H
 #define USERPHRASESLM_H
 
-#include "LanguageModel.h"
+#include "gramambular2/language_model.h"
 #include <iostream>
 #include <map>
 #include <string>
 
 namespace McBopomofo {
 
-class UserPhrasesLM : public Formosa::Gramambular::LanguageModel {
+class UserPhrasesLM : public Formosa::Gramambular2::LanguageModel {
 public:
     UserPhrasesLM();
-    ~UserPhrasesLM();
+    ~UserPhrasesLM() override;
 
     bool isLoaded();
     bool open(const char* path);
     void close();
     void dump();
 
-    virtual const std::vector<Formosa::Gramambular::Unigram> unigramsForKey(const std::string& key);
-    virtual bool hasUnigramsForKey(const std::string& key);
+    std::vector<Formosa::Gramambular2::LanguageModel::Unigram> getUnigrams(const std::string& key) override;
+    bool hasUnigrams(const std::string& key) override;
 
 protected:
     struct Row {
