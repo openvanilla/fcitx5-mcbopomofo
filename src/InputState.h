@@ -75,14 +75,11 @@ struct NotEmpty : InputState {
   const std::string tooltip;
 };
 
-// Inputting state with an optional field to commit evicted ("popped") segments
-// in the composing buffer.
+// Inputting state.
 struct Inputting : NotEmpty {
   Inputting(const std::string& buf, const size_t index,
             const std::string_view& tooltipText = "")
       : NotEmpty(buf, index, tooltipText) {}
-
-  std::string evictedText;
 };
 
 // Candidate selecting state with a non-empty composing buffer.

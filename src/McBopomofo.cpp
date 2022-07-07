@@ -32,7 +32,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "Key.h"
 #include "Log.h"
@@ -40,21 +39,6 @@
 namespace McBopomofo {
 
 constexpr char kConfigPath[] = "conf/mcbopomofo.conf";
-
-// This is determined from experience. Even if a user hits Ctrl-Space quickly,
-// it'll take ~200 ms (so 200,000 microseconds) to switch input method context.
-// 90 ms is so fast that only a quick succession of events taken place during
-// FocusOut (see McBopomofoEngine::reset() below) can cause such context switch.
-constexpr int64_t kIgnoreFocusOutEventThresholdMicroseconds = 90'000;  // 90 ms
-
-static int64_t GetEpochNowInMicroseconds() {
-  auto now = std::chrono::system_clock::now();
-  int64_t timestamp =
-      std::chrono::time_point_cast<std::chrono::microseconds>(now)
-          .time_since_epoch()
-          .count();
-  return timestamp;
-}
 
 static Key MapFcitxKey(const fcitx::Key& key) {
   if (key.isSimple()) {
@@ -108,7 +92,7 @@ static Key MapFcitxKey(const fcitx::Key& key) {
     default:
       break;
   }
-  return Key();
+  return {};
 }
 
 class McBopomofoCandidateWord : public fcitx::CandidateWord {
@@ -118,8 +102,8 @@ class McBopomofoCandidateWord : public fcitx::CandidateWord {
       : fcitx::CandidateWord(std::move(text)), callback_(std::move(callback)) {}
 
   void select(fcitx::InputContext*) const override {
-    auto string = text().toStringForCommit();
-    callback_(std::move(string));
+    std::string str = text().toStringForCommit();
+    callback_(str);
   }
 
  private:
@@ -161,7 +145,7 @@ class KeyHandlerLocalizedString : public KeyHandler::LocalizedStrings {
 class LanguageModelLoaderLocalizedStrings
     : public LanguageModelLoader::LocalizedStrings {
  public:
-  virtual std::string userPhraseFileHeader() {
+  std::string userPhraseFileHeader() override {
     std::stringstream sst;
     // clang-format off
     sst
@@ -179,7 +163,7 @@ class LanguageModelLoaderLocalizedStrings
     // clang-format on
     return sst.str();
   }
-  virtual std::string excludedPhraseFileHeader() {
+  std::string excludedPhraseFileHeader() override {
     std::stringstream sst;
     // clang-format off
     sst
@@ -225,31 +209,31 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
     }
 
     auto userDataPath = languageModelLoader_->userDataPath();
-    fcitx::startProcess({"/bin/sh", scriptPath, newPhrase}, userDataPath);
+    fcitx::startProcess({"/bin/sh", scriptPath, std::move(newPhrase)},
+                        userDataPath);
   });
 
   state_ = std::make_unique<InputStates::Empty>();
-  stateCommittedTimestampMicroseconds_ = GetEpochNowInMicroseconds();
 
-  editUserPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
-  editUserPhreasesAction_->setShortText(_("Edit User Phrases"));
-  editUserPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
+  editUserPhrasesAction_ = std::make_unique<fcitx::SimpleAction>();
+  editUserPhrasesAction_->setShortText(_("Edit User Phrases"));
+  editUserPhrasesAction_->connect<fcitx::SimpleAction::Activated>(
       [this](fcitx::InputContext*) {
         fcitx::startProcess({GetOpenFileWith(config_),
                              languageModelLoader_->userPhrasesPath()});
       });
   instance_->userInterfaceManager().registerAction(
-      "mcbopomofo-user-phrases-edit", editUserPhreasesAction_.get());
+      "mcbopomofo-user-phrases-edit", editUserPhrasesAction_.get());
 
-  excludedPhreasesAction_ = std::make_unique<fcitx::SimpleAction>();
-  excludedPhreasesAction_->setShortText(_("Edit Excluded Phrases"));
-  excludedPhreasesAction_->connect<fcitx::SimpleAction::Activated>(
+  excludedPhrasesAction_ = std::make_unique<fcitx::SimpleAction>();
+  excludedPhrasesAction_->setShortText(_("Edit Excluded Phrases"));
+  excludedPhrasesAction_->connect<fcitx::SimpleAction::Activated>(
       [this](fcitx::InputContext*) {
         fcitx::startProcess({GetOpenFileWith(config_),
                              languageModelLoader_->excludedPhrasesPath()});
       });
   instance_->userInterfaceManager().registerAction(
-      "mcbopomofo-user-excluded-phrases-edit", excludedPhreasesAction_.get());
+      "mcbopomofo-user-excluded-phrases-edit", excludedPhrasesAction_.get());
 
   // Required by convention of fcitx5 modules to load config on its own.
   reloadConfig();
@@ -280,9 +264,9 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
   }
 
   inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
-                                       editUserPhreasesAction_.get());
+                                       editUserPhrasesAction_.get());
   inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
-                                       excludedPhreasesAction_.get());
+                                       excludedPhrasesAction_.get());
 
   auto layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
   switch (config_.bopomofoKeyboardLayout.value()) {
@@ -321,37 +305,29 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
 
   keyHandler_->setCtrlEnterKeyBehavior(config_.ctrlEnterKeys.value());
 
-  keyHandler_->setComposingBufferSize(config_.composingBufferSize.value());
-
   languageModelLoader_->reloadUserModelsIfNeeded();
 }
 
 void McBopomofoEngine::reset(const fcitx::InputMethodEntry&,
                              fcitx::InputContextEvent& event) {
-  // If our previous state is Inputting and it has evicted text, and reset() is
-  // called soon afterwards--here we use
-  // kIgnoreFocusOutEventThresholdMicroseconds to determine it--then we should
-  // ignore this event. This is because some apps, like Chrome-based browsers,
-  // would trigger this event when some string is committed, even if we stay in
-  // the Inputting state. If we don't ignore this, it'll cause the preedit to be
-  // prematurely cleared, which disrupts the user input flow.
-  auto isFocusOutEvent = dynamic_cast<fcitx::FocusOutEvent*>(&event) != nullptr;
-  if (isFocusOutEvent) {
-    int64_t delta =
-        GetEpochNowInMicroseconds() - stateCommittedTimestampMicroseconds_;
-    if (delta < kIgnoreFocusOutEventThresholdMicroseconds) {
-      if (auto inputting =
-              dynamic_cast<InputStates::Inputting*>(state_.get())) {
-        if (inputting->evictedText.length() > 0) {
-          // Don't reset anything. Stay in the current Inputting state.
-          return;
-        }
-      }
-    }
-  }
-
   keyHandler_->reset();
-  enterNewState(event.inputContext(), std::make_unique<InputStates::Empty>());
+
+  if (dynamic_cast<fcitx::FocusOutEvent*>(&event) != nullptr) {
+    // If this is a FocusOutEvent, we let fcitx5 do its own clean up, and so we
+    // just force the state machine to go back to the empty state. The
+    // FocusOutEvent will cause the preedit buffer to be force-committed anyway.
+    //
+    // Note: We don't want to call enterNewState() with EmptyIgnoringPrevious
+    // state because we don't want to clean the preedit ourselves (which would
+    // cause nothing to be force-committed as the focus is switched, and that
+    // would cause user to lose what they've entered). We don't want to call
+    // enterNewState() with Empty state, either, because that would trigger
+    // commit of existing preedit buffer, resulting in double commit of the same
+    // text.
+    state_ = std::make_unique<InputStates::Empty>();
+  } else {
+    enterNewState(event.inputContext(), std::make_unique<InputStates::Empty>());
+  }
 }
 
 void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
@@ -539,7 +515,6 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
   // Hold the previous state, and transfer the ownership of newState.
   std::unique_ptr<InputState> prevState = std::move(state_);
   state_ = std::move(newState);
-  stateCommittedTimestampMicroseconds_ = GetEpochNowInMicroseconds();
 
   InputState* prevPtr = prevState.get();
   InputState* currentPtr = state_.get();
@@ -602,10 +577,6 @@ void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
                                             InputStates::Inputting* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-
-  if (!current->evictedText.empty()) {
-    context->commitString(current->evictedText);
-  }
   updatePreedit(context, current);
 }
 
