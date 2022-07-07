@@ -24,6 +24,7 @@
 #ifndef READING_GRID_H_
 #define READING_GRID_H_
 
+#include <array>
 #include <cassert>
 #include <memory>
 #include <string>
