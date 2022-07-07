@@ -46,12 +46,6 @@ constexpr int kUserOverrideModelCapacity = 500;
 constexpr double kObservedOverrideHalfLife = 5400.0;  // 1.5 hr.
 // Unigram whose score is below this shouldn't be put into user override model.
 constexpr double kNoOverrideThreshold = -8.0;
-constexpr double kEpsilon = 0.000001;
-
-// Maximum composing buffer size, roughly in codepoints.
-constexpr size_t kMaxComposingBufferSize = 100;
-constexpr size_t kDefaultComposingBufferSize = 10;
-constexpr size_t kMaxComposingBufferNeedsToWalkSize = 10;
 
 static const char* GetKeyboardLayoutName(
     const Formosa::Mandarin::BopomofoKeyboardLayout* layout) {
@@ -71,18 +65,17 @@ static const char* GetKeyboardLayoutName(
   return "Standard";
 }
 
-static bool MarkedPhraseExists(Formosa::Gramambular::LanguageModel* lm,
-                               const std::string& reading,
-                               const std::string& value) {
-  if (!lm->hasUnigramsForKey(reading)) {
+static bool MarkedPhraseExists(
+    const std::shared_ptr<Formosa::Gramambular2::LanguageModel>& lm,
+    const std::string& reading, const std::string& value) {
+  if (!lm->hasUnigrams(reading)) {
     return false;
   }
 
-  auto unigrams = lm->unigramsForKey(reading);
-  return std::any_of(unigrams.begin(), unigrams.end(),
-                     [&value](const auto& unigram) {
-                       return unigram.keyValue.value == value;
-                     });
+  auto unigrams = lm->getUnigrams(reading);
+  return std::any_of(
+      unigrams.begin(), unigrams.end(),
+      [&value](const auto& unigram) { return unigram.value() == value; });
 }
 
 static double GetEpochNowInSeconds() {
@@ -90,36 +83,19 @@ static double GetEpochNowInSeconds() {
   int64_t timestamp = std::chrono::time_point_cast<std::chrono::seconds>(now)
                           .time_since_epoch()
                           .count();
-  return timestamp;
-}
-
-static double FindHighestScore(
-    const std::vector<Formosa::Gramambular::NodeAnchor>& nodeAnchors,
-    double epsilon) {
-  double highestScore = 0.0;
-  for (const auto& anchor : nodeAnchors) {
-    double score = anchor.node->highestUnigramScore();
-    if (score > highestScore) {
-      highestScore = score;
-    }
-  }
-  return highestScore + epsilon;
+  return static_cast<double>(timestamp);
 }
 
 KeyHandler::KeyHandler(
-    std::shared_ptr<Formosa::Gramambular::LanguageModel> languageModel,
+    std::shared_ptr<Formosa::Gramambular2::LanguageModel> languageModel,
     std::shared_ptr<UserPhraseAdder> userPhraseAdder,
     std::unique_ptr<LocalizedStrings> localizedStrings)
-    : languageModel_(std::move(languageModel)),
+    : lm_(std::move(languageModel)),
+      grid_(lm_),
       userPhraseAdder_(std::move(userPhraseAdder)),
       localizedStrings_(std::move(localizedStrings)),
       userOverrideModel_(kUserOverrideModelCapacity, kObservedOverrideHalfLife),
-      reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()),
-      composingBufferSize_(kDefaultComposingBufferSize) {
-  builder_ = std::make_unique<Formosa::Gramambular::BlockReadingBuilder>(
-      languageModel_.get());
-  builder_->setJoinSeparator(kJoinSeparator);
-}
+      reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {}
 
 bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                         const StateCallback& stateCallback,
@@ -151,9 +127,9 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     std::string syllable = reading_.syllable().composedString();
     reading_.clear();
 
-    if (!languageModel_->hasUnigramsForKey(syllable)) {
+    if (!lm_->hasUnigrams(syllable)) {
       errorCallback();
-      if (!builder_->length()) {
+      if (!grid_.length()) {
         stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
       } else {
         stateCallback(buildInputtingState());
@@ -161,25 +137,20 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       return true;
     }
 
-    builder_->insertReadingAtCursor(syllable);
-    std::string evictedText = popEvictedTextAndWalk();
+    grid_.insertReading(syllable);
+    walk();
 
     std::string overrideValue = userOverrideModel_.suggest(
-        walkedNodes_, builder_->cursorIndex(), GetEpochNowInSeconds());
+        latestWalk_.nodes, actualCandidateCursorIndex(),
+        GetEpochNowInSeconds());
     if (!overrideValue.empty()) {
-      size_t cursorIndex = actualCandidateCursorIndex();
-      std::vector<Formosa::Gramambular::NodeAnchor> nodes =
-          builder_->grid().nodesCrossingOrEndingAt(cursorIndex);
-      double highestScore = FindHighestScore(nodes, kEpsilon);
-      builder_->grid().overrideNodeScoreForSelectedCandidate(
-          cursorIndex, overrideValue, static_cast<float>(highestScore));
+      grid_.overrideCandidate(
+          actualCandidateCursorIndex(), overrideValue,
+          Formosa::Gramambular2::ReadingGrid::Node::OverrideType::
+              kOverrideValueWithScoreFromTopUnigram);
     }
 
-    fixNodesIfRequired();
-
-    auto inputtingState = buildInputtingState();
-    inputtingState->evictedText = evictedText;
-    stateCallback(std::move(inputtingState));
+    stateCallback(buildInputtingState());
     return true;
   }
 
@@ -196,13 +167,11 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   // Shift + Space.
   if (key.ascii == Key::SPACE && key.shiftPressed) {
     if (putLowercaseLettersToComposingBuffer_) {
-      builder_->insertReadingAtCursor(" ");
-      std::string evictedText = popEvictedTextAndWalk();
-      auto inputtingState = buildInputtingState();
-      inputtingState->evictedText = evictedText;
-      stateCallback(std::move(inputtingState));
+      grid_.insertReading(" ");
+      walk();
+      stateCallback(buildInputtingState());
     } else {
-      if (builder_->length()) {
+      if (grid_.length()) {
         auto inputtingState = buildInputtingState();
         // Steal the composingBuffer built by the inputting state.
         auto committingState = std::make_unique<InputStates::Committing>(
@@ -238,7 +207,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     if (!reading_.isEmpty()) {
       reading_.clear();
-      if (!builder_->length()) {
+      if (!grid_.length()) {
         stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
       } else {
         stateCallback(buildInputtingState());
@@ -278,7 +247,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     if (key.ctrlPressed) {
       if (ctrlEnterKey_ == KeyHandlerCtrlEnter::OutputBpmfReadings) {
-        std::vector<std::string> readings = builder_->readings();
+        std::vector<std::string> readings = grid_.readings();
         std::string readingValue;
         for (auto it = readings.begin(); it != readings.end(); ++it) {
           readingValue += *it;
@@ -327,14 +296,12 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
   // Punctuation key: backtick or grave accent.
   if (simpleAscii == kPunctuationListKey &&
-      languageModel_->hasUnigramsForKey(kPunctuationListUnigramKey)) {
+      lm_->hasUnigrams(kPunctuationListUnigramKey)) {
     if (reading_.isEmpty()) {
-      builder_->insertReadingAtCursor(kPunctuationListUnigramKey);
-
-      std::string evictedText = popEvictedTextAndWalk();
+      grid_.insertReading(kPunctuationListUnigramKey);
+      walk();
 
       auto inputtingState = buildInputtingState();
-      inputtingState->evictedText = evictedText;
       auto choosingCanidateState =
           buildChoosingCandidateState(inputtingState.get());
       stateCallback(std::move(inputtingState));
@@ -421,8 +388,8 @@ void KeyHandler::candidatePanelCancelled(const StateCallback& stateCallback) {
 
 void KeyHandler::reset() {
   reading_.clear();
-  builder_->clear();
-  walkedNodes_.clear();
+  grid_.clear();
+  latestWalk_ = Formosa::Gramambular2::ReadingGrid::WalkResult();
 }
 
 #pragma region Settings
@@ -444,10 +411,6 @@ void KeyHandler::setPutLowercaseLettersToComposingBuffer(bool flag) {
   putLowercaseLettersToComposingBuffer_ = flag;
 }
 
-void KeyHandler::setComposingBufferSize(size_t size) {
-  composingBufferSize_ = size;
-};
-
 void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
   escKeyClearsEntireComposingBuffer_ = flag;
 }
@@ -458,7 +421,7 @@ void KeyHandler::setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior) {
 
 void KeyHandler::setOnAddNewPhrase(
     std::function<void(const std::string&)> onAddNewPhrase) {
-  onAddNewPhrase_ = onAddNewPhrase;
+  onAddNewPhrase_ = std::move(onAddNewPhrase);
 }
 
 #pragma endregion Settings
@@ -468,7 +431,7 @@ void KeyHandler::setOnAddNewPhrase(
 bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
                               const StateCallback& stateCallback,
                               const ErrorCallback& errorCallback) {
-  if (reading_.isEmpty() && walkedNodes_.empty()) {
+  if (reading_.isEmpty() && latestWalk_.nodes.empty()) {
     return false;
   }
 
@@ -492,27 +455,32 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
 
   size_t cursorIndex = actualCandidateCursorIndex();
   size_t length = 0;
-  Formosa::Gramambular::NodeAnchor currentNode;
+  Formosa::Gramambular2::ReadingGrid::NodePtr currentNode;
 
-  for (auto node : walkedNodes_) {
-    length += node.spanningLength;
-    if (length >= cursorIndex) {
+  for (const auto& node : latestWalk_.nodes) {
+    length += node->spanningLength();
+    if (length > cursorIndex) {
       currentNode = node;
       break;
     }
   }
 
+  if (currentNode == nullptr) {
+    // Shouldn't happen.
+    errorCallback();
+    return true;
+  }
+
   size_t currentIndex = 0;
-  if (currentNode.node->score() <
-      Formosa::Gramambular::kSelectedCandidateScore) {
-    // Once the user never select a candidate for the node, we start from the
+  if (!currentNode->isOverridden()) {
+    // If the user never selects a candidate for the node, we start from the
     // first candidate, so the user has a chance to use the unigram with two or
     // more characters when type the tab key for the first time.
     //
     // In other words, if a user type two BPMF readings, but the score of seeing
     // them as two unigrams is higher than a phrase with two characters, the
     // user can just use the longer phrase by typing the tab key.
-    if (candidates[0] == currentNode.node->currentKeyValue().value) {
+    if (candidates[0] == currentNode->value()) {
       // If the first candidate is the value of the current node, we use next
       // one.
       if (key.shiftPressed) {
@@ -522,8 +490,8 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
       }
     }
   } else {
-    for (auto candidate : candidates) {
-      if (candidate == currentNode.node->currentKeyValue().value) {
+    for (const auto& candidate : candidates) {
+      if (candidate == currentNode->value()) {
         if (key.shiftPressed) {
           currentIndex == 0 ? currentIndex = candidates.size() - 1
                             : currentIndex--;
@@ -553,7 +521,7 @@ bool KeyHandler::handleCursorKeys(Key key, McBopomofo::InputState* state,
       dynamic_cast<InputStates::Marking*>(state) == nullptr) {
     return false;
   }
-  size_t markBeginCursorIndex = builder_->cursorIndex();
+  size_t markBeginCursorIndex = grid_.cursor();
   auto marking = dynamic_cast<InputStates::Marking*>(state);
   if (marking != nullptr) {
     markBeginCursorIndex = marking->markStartGridCursorIndex;
@@ -568,23 +536,23 @@ bool KeyHandler::handleCursorKeys(Key key, McBopomofo::InputState* state,
   bool isValidMove = false;
   switch (key.name) {
     case Key::KeyName::LEFT:
-      if (builder_->cursorIndex() > 0) {
-        builder_->setCursorIndex(builder_->cursorIndex() - 1);
+      if (grid_.cursor() > 0) {
+        grid_.setCursor(grid_.cursor() - 1);
         isValidMove = true;
       }
       break;
     case Key::KeyName::RIGHT:
-      if (builder_->cursorIndex() < builder_->length()) {
-        builder_->setCursorIndex(builder_->cursorIndex() + 1);
+      if (grid_.cursor() < grid_.length()) {
+        grid_.setCursor(grid_.cursor() + 1);
         isValidMove = true;
       }
       break;
     case Key::KeyName::HOME:
-      builder_->setCursorIndex(0);
+      grid_.setCursor(0);
       isValidMove = true;
       break;
     case Key::KeyName::END:
-      builder_->setCursorIndex(builder_->length());
+      grid_.setCursor(grid_.length());
       isValidMove = true;
       break;
     default:
@@ -596,7 +564,7 @@ bool KeyHandler::handleCursorKeys(Key key, McBopomofo::InputState* state,
     errorCallback();
   }
 
-  if (key.shiftPressed && builder_->cursorIndex() != markBeginCursorIndex) {
+  if (key.shiftPressed && grid_.cursor() != markBeginCursorIndex) {
     stateCallback(buildMarkingState(markBeginCursorIndex));
   } else {
     stateCallback(buildInputtingState());
@@ -616,12 +584,11 @@ bool KeyHandler::handleDeleteKeys(Key key, McBopomofo::InputState* state,
   } else if (reading_.isEmpty()) {
     bool isValidDelete = false;
 
-    if (key.ascii == Key::BACKSPACE && builder_->cursorIndex() > 0) {
-      builder_->deleteReadingBeforeCursor();
+    if (key.ascii == Key::BACKSPACE && grid_.cursor() > 0) {
+      grid_.deleteReadingBeforeCursor();
       isValidDelete = true;
-    } else if (key.ascii == Key::DELETE &&
-               builder_->cursorIndex() < builder_->length()) {
-      builder_->deleteReadingAfterCursor();
+    } else if (key.ascii == Key::DELETE && grid_.cursor() < grid_.length()) {
+      grid_.deleteReadingAfterCursor();
       isValidDelete = true;
     }
     if (!isValidDelete) {
@@ -639,7 +606,7 @@ bool KeyHandler::handleDeleteKeys(Key key, McBopomofo::InputState* state,
     }
   }
 
-  if (reading_.isEmpty() && builder_->length() == 0) {
+  if (reading_.isEmpty() && grid_.length() == 0) {
     // Cancel the previous input state if everything is empty now.
     stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
   } else {
@@ -651,7 +618,7 @@ bool KeyHandler::handleDeleteKeys(Key key, McBopomofo::InputState* state,
 bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
                                    const StateCallback& stateCallback,
                                    const ErrorCallback& errorCallback) {
-  if (!languageModel_->hasUnigramsForKey(punctuationUnigramKey)) {
+  if (!lm_->hasUnigrams(punctuationUnigramKey)) {
     return false;
   }
 
@@ -661,12 +628,9 @@ bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
     return true;
   }
 
-  builder_->insertReadingAtCursor(punctuationUnigramKey);
-  std::string evictedText = popEvictedTextAndWalk();
-
-  auto inputtingState = buildInputtingState();
-  inputtingState->evictedText = evictedText;
-  stateCallback(std::move(inputtingState));
+  grid_.insertReading(punctuationUnigramKey);
+  walk();
+  stateCallback(buildInputtingState());
   return true;
 }
 
@@ -676,15 +640,10 @@ bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
 
 std::string KeyHandler::getHTMLRubyText() {
   std::string composed;
-  for (const Formosa::Gramambular::NodeAnchor& anchor : walkedNodes_) {
-    const Formosa::Gramambular::Node* node = anchor.node;
-    if (node == nullptr) {
-      continue;
-    }
-
-    std::string key = node->currentKeyValue().key;
+  for (const auto& node : latestWalk_.nodes) {
+    std::string key = node->reading();
     std::replace(key.begin(), key.end(), kJoinSeparator[0], kSpaceSeparator[0]);
-    const std::string& value = node->currentKeyValue().value;
+    std::string value = node->value();
 
     // If a key starts with underscore, it is usually for a punctuation or a
     // symbol but not a Bopomofo reading so we just ignore such case.
@@ -721,25 +680,20 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
 
   std::string tooltip;
 
-  for (const Formosa::Gramambular::NodeAnchor& anchor : walkedNodes_) {
-    const Formosa::Gramambular::Node* node = anchor.node;
-    if (node == nullptr) {
-      continue;
-    }
-
-    const std::string& value = node->currentKeyValue().value;
+  for (const auto& node : latestWalk_.nodes) {
+    std::string value = node->value();
     composed += value;
 
     // No work if runningCursor has already caught up with builderCursor.
     if (runningCursor == builderCursor) {
       continue;
     }
-    size_t spanningLength = anchor.spanningLength;
+    size_t readingLength = node->spanningLength();
 
     // Simple case: if the running cursor is behind, add the spanning length.
-    if (runningCursor + spanningLength <= builderCursor) {
+    if (runningCursor + readingLength <= builderCursor) {
       composedCursor += value.length();
-      runningCursor += spanningLength;
+      runningCursor += readingLength;
       continue;
     }
 
@@ -750,7 +704,8 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
     // The actual partial value's code point length is the shorter of the
     // distance and the value's code point count.
     size_t cpLen = std::min(distance, u32Value.length());
-    std::u32string actualU32Value(u32Value.begin(), u32Value.begin() + cpLen);
+    std::u32string actualU32Value(
+        u32Value.begin(), u32Value.begin() + static_cast<ptrdiff_t>(cpLen));
     std::string actualValue = ToU8(actualU32Value);
     composedCursor += actualValue.length();
     runningCursor += distance;
@@ -758,14 +713,14 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
     // Create a tooltip to warn the user that their cursor is between two
     // readings (syllables) even if the cursor is not in the middle of a
     // composed string due to its being shorter than the number of readings.
-    if (u32Value.length() < spanningLength) {
+    if (u32Value.length() < readingLength) {
       // builderCursor is guaranteed to be > 0. If it was 0, we wouldn't even
       // reach here due to runningCursor having already "caught up" with
       // builderCursor. It is also guaranteed to be less than the size of the
       // builder's readings for the same reason: runningCursor would have
       // already caught up.
-      const std::string& prevReading = builder_->readings()[builderCursor - 1];
-      const std::string& nextReading = builder_->readings()[builderCursor];
+      const std::string& prevReading = grid_.readings()[builderCursor - 1];
+      const std::string& nextReading = grid_.readings()[builderCursor];
 
       tooltip =
           localizedStrings_->cursorIsBetweenSyllables(prevReading, nextReading);
@@ -784,7 +739,7 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
 #pragma region Build_States
 
 std::unique_ptr<InputStates::Inputting> KeyHandler::buildInputtingState() {
-  auto composedString = getComposedString(builder_->cursorIndex());
+  auto composedString = getComposedString(grid_.cursor());
 
   std::string head = composedString.head;
   std::string reading = reading_.composedString();
@@ -798,28 +753,9 @@ std::unique_ptr<InputStates::Inputting> KeyHandler::buildInputtingState() {
 
 std::unique_ptr<InputStates::ChoosingCandidate>
 KeyHandler::buildChoosingCandidateState(InputStates::NotEmpty* nonEmptyState) {
-  std::vector<Formosa::Gramambular::NodeAnchor> anchoredNodes =
-      builder_->grid().nodesCrossingOrEndingAt(actualCandidateCursorIndex());
-
-  // sort the nodes, so that longer nodes (representing longer phrases) are
-  // placed at the top of the candidate list
-  stable_sort(anchoredNodes.begin(), anchoredNodes.end(),
-              [](const Formosa::Gramambular::NodeAnchor& a,
-                 const Formosa::Gramambular::NodeAnchor& b) {
-                return a.node->key().length() > b.node->key().length();
-              });
-
-  std::vector<std::string> candidates;
-  for (const Formosa::Gramambular::NodeAnchor& anchor : anchoredNodes) {
-    const std::vector<Formosa::Gramambular::KeyValuePair>& nodeCandidates =
-        anchor.node->candidates();
-    for (const Formosa::Gramambular::KeyValuePair& kv : nodeCandidates) {
-      candidates.push_back(kv.value);
-    }
-  }
-
   return std::make_unique<InputStates::ChoosingCandidate>(
-      nonEmptyState->composingBuffer, nonEmptyState->cursorIndex, candidates);
+      nonEmptyState->composingBuffer, nonEmptyState->cursorIndex,
+      grid_.candidatesAt(actualCandidateCursorIndex()));
 }
 
 std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
@@ -827,13 +763,13 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
   // We simply build two composed strings and use the delta between the
   // shorter and the longer one as the marked text.
   ComposedString from = getComposedString(beginCursorIndex);
-  ComposedString to = getComposedString(builder_->cursorIndex());
+  ComposedString to = getComposedString(grid_.cursor());
   size_t composedStringCursorIndex = to.head.length();
   std::string composed = to.head + to.tail;
   size_t fromIndex = beginCursorIndex;
-  size_t toIndex = builder_->cursorIndex();
+  size_t toIndex = grid_.cursor();
 
-  if (beginCursorIndex > builder_->cursorIndex()) {
+  if (beginCursorIndex > grid_.cursor()) {
     std::swap(from, to);
     std::swap(fromIndex, toIndex);
   }
@@ -841,13 +777,15 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
   // Now from is shorter and to is longer. The marked text is just the delta.
   std::string head = from.head;
   std::string marked =
-      std::string(to.head.begin() + from.head.length(), to.head.end());
+      std::string(to.head.begin() + static_cast<ptrdiff_t>(from.head.length()),
+                  to.head.end());
   std::string tail = to.tail;
 
   // Collect the readings.
-  auto readingBegin = builder_->readings().begin();
-  std::vector<std::string> readings(readingBegin + fromIndex,
-                                    readingBegin + toIndex);
+  auto readingBegin = grid_.readings().begin();
+  std::vector<std::string> readings(
+      readingBegin + static_cast<ptrdiff_t>(fromIndex),
+      readingBegin + static_cast<ptrdiff_t>(toIndex));
   std::string readingUiText;  // What the user sees.
   std::string readingValue;   // What is used for adding a user phrase.
   for (auto it = readings.begin(); it != readings.end(); ++it) {
@@ -866,7 +804,7 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
     status = localizedStrings_->syllablesRequired(kMinValidMarkingReadingCount);
   } else if (readings.size() > kMaxValidMarkingReadingCount) {
     status = localizedStrings_->syllablesMaximum(kMaxValidMarkingReadingCount);
-  } else if (MarkedPhraseExists(languageModel_.get(), readingValue, marked)) {
+  } else if (MarkedPhraseExists(lm_, readingValue, marked)) {
     status = localizedStrings_->phraseAlreadyExists();
   } else {
     status = localizedStrings_->pressEnterToAddThePhrase();
@@ -881,97 +819,60 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
 }
 
 size_t KeyHandler::actualCandidateCursorIndex() {
-  size_t cursorIndex = builder_->cursorIndex();
-  if (selectPhraseAfterCursorAsCandidate_) {
-    if (cursorIndex < builder_->length()) {
-      ++cursorIndex;
-    }
-  } else {
-    // Cursor must be in the middle or right after a node. So if the cursor is
-    // at the beginning, move by one.
-    if (!cursorIndex && builder_->length() > 0) {
-      ++cursorIndex;
-    }
+  size_t cursor = grid_.cursor();
+
+  // If the cursor is at the end, always return cursor - 1. Even though
+  // ReadingGrid already handles this edge case, we want to use this value
+  // consistently. UserOverrideModel also requires the cursor to be this
+  // correct value.
+  if (cursor == grid_.length() && cursor > 0) {
+    return cursor - 1;
   }
-  return cursorIndex;
+
+  // ReadingGrid already makes the assumption that the cursor is always *at*
+  // the reading location, and when selectPhraseAfterCursorAsCandidate_ is true
+  // we don't need to do anything. Rather, it's when the flag is false (the
+  // default value), that we want to decrement the cursor by one.
+  if (!selectPhraseAfterCursorAsCandidate_ && cursor > 0) {
+    return cursor - 1;
+  }
+
+  return cursor;
 }
 
 #pragma endregion Build_States
 
-std::string KeyHandler::popEvictedTextAndWalk() {
-  // in an ideal world, we can as well let the user type forever,
-  // but because the Viterbi algorithm has a complexity of O(N^2),
-  // the walk will become slower as the number of nodes increase,
-  // therefore we need to "pop out" overflown text -- they usually
-  // lose their influence over the whole MLE anyway -- so that when
-  // the user type along, the already composed text at front will
-  // be popped out
-  std::string evictedText;
-  size_t composingBufferSize =
-      std::min(kMaxComposingBufferSize, composingBufferSize_);
-  if (builder_->grid().width() > composingBufferSize && !walkedNodes_.empty()) {
-    Formosa::Gramambular::NodeAnchor& anchor = walkedNodes_[0];
-    evictedText = anchor.node->currentKeyValue().value;
-    builder_->removeHeadReadings(anchor.spanningLength);
-  }
-
-  walk();
-  return evictedText;
-}
-
-void KeyHandler::fixNodesIfRequired() {
-  size_t width = builder_->grid().width();
-  if (width > kMaxComposingBufferNeedsToWalkSize) {
-    size_t index = 0;
-    for (auto node : walkedNodes_) {
-      if (index >= width - kMaxComposingBufferNeedsToWalkSize) {
-        break;
-      }
-      if (node.node->score() < Formosa::Gramambular::kSelectedCandidateScore) {
-        auto candidate = node.node->currentKeyValue().value;
-        builder_->grid().fixNodeSelectedCandidate(index + node.spanningLength,
-                                                  candidate);
-      }
-      index += node.spanningLength;
-    }
-  }
-}
-
 void KeyHandler::pinNode(const std::string& candidate,
                          const bool useMoveCursorAfterSelectionSetting) {
-  size_t cursorIndex = actualCandidateCursorIndex();
-  Formosa::Gramambular::NodeAnchor selectedNode =
-      builder_->grid().fixNodeSelectedCandidate(cursorIndex, candidate);
-  double score = selectedNode.node->scoreForCandidate(candidate);
-  if (score > kNoOverrideThreshold) {
-    userOverrideModel_.observe(walkedNodes_, cursorIndex, candidate,
+  size_t actualCursor = actualCandidateCursorIndex();
+  if (!grid_.overrideCandidate(actualCursor, candidate)) {
+    return;
+  }
+  walk();
+
+  // Update the user override model if warranted.
+  size_t accumulatedCursor = 0;
+  Formosa::Gramambular2::ReadingGrid::NodePtr currentNode;
+  for (const auto& node : latestWalk_.nodes) {
+    accumulatedCursor += node->spanningLength();
+    if (accumulatedCursor > actualCursor) {
+      currentNode = node;
+      break;
+    }
+  }
+
+  if (currentNode != nullptr &&
+      currentNode->currentUnigram().score() > kNoOverrideThreshold) {
+    userOverrideModel_.observe(latestWalk_.nodes, actualCursor, candidate,
                                GetEpochNowInSeconds());
   }
 
-  walk();
-
-  if (useMoveCursorAfterSelectionSetting && moveCursorAfterSelection_) {
-    size_t nextPosition = 0;
-    for (auto node : walkedNodes_) {
-      if (nextPosition >= cursorIndex) {
-        break;
-      }
-      nextPosition += node.spanningLength;
-    }
-    if (nextPosition <= builder_->length()) {
-      builder_->setCursorIndex(nextPosition);
-    }
+  if (currentNode != nullptr && useMoveCursorAfterSelectionSetting &&
+      moveCursorAfterSelection_) {
+    grid_.setCursor(accumulatedCursor);
   }
 }
 
-void KeyHandler::walk() {
-  // retrieve the most likely trellis, i.e. a Maximum Likelihood Estimation
-  // of the best possible Mandarin characters given the input syllables,
-  // using the Viterbi algorithm implemented in the Gramambular library.
-  Formosa::Gramambular::Walker walker(&builder_->grid());
-
-  // the walker traces the trellis from the end
-  walkedNodes_ = walker.walk(0);
-}
+void KeyHandler::walk() { latestWalk_ = grid_.walk(); }
 
 }  // namespace McBopomofo

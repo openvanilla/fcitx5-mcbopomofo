@@ -112,25 +112,21 @@ void UserPhrasesLM::dump()
     }
 }
 
-const std::vector<Formosa::Gramambular::Unigram> UserPhrasesLM::unigramsForKey(const std::string& key)
+std::vector<Formosa::Gramambular2::LanguageModel::Unigram> UserPhrasesLM::getUnigrams(const std::string& key)
 {
-    std::vector<Formosa::Gramambular::Unigram> v;
+    std::vector<Formosa::Gramambular2::LanguageModel::Unigram> v;
     auto iter = keyRowMap.find(key);
     if (iter != keyRowMap.end()) {
         const std::vector<Row>& rows = iter->second;
         for (const auto& row : rows) {
-            Formosa::Gramambular::Unigram g;
-            g.keyValue.key = row.key;
-            g.keyValue.value = row.value;
-            g.score = 0.0;
-            v.push_back(g);
+            v.emplace_back(std::string(row.value), 0);
         }
     }
 
     return v;
 }
 
-bool UserPhrasesLM::hasUnigramsForKey(const std::string& key)
+bool UserPhrasesLM::hasUnigrams(const std::string& key)
 {
     return keyRowMap.find(key) != keyRowMap.end();
 }

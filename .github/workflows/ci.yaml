@@ -30,7 +30,7 @@ jobs:
       - name: Test
         run: |
           cd build
-          make runTest
+          make runTest runGramambular2Test
           cd ../src/Engine/build
           make runMcBopomofoLMLibTest
 

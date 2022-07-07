@@ -76,6 +76,7 @@ class LanguageModelLoader : public UserPhraseAdder {
  public:
   class LocalizedStrings {
    public:
+    virtual ~LocalizedStrings() = default;
     virtual std::string userPhraseFileHeader() = 0;
     virtual std::string excludedPhraseFileHeader() = 0;
   };
