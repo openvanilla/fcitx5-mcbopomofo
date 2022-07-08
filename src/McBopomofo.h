@@ -202,7 +202,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   fcitx::CandidateLayoutHint getCandidateLayoutHint();
 
   std::shared_ptr<LanguageModelLoader> languageModelLoader_;
-  std::unique_ptr<KeyHandler> keyHandler_;
+  std::shared_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;
   fcitx::KeyList selectionKeys_;

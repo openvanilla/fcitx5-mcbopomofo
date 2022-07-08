@@ -269,8 +269,8 @@ ReadingGrid::WalkResult ReadingGrid::walk() {
   return result;
 }
 
-std::vector<std::string> ReadingGrid::candidatesAt(size_t loc) {
-  std::vector<std::string> result;
+std::vector<ReadingGrid::Candidate> ReadingGrid::candidatesAt(size_t loc) {
+  std::vector<ReadingGrid::Candidate> result;
   if (readings_.empty()) {
     return result;
   }
@@ -290,51 +290,23 @@ std::vector<std::string> ReadingGrid::candidatesAt(size_t loc) {
 
   for (const NodeInSpan& nodeInSpan : nodes) {
     for (const LanguageModel::Unigram& unigram : nodeInSpan.node->unigrams()) {
-      result.emplace_back(unigram.value());
+      result.emplace_back(nodeInSpan.node->reading(), unigram.value());
     }
   }
   return result;
 }
 
 bool ReadingGrid::overrideCandidate(
+    size_t loc, const ReadingGrid::Candidate& candidate,
+    ReadingGrid::Node::OverrideType overrideType) {
+  return overrideCandidate(loc, &candidate.reading, candidate.value,
+                           overrideType);
+}
+
+bool ReadingGrid::overrideCandidate(
     size_t loc, const std::string& candidate,
     ReadingGrid::Node::OverrideType overrideType) {
-  if (loc > readings_.size()) {
-    return false;
-  }
-
-  std::vector<NodeInSpan> overlappingNodes =
-      overlappingNodesAt(loc == readings_.size() ? loc - 1 : loc);
-  NodeInSpan overridden;
-  for (NodeInSpan& nis : overlappingNodes) {
-    if (nis.node->selectOverrideUnigram(candidate, overrideType)) {
-      overridden = nis;
-      break;
-    }
-  }
-
-  if (overridden.node == nullptr) {
-    // Nothing gets overridden.
-    return false;
-  }
-
-  for (size_t i = overridden.spanIndex;
-       i < overridden.spanIndex + overridden.node->spanningLength() &&
-       i < spans_.size();
-       ++i) {
-    // We also need to reset *all* nodes that share the same location in the
-    // span. For example, if previously the two walked nodes are "A BC" where
-    // A and BC are two nodes with overrides. The user now chooses "DEF" which
-    // is a node that shares the same span location with "A". The node with BC
-    // will be reset as it's part of the overlapping node, but A is not.
-    std::vector<NodeInSpan> nodes = overlappingNodesAt(i);
-    for (NodeInSpan& nis : nodes) {
-      if (nis.node != overridden.node) {
-        nis.node->reset();
-      }
-    }
-  }
-  return true;
+  return overrideCandidate(loc, nullptr, candidate, overrideType);
 }
 
 void ReadingGrid::expandGridAt(size_t loc) {
@@ -447,6 +419,51 @@ void ReadingGrid::update() {
       }
     }
   }
+}
+
+bool ReadingGrid::overrideCandidate(
+    size_t loc, const std::string* reading, const std::string& value,
+    ReadingGrid::Node::OverrideType overrideType) {
+  if (loc > readings_.size()) {
+    return false;
+  }
+
+  std::vector<NodeInSpan> overlappingNodes =
+      overlappingNodesAt(loc == readings_.size() ? loc - 1 : loc);
+  NodeInSpan overridden;
+  for (NodeInSpan& nis : overlappingNodes) {
+    if (reading != nullptr && nis.node->reading() != *reading) {
+      continue;
+    }
+
+    if (nis.node->selectOverrideUnigram(value, overrideType)) {
+      overridden = nis;
+      break;
+    }
+  }
+
+  if (overridden.node == nullptr) {
+    // Nothing gets overridden.
+    return false;
+  }
+
+  for (size_t i = overridden.spanIndex;
+       i < overridden.spanIndex + overridden.node->spanningLength() &&
+       i < spans_.size();
+       ++i) {
+    // We also need to reset *all* nodes that share the same location in the
+    // span. For example, if previously the two walked nodes are "A BC" where
+    // A and BC are two nodes with overrides. The user now chooses "DEF" which
+    // is a node that shares the same span location with "A". The node with BC
+    // will be reset as it's part of the overlapping node, but A is not.
+    std::vector<NodeInSpan> nodes = overlappingNodesAt(i);
+    for (NodeInSpan& nis : nodes) {
+      if (nis.node != overridden.node) {
+        nis.node->reset();
+      }
+    }
+  }
+  return true;
 }
 
 std::vector<ReadingGrid::NodeInSpan> ReadingGrid::overlappingNodesAt(

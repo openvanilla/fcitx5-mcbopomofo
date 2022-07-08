@@ -89,7 +89,7 @@ class KeyHandlerTest : public ::testing::Test {
 
   // Given a sequence of keys, return the last state.
   std::unique_ptr<InputState> handleKeySequence(
-      std::vector<Key> keys, bool expectHandled = true,
+      const std::vector<Key>& keys, bool expectHandled = true,
       bool expectErrorCallbackAtEnd = false) {
     std::unique_ptr<InputState> state = std::make_unique<InputStates::Empty>();
 
@@ -185,7 +185,10 @@ TEST_F(KeyHandlerTest, EnterCandidateState) {
   ASSERT_TRUE(choosingCandidateState != nullptr);
   ASSERT_EQ(choosingCandidateState->composingBuffer, "中文");
   ASSERT_EQ(choosingCandidateState->cursorIndex, strlen("中文"));
-  EXPECT_THAT(choosingCandidateState->candidates, testing::Contains("中文"));
+
+  EXPECT_THAT(choosingCandidateState->candidates,
+              testing::Contains(InputStates::ChoosingCandidate::Candidate(
+                  "ㄓㄨㄥ-ㄨㄣˊ", "中文")));
 }
 
 TEST_F(KeyHandlerTest, CursorMovementLeft) {
@@ -218,7 +221,9 @@ TEST_F(KeyHandlerTest, SelectCandidatesBeforeCursor) {
   ASSERT_TRUE(choosingCandidateState != nullptr);
   ASSERT_EQ(choosingCandidateState->composingBuffer, "中文");
   ASSERT_EQ(choosingCandidateState->cursorIndex, strlen("中"));
-  EXPECT_THAT(choosingCandidateState->candidates, testing::Contains("中"));
+  EXPECT_THAT(choosingCandidateState->candidates,
+              testing::Contains(
+                  InputStates::ChoosingCandidate::Candidate("ㄓㄨㄥ", "中")));
 }
 
 TEST_F(KeyHandlerTest, SelectCandidatesAfterCursor) {
@@ -233,7 +238,9 @@ TEST_F(KeyHandlerTest, SelectCandidatesAfterCursor) {
   ASSERT_TRUE(choosingCandidateState != nullptr);
   ASSERT_EQ(choosingCandidateState->composingBuffer, "中文");
   ASSERT_EQ(choosingCandidateState->cursorIndex, strlen("中"));
-  EXPECT_THAT(choosingCandidateState->candidates, testing::Contains("文"));
+  EXPECT_THAT(choosingCandidateState->candidates,
+              testing::Contains(
+                  InputStates::ChoosingCandidate::Candidate("ㄨㄣˊ", "文")));
 }
 
 TEST_F(KeyHandlerTest, UppercaseLetterCommitComposingBufferByDefault) {
@@ -357,7 +364,7 @@ TEST_F(
     NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase2) {
   auto keys = asciiKeys("313");
   // "ˇㄅ" is not valid in McBopomofo. We are tolerant for some cases, such as
-  // we accpet "ˇ一"  to be "以" since it is usually a user just want to type
+  // we accept "ˇ一"  to be "以" since it is usually a user just want to type
   // "一ˇ". However, typing "ˇㄅ" does not make sense.
   auto endState = handleKeySequence(keys);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
@@ -370,7 +377,7 @@ TEST_F(
     NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase3) {
   auto keys = asciiKeys("31 ");
   // "ˇㄅ" is not valid in McBopomofo. We are tolerant for some cases, such as
-  // we accpet "ˇ一"  to be "以" since it is usually a user just want to type
+  // we accept "ˇ一"  to be "以" since it is usually a user just want to type
   // "一ˇ". However, typing "ˇㄅ" does not make sense.
   auto endState = handleKeySequence(keys, /*expectHandled=*/false,
                                     /*expectErrorCallbackAtEnd=*/false);

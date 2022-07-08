@@ -94,7 +94,7 @@ class ReadingGrid {
       // ("b", -2), ("c", -10), overriding using this type for "c" will cause
       // the node to return the value "c" with the score -1. This is used for
       // soft-override such as from a suggestion. The node with the override
-      // value will be likely to favored by a walk, but it does not prevent
+      // value will very likely be favored by a walk, but it does not prevent
       // other nodes from prevailing, which would be the case if
       // kOverrideValueWithHighScore was used.
       kOverrideValueWithScoreFromTopUnigram
@@ -164,15 +164,29 @@ class ReadingGrid {
 
   WalkResult walk();
 
+  struct Candidate {
+    Candidate(std::string r, std::string v)
+        : reading(std::move(r)), value(std::move(v)) {}
+    const std::string reading;
+    const std::string value;
+  };
+
   // Returns all candidate values at the location. If spans are not empty and
   // loc is at the end of the spans, (loc - 1) is used, so that the caller does
   // not have to care about this boundary condition.
-  std::vector<std::string> candidatesAt(size_t loc);
+  std::vector<Candidate> candidatesAt(size_t loc);
 
   // Adds weight to the node with the unigram that has the designated candidate
   // value and applies the desired override type, essentially resulting in user
   // override. An overridden node would influence the grid walk to favor walking
   // through it.
+  bool overrideCandidate(size_t loc, const Candidate& candidate,
+                         Node::OverrideType overrideType =
+                             Node::OverrideType::kOverrideValueWithHighScore);
+
+  // Same as the method above, but since the string candidate value is used, if
+  // there are multiple nodes (of different spanning length) that have the same
+  // unigram value, it's not guaranteed which node will be selected.
   bool overrideCandidate(size_t loc, const std::string& candidate,
                          Node::OverrideType overrideType =
                              Node::OverrideType::kOverrideValueWithHighScore);
@@ -229,10 +243,16 @@ class ReadingGrid {
   bool hasNodeAt(size_t loc, size_t readingLen, const std::string& reading);
   void update();
 
+  // Internal implementation of overrideCandidate, with an optional reading.
+  bool overrideCandidate(size_t loc, const std::string* reading,
+                         const std::string& value,
+                         Node::OverrideType overrideType);
+
   struct NodeInSpan {
     NodePtr node;
     size_t spanIndex;
   };
+
   // Find all nodes that overlap with the location. The return value is a list
   // of nodes along with their starting location in the grid.
   std::vector<NodeInSpan> overlappingNodesAt(size_t loc);

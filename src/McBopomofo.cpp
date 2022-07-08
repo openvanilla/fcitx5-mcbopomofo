@@ -31,6 +31,7 @@
 #include <fmt/format.h>
 
 #include <memory>
+#include <unordered_map>
 #include <utility>
 
 #include "Key.h"
@@ -97,16 +98,23 @@ static Key MapFcitxKey(const fcitx::Key& key) {
 
 class McBopomofoCandidateWord : public fcitx::CandidateWord {
  public:
-  McBopomofoCandidateWord(fcitx::Text text,
-                          std::function<void(const std::string&)> callback)
-      : fcitx::CandidateWord(std::move(text)), callback_(std::move(callback)) {}
+  McBopomofoCandidateWord(fcitx::Text displayText,
+                          InputStates::ChoosingCandidate::Candidate candidate,
+                          std::shared_ptr<KeyHandler> keyHandler,
+                          KeyHandler::StateCallback callback)
+      : fcitx::CandidateWord(std::move(displayText)),
+        candidate_(std::move(candidate)),
+        keyHandler_(std::move(keyHandler)),
+        stateCallback_(std::move(callback)) {}
 
   void select(fcitx::InputContext*) const override {
-    std::string str = text().toStringForCommit();
-    callback_(str);
+    keyHandler_->candidateSelected(candidate_, stateCallback_);
   }
 
  private:
+  InputStates::ChoosingCandidate::Candidate candidate_;
+  std::shared_ptr<KeyHandler> keyHandler_;
+  KeyHandler::StateCallback stateCallback_;
   std::function<void(const std::string&)> callback_;
 };
 
@@ -194,7 +202,7 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
     : instance_(instance) {
   languageModelLoader_ = std::make_shared<LanguageModelLoader>(
       std::make_unique<LanguageModelLoaderLocalizedStrings>());
-  keyHandler_ = std::make_unique<KeyHandler>(
+  keyHandler_ = std::make_shared<KeyHandler>(
       languageModelLoader_->getLM(), languageModelLoader_,
       std::make_unique<KeyHandlerLocalizedString>());
 
@@ -397,15 +405,10 @@ void McBopomofoEngine::handleCandidateKeyEvent(
   if (idx >= 0) {
     if (idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
-      std::string candidate = candidateList->candidate(idx)->text().toString();
+      candidateList->candidate(idx)->select(context);
 #else
-      std::string candidate = candidateList->candidate(idx).text().toString();
+      candidateList->candidate(idx).select(context);
 #endif
-      keyHandler_->candidateSelected(
-          candidate, [this, context](std::unique_ptr<InputState> next) {
-            enterNewState(context, std::move(next));
-          });
-      return;
     }
   }
 
@@ -627,28 +630,42 @@ void McBopomofoEngine::handleCandidatesState(
   fcitx::CandidateLayoutHint layoutHint = getCandidateLayoutHint();
   candidateList->setLayoutHint(layoutHint);
 
-  for (const std::string& candidateStr : current->candidates) {
+  // Construct the candidate list with special care for candidates that have
+  // the same values. The display text of such a candidate will be in the form
+  // of "value (reading)" to help user disambiguate those candidates.
+
+  std::unordered_map<std::string, size_t> valueCountMap;
+
+  KeyHandler::StateCallback callback =
+      [this, context](std::unique_ptr<InputState> next) {
+        enterNewState(context, std::move(next));
+      };
+
+  for (const auto& c : current->candidates) {
+    ++valueCountMap[c.value];
+  }
+
+  for (const auto& c : current->candidates) {
+    std::string displayText = c.value;
+
+    if (valueCountMap[displayText] > 1) {
+      displayText += " (";
+      std::string reading = c.reading;
+      std::replace(reading.begin(), reading.end(),
+                   KeyHandler::kJoinSeparator[0], ' ');
+      displayText += reading;
+      displayText += ")";
+    }
+
 #ifdef USE_LEGACY_FCITX5_API
     fcitx::CandidateWord* candidate = new McBopomofoCandidateWord(
-        fcitx::Text(candidateStr),
-        [this, context](const std::string& candidate) {
-          keyHandler_->candidateSelected(
-              candidate, [this, context](std::unique_ptr<InputState> next) {
-                enterNewState(context, std::move(next));
-              });
-        });
+        fcitx::Text(displayText), c, keyHandler_, callback);
     // ownership of candidate is transferred to candidateList.
     candidateList->append(candidate);
 #else
     std::unique_ptr<fcitx::CandidateWord> candidate =
-        std::make_unique<McBopomofoCandidateWord>(
-            fcitx::Text(candidateStr),
-            [this, context](const std::string& candidate) {
-              keyHandler_->candidateSelected(
-                  candidate, [this, context](std::unique_ptr<InputState> next) {
-                    enterNewState(context, std::move(next));
-                  });
-            });
+        std::make_unique<McBopomofoCandidateWord>(fcitx::Text(displayText), c,
+                                                  keyHandler_, callback);
     candidateList->append(std::move(candidate));
 #endif
   }
