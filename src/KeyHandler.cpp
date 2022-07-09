@@ -32,7 +32,6 @@
 
 namespace McBopomofo {
 
-constexpr char kJoinSeparator[] = "-";
 constexpr char kSpaceSeparator[] = " ";
 constexpr char kPunctuationListKey = '`';  // Hit the key to bring up the list.
 constexpr char kPunctuationListUnigramKey[] = "_punctuation_list";
@@ -376,8 +375,9 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   return false;
 }
 
-void KeyHandler::candidateSelected(const std::string& candidate,
-                                   const StateCallback& stateCallback) {
+void KeyHandler::candidateSelected(
+    const InputStates::ChoosingCandidate::Candidate& candidate,
+    const StateCallback& stateCallback) {
   pinNode(candidate);
   stateCallback(buildInputtingState());
 }
@@ -447,7 +447,7 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
     return true;
   }
 
-  auto candidates = buildChoosingCandidateState(inputting)->candidates;
+  const auto candidates = buildChoosingCandidateState(inputting)->candidates;
   if (candidates.empty()) {
     errorCallback();
     return true;
@@ -480,7 +480,8 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
     // In other words, if a user type two BPMF readings, but the score of seeing
     // them as two unigrams is higher than a phrase with two characters, the
     // user can just use the longer phrase by typing the tab key.
-    if (candidates[0] == currentNode->value()) {
+    if (candidates[0].reading == currentNode->reading() &&
+        candidates[0].value == currentNode->value()) {
       // If the first candidate is the value of the current node, we use next
       // one.
       if (key.shiftPressed) {
@@ -491,7 +492,8 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
     }
   } else {
     for (const auto& candidate : candidates) {
-      if (candidate == currentNode->value()) {
+      if (candidate.reading == currentNode->reading() &&
+          candidate.value == currentNode->value()) {
         if (key.shiftPressed) {
           currentIndex == 0 ? currentIndex = candidates.size() - 1
                             : currentIndex--;
@@ -646,7 +648,7 @@ std::string KeyHandler::getHTMLRubyText() {
     std::string value = node->value();
 
     // If a key starts with underscore, it is usually for a punctuation or a
-    // symbol but not a Bopomofo reading so we just ignore such case.
+    // symbol but not a Bopomofo reading, so we just ignore such case.
     if (key.rfind(std::string("_"), 0) == 0) {
       composed += value;
     } else {
@@ -753,9 +755,15 @@ std::unique_ptr<InputStates::Inputting> KeyHandler::buildInputtingState() {
 
 std::unique_ptr<InputStates::ChoosingCandidate>
 KeyHandler::buildChoosingCandidateState(InputStates::NotEmpty* nonEmptyState) {
+  auto candidates = grid_.candidatesAt(actualCandidateCursorIndex());
+  std::vector<InputStates::ChoosingCandidate::Candidate> stateCandidates;
+  for (const auto& c : candidates) {
+    stateCandidates.emplace_back(c.reading, c.value);
+  }
+
   return std::make_unique<InputStates::ChoosingCandidate>(
       nonEmptyState->composingBuffer, nonEmptyState->cursorIndex,
-      grid_.candidatesAt(actualCandidateCursorIndex()));
+      std::move(stateCandidates));
 }
 
 std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
@@ -842,10 +850,13 @@ size_t KeyHandler::actualCandidateCursorIndex() {
 
 #pragma endregion Build_States
 
-void KeyHandler::pinNode(const std::string& candidate,
-                         const bool useMoveCursorAfterSelectionSetting) {
+void KeyHandler::pinNode(
+    const InputStates::ChoosingCandidate::Candidate& candidate,
+    bool useMoveCursorAfterSelectionSetting) {
   size_t actualCursor = actualCandidateCursorIndex();
-  if (!grid_.overrideCandidate(actualCursor, candidate)) {
+  Formosa::Gramambular2::ReadingGrid::Candidate gridCandidate(candidate.reading,
+                                                              candidate.value);
+  if (!grid_.overrideCandidate(actualCursor, gridCandidate)) {
     return;
   }
   walk();
@@ -863,7 +874,7 @@ void KeyHandler::pinNode(const std::string& candidate,
 
   if (currentNode != nullptr &&
       currentNode->currentUnigram().score() > kNoOverrideThreshold) {
-    userOverrideModel_.observe(latestWalk_.nodes, actualCursor, candidate,
+    userOverrideModel_.observe(latestWalk_.nodes, actualCursor, candidate.value,
                                GetEpochNowInSeconds());
   }
 

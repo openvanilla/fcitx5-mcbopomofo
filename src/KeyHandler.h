@@ -68,8 +68,9 @@ class KeyHandler {
               const ErrorCallback& errorCallback);
 
   // Candidate selected. Can assume the context is in a candidate state.
-  void candidateSelected(const std::string& candidate,
-                         const StateCallback& stateCallback);
+  void candidateSelected(
+      const InputStates::ChoosingCandidate::Candidate& candidate,
+      const StateCallback& stateCallback);
   // Candidate panel canceled. Can assume the context is in a candidate state.
   void candidatePanelCancelled(const StateCallback& stateCallback);
 
@@ -97,6 +98,9 @@ class KeyHandler {
 
   void setOnAddNewPhrase(
       std::function<void(const std::string&)> onAddNewPhrase);
+
+  // Reading joiner for retrieving unigrams from the language model.
+  static constexpr char kJoinSeparator[] = "-";
 
 #pragma endregion Settings
 
@@ -139,8 +143,8 @@ class KeyHandler {
   size_t actualCandidateCursorIndex();
 
   // Pin a node with a fixed unigram value, usually a candidate.
-  void pinNode(const std::string& candidate,
-               const bool useMoveCursorAfterSelectionSetting = true);
+  void pinNode(const InputStates::ChoosingCandidate::Candidate& candidate,
+               bool useMoveCursorAfterSelectionSetting = true);
 
   void walk();
 

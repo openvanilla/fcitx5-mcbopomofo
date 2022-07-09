@@ -165,9 +165,10 @@ class MockLM : public LanguageModel {
   bool hasUnigrams(const std::string&) override { return true; }
 };
 
-static bool Contains(const std::vector<std::string>& strings,
+static bool Contains(const std::vector<ReadingGrid::Candidate>& candidates,
                      const std::string& str) {
-  return std::find(strings.cbegin(), strings.cend(), str) != strings.end();
+  return std::any_of(candidates.cbegin(), candidates.cend(),
+                     [&str](const auto& v) { return v.value == str; });
 }
 
 TEST(ReadingGridTest, Span) {
@@ -600,7 +601,8 @@ TEST(ReadingGridTest, OverrideResetOverlappingNodes) {
 
 TEST(ReadingGridTest, OverrideResetTest) {
   std::string sampleData(kSampleData);
-  sampleData += "ㄓㄨㄥㄐㄧㄤˇ 終講 -11.0\nㄐㄧㄤˇㄐㄧㄣ 槳襟 -11\n";
+  sampleData += "ㄓㄨㄥㄐㄧㄤˇ 終講 -11.0\n";
+  sampleData += "ㄐㄧㄤˇㄐㄧㄣ 槳襟 -11.0\n";
 
   ReadingGrid grid(std::make_shared<SimpleLM>(sampleData.c_str()));
   grid.setReadingSeparator("");
@@ -626,6 +628,49 @@ TEST(ReadingGridTest, OverrideResetTest) {
   result = grid.walk();
   ASSERT_EQ(result.valuesAsStrings(),
             (std::vector<std::string>{"年終", "槳襟"}));
+}
+
+TEST(ReadingGridTest, DisambiguateCandidates) {
+  std::string sampleData(kSampleData);
+  sampleData += R"(
+ㄍㄠ 高 -2.9396
+ㄖㄜˋ 熱 -3.6024
+ㄍㄠㄖㄜˋ 高熱 -6.1526
+ㄏㄨㄛˇ 火 -3.6966
+ㄏㄨㄛˇ 🔥 -8
+ㄧㄢˋ 焰 -5.4466
+ㄏㄨㄛˇㄧㄢˋ 火焰 -5.6231
+ㄏㄨㄛˇㄧㄢˋ 🔥 -8
+ㄨㄟˊ 危 -3.9832
+ㄒㄧㄢˇ 險 -3.7810
+ㄨㄟˊㄒㄧㄢˇ 危險 -4.2623
+)";
+
+  ReadingGrid grid(std::make_shared<SimpleLM>(sampleData.c_str()));
+  grid.setReadingSeparator("");
+  grid.insertReading("ㄍㄠ");
+  grid.insertReading("ㄖㄜˋ");
+  grid.insertReading("ㄏㄨㄛˇ");
+  grid.insertReading("ㄧㄢˋ");
+  grid.insertReading("ㄨㄟˊ");
+  grid.insertReading("ㄒㄧㄢˇ");
+  auto result = grid.walk();
+  ASSERT_EQ(result.valuesAsStrings(),
+            (std::vector<std::string>{"高熱", "火焰", "危險"}));
+
+  constexpr size_t loc = 2;  // after 高熱
+
+  ASSERT_TRUE(
+      grid.overrideCandidate(loc, ReadingGrid::Candidate("ㄏㄨㄛˇ", "🔥")));
+  result = grid.walk();
+  ASSERT_EQ(result.valuesAsStrings(),
+            (std::vector<std::string>{"高熱", "🔥", "焰", "危險"}));
+
+  ASSERT_TRUE(
+      grid.overrideCandidate(loc, ReadingGrid::Candidate("ㄏㄨㄛˇㄧㄢˋ", "🔥")));
+  result = grid.walk();
+  ASSERT_EQ(result.valuesAsStrings(),
+            (std::vector<std::string>{"高熱", "🔥", "危險"}));
 }
 
 }  // namespace Formosa::Gramambular2

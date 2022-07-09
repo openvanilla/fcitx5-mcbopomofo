@@ -55,7 +55,7 @@ struct EmptyIgnoringPrevious : InputState {};
 
 // Committing text.
 struct Committing : InputState {
-  explicit Committing(const std::string& t) : text(t) {}
+  explicit Committing(std::string t) : text(std::move(t)) {}
 
   const std::string text;
 };
@@ -63,9 +63,11 @@ struct Committing : InputState {
 // NotEmpty state that has a non-empty composing buffer ("preedit" in some IME
 // frameworks).
 struct NotEmpty : InputState {
-  NotEmpty(const std::string& buf, const size_t index,
+  NotEmpty(std::string buf, const size_t index,
            const std::string_view& tooltipText = "")
-      : composingBuffer(buf), cursorIndex(index), tooltip(tooltipText) {}
+      : composingBuffer(std::move(buf)),
+        cursorIndex(index),
+        tooltip(tooltipText) {}
 
   const std::string composingBuffer;
 
@@ -84,12 +86,26 @@ struct Inputting : NotEmpty {
 
 // Candidate selecting state with a non-empty composing buffer.
 struct ChoosingCandidate : NotEmpty {
-  ChoosingCandidate(const std::string& buf, const size_t index,
-                    const std::vector<std::string>& cs)
-      : NotEmpty(buf, index), candidates(cs) {}
+  struct Candidate;
 
-  const std::vector<std::string> candidates;
+  ChoosingCandidate(const std::string& buf, const size_t index,
+                    std::vector<Candidate> cs)
+      : NotEmpty(buf, index), candidates(std::move(cs)) {}
+
+  const std::vector<Candidate> candidates;
+
+  struct Candidate {
+    Candidate(std::string r, std::string v)
+        : reading(std::move(r)), value(std::move(v)) {}
+    const std::string reading;
+    const std::string value;
+  };
 };
+
+inline bool operator==(const ChoosingCandidate::Candidate& a,
+                       const ChoosingCandidate::Candidate& b) {
+  return a.reading == b.reading && a.value == b.value;
+}
 
 // Represents the Marking state where the user uses Shift-Left/Shift-Right to
 // mark a phrase to be added to their custom phrases. A Marking state still has
@@ -103,15 +119,14 @@ struct ChoosingCandidate : NotEmpty {
 struct Marking : NotEmpty {
   Marking(const std::string& buf, const size_t composingBufferCursorIndex,
           const std::string& tooltipText, const size_t startCursorIndexInGrid,
-          const std::string& headText, const std::string& markedText,
-          const std::string& tailText, const std::string& readingText,
-          const bool canAccept)
+          std::string headText, std::string markedText, std::string tailText,
+          std::string readingText, const bool canAccept)
       : NotEmpty(buf, composingBufferCursorIndex, tooltipText),
         markStartGridCursorIndex(startCursorIndexInGrid),
-        head(headText),
-        markedText(markedText),
-        tail(tailText),
-        reading(readingText),
+        head(std::move(headText)),
+        markedText(std::move(markedText)),
+        tail(std::move(tailText)),
+        reading(std::move(readingText)),
         acceptable(canAccept) {}
 
   const size_t markStartGridCursorIndex;
