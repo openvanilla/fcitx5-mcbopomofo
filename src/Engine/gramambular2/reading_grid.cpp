@@ -384,6 +384,9 @@ void ReadingGrid::removeAffectedNodes(size_t loc) {
   //                XXXXX
   //            XXXXXXXXX
   //
+  if (spans_.empty()) {
+    return;
+  }
   size_t affectedLength = kMaximumSpanLength - 1;
   size_t begin = loc <= affectedLength ? 0 : loc - affectedLength;
   size_t end = loc >= 1 ? loc - 1 : 0;
