@@ -36,28 +36,42 @@ class UserOverrideModel {
 public:
     UserOverrideModel(size_t capacity, double decayConstant);
 
-    void observe(const std::vector<Formosa::Gramambular2::ReadingGrid::NodePtr>& walkedNodes,
-        size_t cursorIndex,
-        const std::string& candidate,
+    struct Suggestion {
+        Suggestion() { }
+        Suggestion(std::string c, bool f)
+            : candidate(std::move(c))
+            , forceHighScoreOverride(f)
+        {
+        }
+        std::string candidate;
+        bool forceHighScoreOverride = false;
+
+        bool empty()
+        {
+            return candidate.empty();
+        }
+    };
+
+    void observe(
+        const Formosa::Gramambular2::ReadingGrid::WalkResult& walkBeforeUserOverride,
+        const Formosa::Gramambular2::ReadingGrid::WalkResult& walkAfterUserOverride,
+        size_t cursor,
         double timestamp);
 
-    std::string suggest(const std::vector<Formosa::Gramambular2::ReadingGrid::NodePtr>& walkedNodes,
-        size_t cursorIndex,
+    Suggestion suggest(
+        const Formosa::Gramambular2::ReadingGrid::WalkResult& currentWalk,
+        size_t cursor,
         double timestamp);
 
-    void observe(const std::string& key, const std::string& candidate, double timestamp);
-    std::string suggest(const std::string& key, double timestamp);
+    void observe(const std::string& key, const std::string& candidate, double timestamp, bool forceHighScoreOverride = false);
+
+    Suggestion suggest(const std::string& key, double timestamp);
 
 private:
     struct Override {
-        size_t count;
-        double timestamp;
-
-        Override()
-            : count(0)
-            , timestamp(0.0)
-        {
-        }
+        size_t count = 0;
+        double timestamp = 0;
+        bool forceHighScoreOverride = false;
     };
 
     struct Observation {
@@ -68,7 +82,7 @@ private:
             : count(0)
         {
         }
-        void update(const std::string& candidate, double timestamp);
+        void update(const std::string& candidate, double timestamp, bool forceHighScoreOverride);
     };
 
     typedef std::pair<std::string, Observation> KeyObservationPair;

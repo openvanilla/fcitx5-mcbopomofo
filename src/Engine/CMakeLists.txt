@@ -17,7 +17,6 @@ add_library(McBopomofoLMLib
         PhraseReplacementMap.cpp
         UserOverrideModel.h
         UserOverrideModel.cpp
-        UserOverrideModelTest.cpp
         UserPhrasesLM.h
         UserPhrasesLM.cpp)
 

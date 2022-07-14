@@ -139,14 +139,19 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     grid_.insertReading(syllable);
     walk();
 
-    std::string overrideValue = userOverrideModel_.suggest(
-        latestWalk_.nodes, actualCandidateCursorIndex(),
-        GetEpochNowInSeconds());
-    if (!overrideValue.empty()) {
-      grid_.overrideCandidate(
-          actualCandidateCursorIndex(), overrideValue,
-          Formosa::Gramambular2::ReadingGrid::Node::OverrideType::
-              kOverrideValueWithScoreFromTopUnigram);
+    UserOverrideModel::Suggestion suggestion = userOverrideModel_.suggest(
+        latestWalk_, actualCandidateCursorIndex(), GetEpochNowInSeconds());
+
+    if (!suggestion.empty()) {
+      Formosa::Gramambular2::ReadingGrid::Node::OverrideType t =
+          suggestion.forceHighScoreOverride
+              ? Formosa::Gramambular2::ReadingGrid::Node::OverrideType::
+                    kOverrideValueWithHighScore
+              : Formosa::Gramambular2::ReadingGrid::Node::OverrideType::
+                    kOverrideValueWithScoreFromTopUnigram;
+      grid_.overrideCandidate(actualCandidateCursorIndex(),
+                              suggestion.candidate, t);
+      walk();
     }
 
     stateCallback(buildInputtingState());
@@ -849,6 +854,8 @@ void KeyHandler::pinNode(
   if (!grid_.overrideCandidate(actualCursor, gridCandidate)) {
     return;
   }
+
+  Formosa::Gramambular2::ReadingGrid::WalkResult prevWalk = latestWalk_;
   walk();
 
   // Update the user override model if warranted.
@@ -861,7 +868,7 @@ void KeyHandler::pinNode(
 
   if (currentNode != nullptr &&
       currentNode->currentUnigram().score() > kNoOverrideThreshold) {
-    userOverrideModel_.observe(latestWalk_.nodes, actualCursor, candidate.value,
+    userOverrideModel_.observe(prevWalk, latestWalk_, actualCursor,
                                GetEpochNowInSeconds());
   }
 
