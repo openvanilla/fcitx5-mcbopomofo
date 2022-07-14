@@ -15,6 +15,9 @@ add_library(McBopomofoLMLib
         ParselessLM.h
         PhraseReplacementMap.h
         PhraseReplacementMap.cpp
+        UserOverrideModel.h
+        UserOverrideModel.cpp
+        UserOverrideModelTest.cpp
         UserPhrasesLM.h
         UserPhrasesLM.cpp)
 
@@ -37,8 +40,9 @@ add_executable(McBopomofoLMLibTest
         ParselessLMTest.cpp
         ParselessPhraseDBTest.cpp
         PhraseReplacementMapTest.cpp
+        UserOverrideModelTest.cpp
         UserPhrasesLMTest.cpp)
-target_link_libraries(McBopomofoLMLibTest gtest_main McBopomofoLMLib)
+target_link_libraries(McBopomofoLMLibTest gtest_main McBopomofoLMLib gramambular2_lib)
 include(GoogleTest)
 gtest_discover_tests(McBopomofoLMLibTest)
 

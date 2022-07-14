@@ -62,6 +62,23 @@ void UserOverrideModel::observe(const std::vector<Formosa::Gramambular2::Reading
         return;
     }
 
+    observe(key, candidate, timestamp);
+}
+
+std::string UserOverrideModel::suggest(const std::vector<Formosa::Gramambular2::ReadingGrid::NodePtr>& walkedNodes,
+    size_t cursorIndex,
+    double timestamp)
+{
+    std::string key = WalkedNodesToKey(walkedNodes, cursorIndex);
+    if (key.empty()) {
+        return std::string();
+    }
+
+    return suggest(key, timestamp);
+}
+
+void UserOverrideModel::observe(const std::string& key, const std::string& candidate, double timestamp)
+{
     auto mapIter = m_lruMap.find(key);
     if (mapIter == m_lruMap.end()) {
         auto keyValuePair = KeyObservationPair(key, Observation());
@@ -90,15 +107,8 @@ void UserOverrideModel::observe(const std::vector<Formosa::Gramambular2::Reading
     }
 }
 
-std::string UserOverrideModel::suggest(const std::vector<Formosa::Gramambular2::ReadingGrid::NodePtr>& walkedNodes,
-    size_t cursorIndex,
-    double timestamp)
+std::string UserOverrideModel::suggest(const std::string& key, double timestamp)
 {
-    std::string key = WalkedNodesToKey(walkedNodes, cursorIndex);
-    if (key.empty()) {
-        return std::string();
-    }
-
     auto mapIter = m_lruMap.find(key);
     if (mapIter == m_lruMap.end()) {
         return std::string();

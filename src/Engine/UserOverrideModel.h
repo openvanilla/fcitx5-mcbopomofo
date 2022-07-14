@@ -45,6 +45,9 @@ public:
         size_t cursorIndex,
         double timestamp);
 
+    void observe(const std::string& key, const std::string& candidate, double timestamp);
+    std::string suggest(const std::string& key, double timestamp);
+
 private:
     struct Override {
         size_t count;
