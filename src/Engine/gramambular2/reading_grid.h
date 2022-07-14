@@ -154,9 +154,18 @@ class ReadingGrid {
 
   struct WalkResult {
     std::vector<NodePtr> nodes;
+    size_t totalReadings;
     size_t vertices;
     size_t edges;
     uint64_t elapsedMicroseconds;
+
+    // Convenient method for finding the node at the cursor. Returns
+    // nodes.cend() if the value of cursor argument doesn't make sense. An
+    // optional ourCursorPastNode argument can be used to obtain the cursor
+    // position that is right past the node at cursor, and will be only be set
+    // if it's not nullptr and the returned iterator is not nodes.cend().
+    std::vector<NodePtr>::const_iterator findNodeAt(
+        size_t cursor, size_t* outCursorPastNode = nullptr);
 
     std::vector<std::string> valuesAsStrings();
     std::vector<std::string> readingsAsStrings();
