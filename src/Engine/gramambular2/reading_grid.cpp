@@ -550,7 +550,8 @@ bool ReadingGrid::Node::selectOverrideUnigram(
 }
 
 std::vector<ReadingGrid::NodePtr>::const_iterator
-ReadingGrid::WalkResult::findNodeAt(size_t cursor, size_t* outCursorPastNode) {
+ReadingGrid::WalkResult::findNodeAt(size_t cursor,
+                                    size_t* outCursorPastNode) const {
   if (nodes.empty()) {
     return nodes.cend();
   }
@@ -591,7 +592,7 @@ ReadingGrid::WalkResult::findNodeAt(size_t cursor, size_t* outCursorPastNode) {
   return nodes.cend();
 }
 
-std::vector<std::string> ReadingGrid::WalkResult::valuesAsStrings() {
+std::vector<std::string> ReadingGrid::WalkResult::valuesAsStrings() const {
   std::vector<std::string> result;
   for (const NodePtr& node : nodes) {
     result.emplace_back(node->value());
@@ -599,7 +600,7 @@ std::vector<std::string> ReadingGrid::WalkResult::valuesAsStrings() {
   return result;
 }
 
-std::vector<std::string> ReadingGrid::WalkResult::readingsAsStrings() {
+std::vector<std::string> ReadingGrid::WalkResult::readingsAsStrings() const {
   std::vector<std::string> result;
   for (const NodePtr& node : nodes) {
     result.emplace_back(node->reading());

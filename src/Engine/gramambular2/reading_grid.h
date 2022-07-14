@@ -165,10 +165,10 @@ class ReadingGrid {
     // position that is right past the node at cursor, and will be only be set
     // if it's not nullptr and the returned iterator is not nodes.cend().
     std::vector<NodePtr>::const_iterator findNodeAt(
-        size_t cursor, size_t* outCursorPastNode = nullptr);
+        size_t cursor, size_t* outCursorPastNode = nullptr) const;
 
-    std::vector<std::string> valuesAsStrings();
-    std::vector<std::string> readingsAsStrings();
+    std::vector<std::string> valuesAsStrings() const;
+    std::vector<std::string> readingsAsStrings() const;
   };
 
   WalkResult walk();
