@@ -1,7 +1,4 @@
-//
-// UserOverrideModel.cpp
-//
-// Copyright (c) 2017 The McBopomofo Project.
+// Copyright (c) 2017 ond onwards The McBopomofo Authors.
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -35,7 +32,7 @@
 namespace McBopomofo {
 
 // About 20 generations.
-static const double DecayThreshould = 1.0 / 1048576.0;
+static const double DecayThreshold = 1.0 / 1048576.0;
 
 static double Score(size_t eventCount,
     size_t totalCount,
@@ -157,7 +154,7 @@ static double Score(size_t eventCount,
     double lambda)
 {
     double decay = exp((timestamp - eventTimestamp) * lambda);
-    if (decay < DecayThreshould) {
+    if (decay < DecayThreshold) {
         return 0.0;
     }
 
