@@ -28,7 +28,7 @@ namespace McBopomofo {
 
 namespace {
     constexpr double kFakeNow = 1657772432;
-    constexpr int kCapacity = 2;
+    constexpr int kCapacity = 5;
     constexpr double kHalflife = 5400.0; // 1.5 hr.
 } // namespace
 
@@ -90,6 +90,33 @@ TEST(UserOverrideModelTest, FreshVsFrequent)
     ASSERT_EQ(v, newerValue);
 
     v = uom.suggest(key, kFakeNow + kHalflife * 45);
+    ASSERT_TRUE(v.empty());
+}
+
+TEST(UserOverrideModelTest, LRUBehavior)
+{
+    UserOverrideModel uom(2, kHalflife);
+    uom.observe("abc", "x", kFakeNow);
+    uom.observe("def", "y", kFakeNow + kHalflife);
+    uom.observe("ghi", "z", kFakeNow + kHalflife * 2);
+
+    auto v = uom.suggest("ghi", kFakeNow + kHalflife * 3);
+    ASSERT_EQ(v, "z");
+
+    v = uom.suggest("def", kFakeNow + kHalflife * 4);
+    ASSERT_EQ(v, "y");
+
+    // abc evicted.
+    v = uom.suggest("abc", kFakeNow + kHalflife * 5);
+    ASSERT_TRUE(v.empty());
+
+    uom.observe("jkl", "p", kFakeNow + kHalflife * 6);
+
+    v = uom.suggest("ghi", kFakeNow + kHalflife * 7);
+    ASSERT_EQ(v, "z");
+
+    // def evicted.
+    v = uom.suggest("def", kFakeNow + kHalflife * 7);
     ASSERT_TRUE(v.empty());
 }
 
