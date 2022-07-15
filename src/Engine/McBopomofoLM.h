@@ -24,6 +24,7 @@
 #ifndef MCBOPOMOFOLM_H
 #define MCBOPOMOFOLM_H
 
+#include "AssociatedPhrases.h"
 #include "ParselessLM.h"
 #include "PhraseReplacementMap.h"
 #include "UserPhrasesLM.h"
@@ -67,11 +68,11 @@ public:
     /// If the data model is already loaded.
     bool isDataModelLoaded();
 
-    // /// Asks to load the associated phrases at the given path.
-    // /// @param associatedPhrasesPath The path of the associated phrases.
-    // void loadAssociatedPhrases(const char* associatedPhrasesPath);
-    // /// If the associated phrases already loaded.
-    // bool isAssociatedPhrasesLoaded();
+    /// Asks to load the associated phrases at the given path.
+    /// @param associatedPhrasesPath The path of the associated phrases.
+    void loadAssociatedPhrases(const char* associatedPhrasesPath);
+    /// If the associated phrases already loaded.
+    bool isAssociatedPhrasesLoaded();
 
     /// Asks to load the user phrases and excluded phrases at the given path.
     /// @param userPhrasesPath The path of user phrases.
@@ -120,7 +121,7 @@ protected:
     UserPhrasesLM m_userPhrases;
     UserPhrasesLM m_excludedPhrases;
     PhraseReplacementMap m_phraseReplacement;
-    // AssociatedPhrases m_associatedPhrases;
+    AssociatedPhrases m_associatedPhrases;
     bool m_phraseReplacementEnabled;
     bool m_externalConverterEnabled;
     std::function<std::string(std::string)> m_externalConverter;

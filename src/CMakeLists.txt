@@ -13,6 +13,8 @@ set(MCBOPOMOFO_LIB_SOURCES
  LanguageModelLoader.cpp
  UTF8Helper.cpp
  Log.cpp  # Log is part of McBopomofoLib to facilitate debugging via logging.
+ Engine/AssociatedPhrases.h
+ Engine/AssociatedPhrases.cpp
  Engine/KeyValueBlobReader.cpp 
  Engine/McBopomofoLM.cpp
  Engine/ParselessLM.cpp

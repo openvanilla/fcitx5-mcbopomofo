@@ -7,6 +7,8 @@ add_subdirectory(gramambular2)
 
 include_directories("Gramambular")
 add_library(McBopomofoLMLib
+        AssociatedPhrases.h
+        AssociatedPhrases.cpp
         KeyValueBlobReader.cpp
         KeyValueBlobReader.h
         ParselessPhraseDB.cpp
