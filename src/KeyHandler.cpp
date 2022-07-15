@@ -139,14 +139,19 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     grid_.insertReading(syllable);
     walk();
 
-    std::string overrideValue = userOverrideModel_.suggest(
-        latestWalk_.nodes, actualCandidateCursorIndex(),
-        GetEpochNowInSeconds());
-    if (!overrideValue.empty()) {
-      grid_.overrideCandidate(
-          actualCandidateCursorIndex(), overrideValue,
-          Formosa::Gramambular2::ReadingGrid::Node::OverrideType::
-              kOverrideValueWithScoreFromTopUnigram);
+    UserOverrideModel::Suggestion suggestion = userOverrideModel_.suggest(
+        latestWalk_, actualCandidateCursorIndex(), GetEpochNowInSeconds());
+
+    if (!suggestion.empty()) {
+      Formosa::Gramambular2::ReadingGrid::Node::OverrideType t =
+          suggestion.forceHighScoreOverride
+              ? Formosa::Gramambular2::ReadingGrid::Node::OverrideType::
+                    kOverrideValueWithHighScore
+              : Formosa::Gramambular2::ReadingGrid::Node::OverrideType::
+                    kOverrideValueWithScoreFromTopUnigram;
+      grid_.overrideCandidate(actualCandidateCursorIndex(),
+                              suggestion.candidate, t);
+      walk();
     }
 
     stateCallback(buildInputtingState());
@@ -453,23 +458,13 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
     return true;
   }
 
-  size_t cursorIndex = actualCandidateCursorIndex();
-  size_t length = 0;
-  Formosa::Gramambular2::ReadingGrid::NodePtr currentNode;
-
-  for (const auto& node : latestWalk_.nodes) {
-    length += node->spanningLength();
-    if (length > cursorIndex) {
-      currentNode = node;
-      break;
-    }
-  }
-
-  if (currentNode == nullptr) {
+  auto nodeIter = latestWalk_.findNodeAt(actualCandidateCursorIndex());
+  if (nodeIter == latestWalk_.nodes.cend()) {
     // Shouldn't happen.
     errorCallback();
     return true;
   }
+  Formosa::Gramambular2::ReadingGrid::NodePtr currentNode = *nodeIter;
 
   size_t currentIndex = 0;
   if (!currentNode->isOverridden()) {
@@ -859,22 +854,21 @@ void KeyHandler::pinNode(
   if (!grid_.overrideCandidate(actualCursor, gridCandidate)) {
     return;
   }
+
+  Formosa::Gramambular2::ReadingGrid::WalkResult prevWalk = latestWalk_;
   walk();
 
   // Update the user override model if warranted.
   size_t accumulatedCursor = 0;
-  Formosa::Gramambular2::ReadingGrid::NodePtr currentNode;
-  for (const auto& node : latestWalk_.nodes) {
-    accumulatedCursor += node->spanningLength();
-    if (accumulatedCursor > actualCursor) {
-      currentNode = node;
-      break;
-    }
+  auto nodeIter = latestWalk_.findNodeAt(actualCursor, &accumulatedCursor);
+  if (nodeIter == latestWalk_.nodes.cend()) {
+    return;
   }
+  Formosa::Gramambular2::ReadingGrid::NodePtr currentNode = *nodeIter;
 
   if (currentNode != nullptr &&
       currentNode->currentUnigram().score() > kNoOverrideThreshold) {
-    userOverrideModel_.observe(latestWalk_.nodes, actualCursor, candidate.value,
+    userOverrideModel_.observe(prevWalk, latestWalk_, actualCursor,
                                GetEpochNowInSeconds());
   }
 

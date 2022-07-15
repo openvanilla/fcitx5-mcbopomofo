@@ -686,7 +686,7 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
 }
 
 fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() {
-  fcitx::CandidateLayoutHint layoutHint;
+  fcitx::CandidateLayoutHint layoutHint = fcitx::CandidateLayoutHint::NotSet;
   switch (config_.candidateLayout.value()) {
     case McBopomofo::CandidateLayoutHint::Vertical:
       layoutHint = fcitx::CandidateLayoutHint::Vertical;
@@ -696,8 +696,6 @@ fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() {
       break;
     case McBopomofo::CandidateLayoutHint::NotSet:
       layoutHint = fcitx::CandidateLayoutHint::NotSet;
-      break;
-    default:
       break;
   }
 
