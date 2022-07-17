@@ -209,7 +209,7 @@ ReadingGrid::WalkResult ReadingGrid::walk() {
   size_t vertices = 0;
   size_t edges = 0;
   for (size_t i = 0, len = spans_.size(); i < len; ++i) {
-    const ReadingGrid::Span span = spans_[i];
+    const ReadingGrid::Span& span = spans_[i];
     for (size_t j = 1, maxSpanLen = span.maxLength(); j <= maxSpanLen; ++j) {
       NodePtr p = span.nodeOf(j);
       if (p != nullptr) {
