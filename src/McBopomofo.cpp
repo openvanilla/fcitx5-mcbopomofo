@@ -264,8 +264,12 @@ void McBopomofoEngine::reloadConfig() {
   fcitx::readAsIni(config_, kConfigPath);
 }
 
-void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
+void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
                                 fcitx::InputContextEvent& event) {
+  McBopomofo::InputMode mode = entry.uniqueName() == "mcbopomofo-plain"
+                                   ? McBopomofo::InputMode::PlainBopomofo
+                                   : McBopomofo::InputMode::McBopomofo;
+
   chttrans();
 
   auto* inputContext = event.inputContext();
@@ -275,10 +279,14 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry&,
                                          action);
   }
 
-  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
-                                       editUserPhrasesAction_.get());
-  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
-                                       excludedPhrasesAction_.get());
+  if (mode == McBopomofo::InputMode::McBopomofo) {
+    inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                         editUserPhrasesAction_.get());
+    inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                         excludedPhrasesAction_.get());
+  }
+
+  keyHandler_->setInputMode(mode);
 
   auto layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
   switch (config_.bopomofoKeyboardLayout.value()) {
@@ -378,12 +386,23 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
       enterNewState(context, std::make_unique<InputStates::Empty>());
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       context->updatePreedit();
+
       return;
     }
 
-    handleCandidateKeyEvent(context, key, maybeCandidateList);
-    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-    context->updatePreedit();
+    handleCandidateKeyEvent(
+        context, key, maybeCandidateList,
+        [this, context](std::unique_ptr<InputState> next) {
+          enterNewState(context, std::move(next));
+        },
+        []() {
+          // TODO(unassigned): beep?
+        });
+    if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) !=
+        nullptr) {
+      context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+      context->updatePreedit();
+    }
     return;
   }
 
@@ -404,7 +423,9 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
 
 void McBopomofoEngine::handleCandidateKeyEvent(
     fcitx::InputContext* context, fcitx::Key key,
-    fcitx::CommonCandidateList* candidateList) {
+    fcitx::CommonCandidateList* candidateList,
+    const McBopomofo::KeyHandler::StateCallback& stateCallback,
+    const McBopomofo::KeyHandler::ErrorCallback& errorCallback) {
   int idx = key.keyListIndex(selectionKeys_);
   if (idx >= 0) {
     if (idx < candidateList->size()) {
@@ -414,6 +435,7 @@ void McBopomofoEngine::handleCandidateKeyEvent(
       candidateList->candidate(idx).select(context);
 #endif
     }
+    return;
   }
 
   if (key.check(FcitxKey_Return)) {
@@ -514,7 +536,27 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
+  bool result =
+      keyHandler_->handleCandidateKeyForTraditionalBompomofoIfRequired(
+          MapFcitxKey(key),
+          [candidateList, context] {
+            auto idx = candidateList->cursorIndex();
+            if (idx < candidateList->size()) {
+#ifdef USE_LEGACY_FCITX5_API
+              candidateList->candidate(idx)->select(context);
+#else
+              candidateList->candidate(idx).select(context);
+#endif
+            }
+          },
+          stateCallback, errorCallback);
+
+  if (result) {
+    return;
+  }
+
   // TODO(unassigned): All else... beep?
+  errorCallback();
 }
 
 void McBopomofoEngine::enterNewState(fcitx::InputContext* context,

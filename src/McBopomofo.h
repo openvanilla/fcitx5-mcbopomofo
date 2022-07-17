@@ -170,8 +170,11 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   FCITX_ADDON_DEPENDENCY_LOADER(chttrans, instance_->addonManager());
   fcitx::Instance* instance_;
 
-  void handleCandidateKeyEvent(fcitx::InputContext* context, fcitx::Key key,
-                               fcitx::CommonCandidateList* candidateList);
+  void handleCandidateKeyEvent(
+      fcitx::InputContext* context, fcitx::Key key,
+      fcitx::CommonCandidateList* candidateList,
+      const McBopomofo::KeyHandler::StateCallback& stateCallback,
+      const McBopomofo::KeyHandler::ErrorCallback& errorCallback);
 
   // Handles state transitions.
   void enterNewState(fcitx::InputContext* context,
