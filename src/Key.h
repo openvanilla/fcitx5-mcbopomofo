@@ -33,7 +33,7 @@ namespace McBopomofo {
 // This is not always a perfect representation (for example, shift muddles the
 // picture), but is sufficient for KeyHandler's needs.
 struct Key {
-  enum class KeyName { ASCII, LEFT, RIGHT, HOME, END, UNKNOWN };
+  enum class KeyName { ASCII, LEFT, RIGHT, UP, DOWN, HOME, END, UNKNOWN };
 
   static constexpr char TAB = 9;
   static constexpr char BACKSPACE = 8;

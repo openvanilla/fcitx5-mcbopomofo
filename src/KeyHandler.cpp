@@ -191,8 +191,8 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
   // Space hit: see if we should enter the candidate choosing state.
   auto maybeNotEmptyState = dynamic_cast<InputStates::NotEmpty*>(state);
-  if (simpleAscii == Key::SPACE && maybeNotEmptyState != nullptr &&
-      reading_.isEmpty()) {
+  if ((simpleAscii == Key::SPACE || key.name == Key::KeyName::DOWN) &&
+      maybeNotEmptyState != nullptr && reading_.isEmpty()) {
     stateCallback(buildChoosingCandidateState(maybeNotEmptyState));
     return true;
   }

@@ -90,6 +90,10 @@ static Key MapFcitxKey(const fcitx::Key& key) {
       return Key::namedKey(Key::KeyName::HOME, shiftPressed, ctrlPressed);
     case FcitxKey_End:
       return Key::namedKey(Key::KeyName::END, shiftPressed, ctrlPressed);
+    case FcitxKey_Up:
+      return Key::namedKey(Key::KeyName::UP, shiftPressed, ctrlPressed);
+    case FcitxKey_Down:
+      return Key::namedKey(Key::KeyName::DOWN, shiftPressed, ctrlPressed);
     default:
       break;
   }
