@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+#include "AbstractKeyHandler.h"
 #include "Engine/gramambular2/language_model.h"
 #include "Engine/gramambular2/reading_grid.h"
 #include "InputState.h"
@@ -40,13 +41,7 @@
 
 namespace McBopomofo {
 
-enum class KeyHandlerCtrlEnter {
-  Disabled,
-  OutputBpmfReadings,
-  OutputHTMLRubyText
-};
-
-class KeyHandler {
+class KeyHandler : public AbstractKeyHandler {
  public:
   class LocalizedStrings;
 
@@ -55,49 +50,35 @@ class KeyHandler {
       std::shared_ptr<UserPhraseAdder> userPhraseAdder,
       std::unique_ptr<LocalizedStrings> localizedStrings);
 
-  using StateCallback =
-      std::function<void(std::unique_ptr<McBopomofo::InputState>)>;
-  using ErrorCallback = std::function<void(void)>;
-
-  // Given a fcitx5 KeyEvent and the current state, invokes the stateCallback if
-  // a new state is entered, or errorCallback will be invoked. Returns true if
-  // the key should be absorbed, signaling that the key is accepted and handled,
-  // or false if the event should be let pass through.
   bool handle(Key key, McBopomofo::InputState* state,
               const StateCallback& stateCallback,
-              const ErrorCallback& errorCallback);
+              const ErrorCallback& errorCallback) override;
 
-  // Candidate selected. Can assume the context is in a candidate state.
   void candidateSelected(
       const InputStates::ChoosingCandidate::Candidate& candidate,
-      const StateCallback& stateCallback);
-  // Candidate panel canceled. Can assume the context is in a candidate state.
-  void candidatePanelCancelled(const StateCallback& stateCallback);
+      const StateCallback& stateCallback) override;
 
-  void reset();
+  void candidatePanelCancelled(const StateCallback& stateCallback) override;
+
+  void reset() override;
 
 #pragma region Settings
 
-  // Sets the Bopomofo keyboard layout.
   void setKeyboardLayout(
-      const Formosa::Mandarin::BopomofoKeyboardLayout* layout);
+      const Formosa::Mandarin::BopomofoKeyboardLayout* layout) override;
 
-  // Sets if we should select phrase after cursor as candidate.
-  void setSelectPhraseAfterCursorAsCandidate(bool flag);
+  void setSelectPhraseAfterCursorAsCandidate(bool flag) override;
 
-  // Sets if we should move cursor after selection.
-  void setMoveCursorAfterSelection(bool flag);
+  void setMoveCursorAfterSelection(bool flag) override;
 
-  // Sets if we should put lowercasesd letters into the composing buffer.
-  void setPutLowercaseLettersToComposingBuffer(bool flag);
+  void setPutLowercaseLettersToComposingBuffer(bool flag) override;
 
-  /// Sets if the ESC key clears entire composing buffer.
-  void setEscKeyClearsEntireComposingBuffer(bool flag);
+  void setEscKeyClearsEntireComposingBuffer(bool flag) override;
 
-  void setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior);
+  void setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior) override;
 
   void setOnAddNewPhrase(
-      std::function<void(const std::string&)> onAddNewPhrase);
+      std::function<void(const std::string&)> onAddNewPhrase) override;
 
   // Reading joiner for retrieving unigrams from the language model.
   static constexpr char kJoinSeparator[] = "-";

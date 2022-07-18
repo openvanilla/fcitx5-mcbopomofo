@@ -34,7 +34,9 @@
 #include <unordered_map>
 #include <utility>
 
+#include "AbstractKeyHandler.h"
 #include "Key.h"
+#include "KeyHandler.h"
 #include "Log.h"
 
 namespace McBopomofo {
@@ -100,7 +102,7 @@ class McBopomofoCandidateWord : public fcitx::CandidateWord {
  public:
   McBopomofoCandidateWord(fcitx::Text displayText,
                           InputStates::ChoosingCandidate::Candidate candidate,
-                          std::shared_ptr<KeyHandler> keyHandler,
+                          std::shared_ptr<AbstractKeyHandler> keyHandler,
                           KeyHandler::StateCallback callback)
       : fcitx::CandidateWord(std::move(displayText)),
         candidate_(std::move(candidate)),
@@ -113,7 +115,7 @@ class McBopomofoCandidateWord : public fcitx::CandidateWord {
 
  private:
   InputStates::ChoosingCandidate::Candidate candidate_;
-  std::shared_ptr<KeyHandler> keyHandler_;
+  std::shared_ptr<AbstractKeyHandler> keyHandler_;
   KeyHandler::StateCallback stateCallback_;
   std::function<void(const std::string&)> callback_;
 };

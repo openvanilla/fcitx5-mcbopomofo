@@ -41,8 +41,8 @@
 #include <string>
 #include <type_traits>
 
+#include "AbstractKeyHandler.h"
 #include "InputState.h"
-#include "KeyHandler.h"
 #include "LanguageModelLoader.h"
 
 namespace McBopomofo {
@@ -202,7 +202,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   fcitx::CandidateLayoutHint getCandidateLayoutHint();
 
   std::shared_ptr<LanguageModelLoader> languageModelLoader_;
-  std::shared_ptr<KeyHandler> keyHandler_;
+  std::shared_ptr<AbstractKeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;
   fcitx::KeyList selectionKeys_;
