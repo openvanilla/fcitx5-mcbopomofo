@@ -37,7 +37,7 @@ public:
     UserOverrideModel(size_t capacity, double decayConstant);
 
     struct Suggestion {
-        Suggestion() { }
+        Suggestion() = default;
         Suggestion(std::string c, bool f)
             : candidate(std::move(c))
             , forceHighScoreOverride(f)
@@ -46,7 +46,7 @@ public:
         std::string candidate;
         bool forceHighScoreOverride = false;
 
-        bool empty()
+        [[nodiscard]] bool empty() const
         {
             return candidate.empty();
         }
@@ -93,6 +93,6 @@ private:
     std::map<std::string, std::list<KeyObservationPair>::iterator> m_lruMap;
 };
 
-}; // namespace McBopomofo
+} // namespace McBopomofo
 
 #endif

@@ -278,7 +278,11 @@ static std::string FormObservationKey(std::vector<Formosa::Gramambular2::Reading
     std::string anteriorStr;
     if (head != end && !prevIsPunctuation) {
         --head;
-        anteriorStr = CombineReadingValue((*head)->reading(), (*head)->currentUnigram().value());
+        if (IsPunctuation((*head))) {
+            anteriorStr = kEmptyNodeString;
+        } else {
+            anteriorStr = CombineReadingValue((*head)->reading(), (*head)->currentUnigram().value());
+        }
     } else {
         anteriorStr = kEmptyNodeString;
     }
