@@ -469,6 +469,8 @@ void KeyHandler::reset() {
 
 #pragma region Settings
 
+McBopomofo::InputMode KeyHandler::inputMode() { return inputMode_; }
+
 void KeyHandler::setInputMode(McBopomofo::InputMode mode) { inputMode_ = mode; }
 
 void KeyHandler::setKeyboardLayout(

@@ -31,6 +31,7 @@
 
 #include "Engine/gramambular2/language_model.h"
 #include "Engine/gramambular2/reading_grid.h"
+#include "InputMode.h"
 #include "InputState.h"
 #include "Key.h"
 #include "LanguageModelLoader.h"
@@ -39,8 +40,6 @@
 #include "UserOverrideModel.h"
 
 namespace McBopomofo {
-
-enum class InputMode { McBopomofo, PlainBopomofo };
 
 enum class KeyHandlerCtrlEnter {
   Disabled,
@@ -87,6 +86,8 @@ class KeyHandler {
   void reset();
 
 #pragma region Settings
+
+  McBopomofo::InputMode inputMode();
 
   // Sets the input mode.
   void setInputMode(McBopomofo::InputMode mode);

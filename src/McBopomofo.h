@@ -41,6 +41,7 @@
 #include <string>
 #include <type_traits>
 
+#include "InputMode.h"
 #include "InputState.h"
 #include "KeyHandler.h"
 #include "LanguageModelLoader.h"

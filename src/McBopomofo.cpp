@@ -270,6 +270,10 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
                                    ? McBopomofo::InputMode::PlainBopomofo
                                    : McBopomofo::InputMode::McBopomofo;
 
+  if (mode != keyHandler_->inputMode()) {
+    languageModelLoader_->loadModelForMode(mode);
+  }
+
   chttrans();
 
   auto* inputContext = event.inputContext();
