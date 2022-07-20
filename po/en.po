@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-12 13:02-0700\n"
+"POT-Creation-Date: 2022-07-17 23:13+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,80 +17,80 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/McBopomofo.cpp:133
+#: src/McBopomofo.cpp:129
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
-#: src/McBopomofo.cpp:138
+#: src/McBopomofo.cpp:134
 msgid "{0} syllables required"
 msgstr ""
 
-#: src/McBopomofo.cpp:142
+#: src/McBopomofo.cpp:138
 msgid "{0} syllables maximum"
 msgstr ""
 
-#: src/McBopomofo.cpp:146
+#: src/McBopomofo.cpp:142
 msgid "phrase already exists"
 msgstr ""
 
-#: src/McBopomofo.cpp:150
+#: src/McBopomofo.cpp:146
 msgid "press Enter to add the phrase"
 msgstr ""
 
-#: src/McBopomofo.cpp:156
+#: src/McBopomofo.cpp:152
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
-#: src/McBopomofo.cpp:168
+#: src/McBopomofo.cpp:164
 msgid "# Custom Phrases or Characters."
 msgstr ""
 
-#: src/McBopomofo.cpp:170
+#: src/McBopomofo.cpp:166
 msgid ""
 "# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動加詞 for "
 "usage."
 msgstr ""
 
-#: src/McBopomofo.cpp:172
+#: src/McBopomofo.cpp:168
 msgid ""
 "# Add your phrases and their respective Bopomofo reading below. Use hyphen "
 "(\"-\")"
 msgstr ""
 
-#: src/McBopomofo.cpp:173
+#: src/McBopomofo.cpp:169
 msgid "# to connect the Bopomofo syllables."
 msgstr ""
 
-#: src/McBopomofo.cpp:177 src/McBopomofo.cpp:196
+#: src/McBopomofo.cpp:173 src/McBopomofo.cpp:192
 msgid "# Any line that starts with \"#\" is treated as comment."
 msgstr ""
 
-#: src/McBopomofo.cpp:186
+#: src/McBopomofo.cpp:182
 msgid "# Custom Excluded Phrases or Characters."
 msgstr ""
 
-#: src/McBopomofo.cpp:188
+#: src/McBopomofo.cpp:184
 msgid ""
 "# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動刪詞 for "
 "usage."
 msgstr ""
 
-#: src/McBopomofo.cpp:190
+#: src/McBopomofo.cpp:186
 msgid ""
 "# For example, the line below will prevent the phrase \"家祠\" from showing "
 "up anywhere:"
 msgstr ""
 
-#: src/McBopomofo.cpp:194
+#: src/McBopomofo.cpp:190
 msgid ""
 "# Note that you need to use a hyphen (\"-\") between Bopomofo syllables."
 msgstr ""
 
-#: src/McBopomofo.cpp:235
+#: src/McBopomofo.cpp:231
 msgid "Edit User Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:245
+#: src/McBopomofo.cpp:241
 msgid "Edit Excluded Phrases"
 msgstr ""
 
@@ -195,31 +195,31 @@ msgid "ESC key clears entire composing buffer"
 msgstr ""
 
 #: src/McBopomofo.h:128
-msgid "Composing Buffer Size"
-msgstr ""
-
-#: src/McBopomofo.h:133
 msgid "Shift + Letter Keys"
 msgstr ""
 
-#: src/McBopomofo.h:139
+#: src/McBopomofo.h:134
 msgid "Control + Enter Key"
 msgstr ""
 
-#: src/McBopomofo.h:144
+#: src/McBopomofo.h:139
 msgid "Open User Phrase Files With"
 msgstr ""
 
-#: src/McBopomofo.h:149
+#: src/McBopomofo.h:144
 msgid "Add Phrase Hook Path"
 msgstr ""
 
-#: src/McBopomofo.h:154
+#: src/McBopomofo.h:149
 msgid "Run the hook script after adding a phrase"
 msgstr ""
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
 msgid "McBopomofo"
+msgstr ""
+
+#: src/mcbopomofo-plain.conf.in.in:3
+msgid "PlainBopomofo"
 msgstr ""
 
 #: src/mcbopomofo-addon.conf.in.in:4

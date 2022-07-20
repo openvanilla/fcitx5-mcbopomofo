@@ -31,6 +31,7 @@
 
 #include "Engine/gramambular2/language_model.h"
 #include "Engine/gramambular2/reading_grid.h"
+#include "InputMode.h"
 #include "InputState.h"
 #include "Key.h"
 #include "LanguageModelLoader.h"
@@ -58,6 +59,7 @@ class KeyHandler {
   using StateCallback =
       std::function<void(std::unique_ptr<McBopomofo::InputState>)>;
   using ErrorCallback = std::function<void(void)>;
+  using SelectCurrentCandidateCallback = std::function<void(void)>;
 
   // Given a fcitx5 KeyEvent and the current state, invokes the stateCallback if
   // a new state is entered, or errorCallback will be invoked. Returns true if
@@ -71,12 +73,24 @@ class KeyHandler {
   void candidateSelected(
       const InputStates::ChoosingCandidate::Candidate& candidate,
       const StateCallback& stateCallback);
+
   // Candidate panel canceled. Can assume the context is in a candidate state.
   void candidatePanelCancelled(const StateCallback& stateCallback);
+
+  // Workaround for the Traditional Bopomofo mode.
+  bool handleCandidateKeyForTraditionalBompomofoIfRequired(
+      Key key,
+      const SelectCurrentCandidateCallback& SelectCurrentCandidateCallback,
+      const StateCallback& stateCallback, const ErrorCallback& errorCallback);
 
   void reset();
 
 #pragma region Settings
+
+  McBopomofo::InputMode inputMode();
+
+  // Sets the input mode.
+  void setInputMode(McBopomofo::InputMode mode);
 
   // Sets the Bopomofo keyboard layout.
   void setKeyboardLayout(
@@ -159,6 +173,7 @@ class KeyHandler {
 
 #pragma region Settings
 
+  McBopomofo::InputMode inputMode_ = McBopomofo::InputMode::McBopomofo;
   bool selectPhraseAfterCursorAsCandidate_ = false;
   bool moveCursorAfterSelection_ = false;
   bool putLowercaseLettersToComposingBuffer_ = false;

@@ -29,6 +29,7 @@
 #include <string>
 #include <string_view>
 
+#include "InputMode.h"
 #include "McBopomofoLM.h"
 
 namespace McBopomofo {
@@ -48,6 +49,8 @@ class LanguageModelLoader : public UserPhraseAdder {
       std::unique_ptr<LocalizedStrings> localizedStrings);
 
   std::shared_ptr<McBopomofoLM> getLM() { return lm_; }
+
+  void loadModelForMode(McBopomofo::InputMode mode);
 
   void addUserPhrase(const std::string_view& reading,
                      const std::string_view& phrase) override;

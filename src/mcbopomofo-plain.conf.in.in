@@ -1,0 +1,7 @@
+[InputMethod]
+Name=PlainBopomofo
+Icon=fcitx-mcbopomofo
+Label=ㄅ
+LangCode=zh_TW
+Addon=mcbopomofo
+Configurable=True

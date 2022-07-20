@@ -63,6 +63,9 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-addon.conf" RENAME mcbopom
 configure_file(mcbopomofo.conf.in.in mcbopomofo.conf.in)
 fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo.conf.in" mcbopomofo.conf)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo.conf" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/inputmethod")
+configure_file(mcbopomofo-plain.conf.in.in mcbopomofo-plain.conf.in)
+fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-plain.conf.in" mcbopomofo-plain.conf)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-plain.conf" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/inputmethod")
 
 if (ENABLE_TEST)
     # Let CMake fetch Google Test for us.
