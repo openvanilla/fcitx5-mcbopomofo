@@ -3,9 +3,9 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  build_ubuntu_21:
+  build_ubuntu_22:
     runs-on: ubuntu-latest
-    container: ubuntu:impish-20220316
+    container: ubuntu:jammy-20220531
 
     steps:
       - uses: actions/checkout@v1
@@ -15,7 +15,7 @@ jobs:
           apt-get update
           apt install -y clang
           apt install -y cmake extra-cmake-modules gettext libfmt-dev
-          apt install -y fcitx5=5.0.5-1ubuntu2 libfcitx5core-dev=5.0.5-1ubuntu2 libfcitx5config-dev=5.0.5-1ubuntu2 libfcitx5utils-dev=5.0.5-1ubuntu2
+          apt install -y fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev
       - name: Build
         run: |
           mkdir -p build
@@ -36,7 +36,7 @@ jobs:
 
   build_ubuntu_20:
     runs-on: ubuntu-latest
-    container: ubuntu:focal-20220316
+    container: ubuntu:focal-20220531
 
     steps:
       - uses: actions/checkout@v1
