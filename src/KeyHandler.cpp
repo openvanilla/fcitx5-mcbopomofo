@@ -401,7 +401,7 @@ void KeyHandler::candidateSelected(
     const StateCallback& stateCallback) {
   if (inputMode_ == InputMode::PlainBopomofo) {
     reset();
-     std::unique_ptr<InputStates::Committing> committingState =
+    std::unique_ptr<InputStates::Committing> committingState =
         std::make_unique<InputStates::Committing>(candidate.value);
     stateCallback(std::move(committingState));
     return;
@@ -414,8 +414,9 @@ void KeyHandler::candidateSelected(
 void KeyHandler::candidatePanelCancelled(const StateCallback& stateCallback) {
   if (inputMode_ == InputMode::PlainBopomofo) {
     reset();
-    std::unique_ptr<InputStates::EmptyIgnoringPrevious> emptyIgnorePreviousState =
-        std::make_unique<InputStates::EmptyIgnoringPrevious>();
+    std::unique_ptr<InputStates::EmptyIgnoringPrevious>
+        emptyIgnorePreviousState =
+            std::make_unique<InputStates::EmptyIgnoringPrevious>();
     stateCallback(std::move(emptyIgnorePreviousState));
     return;
   }
