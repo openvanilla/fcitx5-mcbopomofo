@@ -401,7 +401,7 @@ void KeyHandler::candidateSelected(
     const StateCallback& stateCallback) {
   if (inputMode_ == InputMode::PlainBopomofo) {
     reset();
-    auto committingState =
+     std::unique_ptr<InputStates::Committing> committingState =
         std::make_unique<InputStates::Committing>(candidate.value);
     stateCallback(std::move(committingState));
     return;
@@ -414,9 +414,9 @@ void KeyHandler::candidateSelected(
 void KeyHandler::candidatePanelCancelled(const StateCallback& stateCallback) {
   if (inputMode_ == InputMode::PlainBopomofo) {
     reset();
-    auto committingState =
+    std::unique_ptr<InputStates::EmptyIgnoringPrevious> emptyIgnorePreviousState =
         std::make_unique<InputStates::EmptyIgnoringPrevious>();
-    stateCallback(std::move(committingState));
+    stateCallback(std::move(emptyIgnorePreviousState));
     return;
   }
 
@@ -444,7 +444,7 @@ bool KeyHandler::handleCandidateKeyForTraditionalBompomofoIfRequired(
                                    lm_->hasUnigrams(punctuation);
   if (!shouldAutoSelectCandidate) {
     if (chrStr >= 'A' && chrStr <= 'Z') {
-      std::string letter = kLetterPrefix + chrStr;
+      std::string letter = std::string(kLetterPrefix) + chrStr;
       if (lm_->hasUnigrams(letter)) {
         shouldAutoSelectCandidate = true;
       }

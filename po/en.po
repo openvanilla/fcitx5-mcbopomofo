@@ -220,7 +220,7 @@ msgstr ""
 
 #: src/mcbopomofo-plain.conf.in.in:3
 msgid "PlainBopomofo"
-msgstr ""
+msgstr "Plain Bopomofo"
 
 #: src/mcbopomofo-addon.conf.in.in:4
 msgid "McBopomofo Input Method For Fcitx"
