@@ -93,7 +93,6 @@ LanguageModelLoader::LanguageModelLoader(
 }
 
 void LanguageModelLoader::loadModelForMode(McBopomofo::InputMode mode) {
-  // FCITX_MCBOPOMOFO_INFO() << "mode " << mode;
   const char* path = mode == McBopomofo::InputMode::PlainBopomofo
                          ? kDataPathPlainBPMF
                          : kDataPath;
