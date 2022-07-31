@@ -19,8 +19,7 @@ xgettext \
 	--keyword=Keywords \
 	-j \
 	-o po/fcitx5-mcbopomofo.pot \
-	src/mcbopomofo.conf.in.in src/mcbopomofo-addon.conf.in.in
-
+	src/mcbopomofo.conf.in.in src/mcbopomofo-plain.conf.in.in src/mcbopomofo-addon.conf.in.in
 
 ## To re-generate the po files from scratch:
 # msginit -l zh_TW.UTF-8 --no-translator -o po/zh_TW.po -i po/po/fcitx5-mcbopomofo.pot

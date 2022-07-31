@@ -139,22 +139,38 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     grid_.insertReading(syllable);
     walk();
 
-    UserOverrideModel::Suggestion suggestion = userOverrideModel_.suggest(
-        latestWalk_, actualCandidateCursorIndex(), GetEpochNowInSeconds());
+    if (inputMode_ != McBopomofo::InputMode::PlainBopomofo) {
+      UserOverrideModel::Suggestion suggestion = userOverrideModel_.suggest(
+          latestWalk_, actualCandidateCursorIndex(), GetEpochNowInSeconds());
 
-    if (!suggestion.empty()) {
-      Formosa::Gramambular2::ReadingGrid::Node::OverrideType t =
-          suggestion.forceHighScoreOverride
-              ? Formosa::Gramambular2::ReadingGrid::Node::OverrideType::
-                    kOverrideValueWithHighScore
-              : Formosa::Gramambular2::ReadingGrid::Node::OverrideType::
-                    kOverrideValueWithScoreFromTopUnigram;
-      grid_.overrideCandidate(actualCandidateCursorIndex(),
-                              suggestion.candidate, t);
-      walk();
+      if (!suggestion.empty()) {
+        Formosa::Gramambular2::ReadingGrid::Node::OverrideType t =
+            suggestion.forceHighScoreOverride
+                ? Formosa::Gramambular2::ReadingGrid::Node::OverrideType::
+                      kOverrideValueWithHighScore
+                : Formosa::Gramambular2::ReadingGrid::Node::OverrideType::
+                      kOverrideValueWithScoreFromTopUnigram;
+        grid_.overrideCandidate(actualCandidateCursorIndex(),
+                                suggestion.candidate, t);
+        walk();
+      }
     }
 
-    stateCallback(buildInputtingState());
+    if (inputMode_ == McBopomofo::InputMode::PlainBopomofo) {
+      auto inputting = buildInputtingState();
+      auto choosingCandidate = buildChoosingCandidateState(inputting.get());
+      if (choosingCandidate->candidates.size() == 1) {
+        reset();
+        std::string value = choosingCandidate->candidates[0].value;
+        auto committingState = std::make_unique<InputStates::Committing>(value);
+        stateCallback(std::move(committingState));
+      } else {
+        stateCallback(std::move(choosingCandidate));
+      }
+    } else {
+      auto inputting = buildInputtingState();
+      stateCallback(std::move(inputting));
+    }
     return true;
   }
 
@@ -191,8 +207,8 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
   // Space hit: see if we should enter the candidate choosing state.
   auto maybeNotEmptyState = dynamic_cast<InputStates::NotEmpty*>(state);
-  if (simpleAscii == Key::SPACE && maybeNotEmptyState != nullptr &&
-      reading_.isEmpty()) {
+  if ((simpleAscii == Key::SPACE || key.name == Key::KeyName::DOWN) &&
+      maybeNotEmptyState != nullptr && reading_.isEmpty()) {
     stateCallback(buildChoosingCandidateState(maybeNotEmptyState));
     return true;
   }
@@ -306,10 +322,10 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       walk();
 
       auto inputtingState = buildInputtingState();
-      auto choosingCanidateState =
+      auto choosingCandidateState =
           buildChoosingCandidateState(inputtingState.get());
       stateCallback(std::move(inputtingState));
-      stateCallback(std::move(choosingCanidateState));
+      stateCallback(std::move(choosingCandidateState));
     } else {
       // Punctuation ignored if a bopomofo reading is active..
       errorCallback();
@@ -383,12 +399,67 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 void KeyHandler::candidateSelected(
     const InputStates::ChoosingCandidate::Candidate& candidate,
     const StateCallback& stateCallback) {
+  if (inputMode_ == InputMode::PlainBopomofo) {
+    reset();
+    std::unique_ptr<InputStates::Committing> committingState =
+        std::make_unique<InputStates::Committing>(candidate.value);
+    stateCallback(std::move(committingState));
+    return;
+  }
+
   pinNode(candidate);
   stateCallback(buildInputtingState());
 }
 
 void KeyHandler::candidatePanelCancelled(const StateCallback& stateCallback) {
+  if (inputMode_ == InputMode::PlainBopomofo) {
+    reset();
+    std::unique_ptr<InputStates::EmptyIgnoringPrevious>
+        emptyIgnorePreviousState =
+            std::make_unique<InputStates::EmptyIgnoringPrevious>();
+    stateCallback(std::move(emptyIgnorePreviousState));
+    return;
+  }
+
   stateCallback(buildInputtingState());
+}
+
+bool KeyHandler::handleCandidateKeyForTraditionalBompomofoIfRequired(
+    Key key,
+    const SelectCurrentCandidateCallback& SelectCurrentCandidateCallback,
+    const StateCallback& stateCallback, const ErrorCallback& errorCallback) {
+  if (inputMode_ != McBopomofo::InputMode::PlainBopomofo) {
+    return false;
+  }
+
+  const char chrStr = key.ascii;
+
+  std::string customPunctuation =
+      std::string(kPunctuationKeyPrefix) +
+      GetKeyboardLayoutName(reading_.keyboardLayout()) + "_" +
+      std::string(1, key.ascii);
+
+  std::string punctuation = kPunctuationKeyPrefix + std::string(1, key.ascii);
+  bool shouldAutoSelectCandidate = reading_.isValidKey(chrStr) ||
+                                   lm_->hasUnigrams(customPunctuation) ||
+                                   lm_->hasUnigrams(punctuation);
+  if (!shouldAutoSelectCandidate) {
+    if (chrStr >= 'A' && chrStr <= 'Z') {
+      std::string letter = std::string(kLetterPrefix) + chrStr;
+      if (lm_->hasUnigrams(letter)) {
+        shouldAutoSelectCandidate = true;
+      }
+    }
+  }
+
+  if (shouldAutoSelectCandidate) {
+    SelectCurrentCandidateCallback();
+    reset();
+    handle(key, std::make_unique<InputStates::Empty>().get(), stateCallback,
+           errorCallback);
+    return true;
+  }
+  return false;
 }
 
 void KeyHandler::reset() {
@@ -398,6 +469,10 @@ void KeyHandler::reset() {
 }
 
 #pragma region Settings
+
+McBopomofo::InputMode KeyHandler::inputMode() { return inputMode_; }
+
+void KeyHandler::setInputMode(McBopomofo::InputMode mode) { inputMode_ = mode; }
 
 void KeyHandler::setKeyboardLayout(
     const Formosa::Mandarin::BopomofoKeyboardLayout* layout) {
@@ -627,7 +702,23 @@ bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
 
   grid_.insertReading(punctuationUnigramKey);
   walk();
-  stateCallback(buildInputtingState());
+
+  if (inputMode_ == McBopomofo::InputMode::PlainBopomofo) {
+    auto inputting = buildInputtingState();
+    auto choosingCandidate = buildChoosingCandidateState(inputting.get());
+    if (choosingCandidate->candidates.size() == 1) {
+      reset();
+      std::string value = choosingCandidate->candidates[0].value;
+      auto committingState = std::make_unique<InputStates::Committing>(value);
+      stateCallback(std::move(committingState));
+    } else {
+      stateCallback(std::move(choosingCandidate));
+    }
+  } else {
+    auto inputting = buildInputtingState();
+    stateCallback(std::move(inputting));
+  }
+
   return true;
 }
 
