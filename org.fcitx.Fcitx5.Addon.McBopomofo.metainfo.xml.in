@@ -9,5 +9,12 @@
   <url type="homepage">https://mcbopomofo.openvanilla.org/</url>
   <url type="bugtracker">https://github.com/openvanilla/fcitx5-mcbopomofo/issues</url>
   <project_group>Fcitx</project_group>
+  <releases>
+    <release version="2.4" date="2022-08-06"/>
+    <release version="2.3" date="2022-06-15"/>
+    <release version="2.2.2" date="2022-04-18"/>
+    <release version="2.2.1" date="2022-03-28"/>
+    <release version="2.2" date="2022-03-28"/>
+  </releases>
   <content_rating type="oars-1.1"/>
 </component>
