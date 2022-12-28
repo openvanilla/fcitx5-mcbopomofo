@@ -30,9 +30,7 @@ jobs:
       - name: Test
         run: |
           cd build
-          make runTest runGramambular2Test
-          cd ../src/Engine/build
-          make runMcBopomofoLMLibTest
+          make runTest runGramambular2Test runMcBopomofoLMLibTest
 
   build_ubuntu_20:
     runs-on: ubuntu-latest
