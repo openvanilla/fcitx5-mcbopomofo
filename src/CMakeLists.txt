@@ -6,7 +6,7 @@ find_package(Fcitx5Utils REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
 
-add_subdirectory(Engine/gramambular2)
+add_subdirectory(Engine)
 
 set(MCBOPOMOFO_LIB_SOURCES
  KeyHandler.cpp
