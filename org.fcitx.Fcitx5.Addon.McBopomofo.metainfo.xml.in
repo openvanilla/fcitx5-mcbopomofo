@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component type="addon">
+  <id>org.fcitx.Fcitx5.Addon.McBopomofo</id>
+  <extends>org.fcitx.Fcitx5</extends>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>McBopomofo for Fcitx 5</name>
+  <summary>Bopomofo input method derived from Openvanilla</summary>
+  <url type="homepage">https://mcbopomofo.openvanilla.org/</url>
+  <url type="bugtracker">https://github.com/openvanilla/fcitx5-mcbopomofo/issues</url>
+  <project_group>Fcitx</project_group>
+  <releases>
+    <release version="2.4" date="2022-08-06"/>
+    <release version="2.3" date="2022-06-15"/>
+    <release version="2.2.2" date="2022-04-18"/>
+    <release version="2.2.1" date="2022-03-28"/>
+    <release version="2.2" date="2022-03-28"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>
