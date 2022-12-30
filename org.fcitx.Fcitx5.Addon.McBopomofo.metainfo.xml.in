@@ -5,7 +5,7 @@
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
   <name>McBopomofo for Fcitx 5</name>
-  <summary>A bopomofo input method that predicts words intelligently</summary>
+  <summary>A Bopomofo input method that picks phrases intelligently</summary>
   <url type="homepage">https://mcbopomofo.openvanilla.org/</url>
   <url type="bugtracker">https://github.com/openvanilla/fcitx5-mcbopomofo/issues</url>
   <project_group>Fcitx</project_group>

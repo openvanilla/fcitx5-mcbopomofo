@@ -234,5 +234,5 @@ msgid "McBopomofo for Fcitx 5"
 msgstr "Fctix 5 的小麥注音"
 
 #: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:8
-msgid "A bopomofo input method that predicts words intelligently"
-msgstr "智慧選字的注音輸入法"
+msgid "A Bopomofo input method that picks phrases intelligently"
+msgstr "一套智慧選字的注音輸入法"

@@ -231,5 +231,5 @@ msgid "McBopomofo for Fcitx 5"
 msgstr ""
 
 #: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:8
-msgid "A bopomofo input method that predicts words intelligently"
+msgid "A Bopomofo input method that picks phrases intelligently"
 msgstr ""
