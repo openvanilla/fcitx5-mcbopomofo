@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(mcbopomofo VERSION 2.4)
+project(mcbopomofo VERSION 2.4.1)
 
 find_package(Fcitx5Core REQUIRED)
 find_package(Fcitx5Utils REQUIRED)
