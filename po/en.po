@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-17 23:13+0800\n"
+"POT-Creation-Date: 2022-12-30 10:34+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -94,129 +94,130 @@ msgstr ""
 msgid "Edit Excluded Phrases"
 msgstr ""
 
-#: src/McBopomofo.h:58
+#: src/McBopomofo.h:59
 msgid "standard"
 msgstr "Standard"
 
-#: src/McBopomofo.h:59
+#: src/McBopomofo.h:60
 msgid "eten"
 msgstr "ETen"
 
-#: src/McBopomofo.h:59
+#: src/McBopomofo.h:60
 msgid "hsu"
 msgstr "Hsu"
 
-#: src/McBopomofo.h:59
+#: src/McBopomofo.h:60
 msgid "et26"
 msgstr "ETen26"
 
-#: src/McBopomofo.h:60
+#: src/McBopomofo.h:61
 msgid "hanyupinyin"
 msgstr "Pinyin"
 
-#: src/McBopomofo.h:60
+#: src/McBopomofo.h:61
 msgid "ibm"
 msgstr "IBM"
 
-#: src/McBopomofo.h:67
+#: src/McBopomofo.h:68
 msgid "123456789"
 msgstr ""
 
-#: src/McBopomofo.h:68
+#: src/McBopomofo.h:69
 msgid "asdfghjkl"
 msgstr ""
 
-#: src/McBopomofo.h:68
+#: src/McBopomofo.h:69
 msgid "asdfzxcvb"
 msgstr ""
 
-#: src/McBopomofo.h:71
+#: src/McBopomofo.h:72
 msgid "Not Set"
 msgstr ""
 
-#: src/McBopomofo.h:72
+#: src/McBopomofo.h:73
 msgid "Vertical"
 msgstr ""
 
-#: src/McBopomofo.h:72
+#: src/McBopomofo.h:73
 msgid "Horizontal"
 msgstr ""
 
-#: src/McBopomofo.h:75
+#: src/McBopomofo.h:76
 msgid "before_cursor"
 msgstr "Before the Cursor (Like Hanin)"
 
-#: src/McBopomofo.h:76
+#: src/McBopomofo.h:77
 msgid "after_cursor"
 msgstr "After the Cursor (Like MS IME)"
 
-#: src/McBopomofo.h:80
+#: src/McBopomofo.h:81
 msgid "directly_output_uppercase"
 msgstr "Directly Output Uppercase Letters"
 
-#: src/McBopomofo.h:81
+#: src/McBopomofo.h:82
 msgid "put_lowercase_to_buffer"
 msgstr "Put Lowercase Letters to Composing Buffer"
 
-#: src/McBopomofo.h:87
+#: src/McBopomofo.h:88
 msgid "disabled"
 msgstr "Disabled"
 
-#: src/McBopomofo.h:88
+#: src/McBopomofo.h:89
 msgid "output_bpmf_reading"
 msgstr "Input Bofomofo Readings"
 
-#: src/McBopomofo.h:89
+#: src/McBopomofo.h:90
 msgid "output_html_ruby_text"
 msgstr "Input HTML Ruby Text"
 
-#: src/McBopomofo.h:97
+#: src/McBopomofo.h:98
 msgid "Bopomofo Keyboard Layout"
 msgstr ""
 
-#: src/McBopomofo.h:103
+#: src/McBopomofo.h:104
 msgid "Candidate List Layout"
 msgstr ""
 
-#: src/McBopomofo.h:108
+#: src/McBopomofo.h:109
 msgid "Selection Keys"
 msgstr ""
 
-#: src/McBopomofo.h:113
+#: src/McBopomofo.h:114
 msgid "Show Candidate Phrase"
 msgstr "Show Candidates"
 
-#: src/McBopomofo.h:118
+#: src/McBopomofo.h:119
 msgid "Move cursor after selection"
 msgstr ""
 
-#: src/McBopomofo.h:124
+#: src/McBopomofo.h:125
 msgid "ESC key clears entire composing buffer"
 msgstr ""
 
-#: src/McBopomofo.h:128
+#: src/McBopomofo.h:129
 msgid "Shift + Letter Keys"
 msgstr ""
 
-#: src/McBopomofo.h:134
+#: src/McBopomofo.h:135
 msgid "Control + Enter Key"
 msgstr ""
 
-#: src/McBopomofo.h:139
+#: src/McBopomofo.h:140
 msgid "Open User Phrase Files With"
 msgstr ""
 
-#: src/McBopomofo.h:144
+#: src/McBopomofo.h:145
 msgid "Add Phrase Hook Path"
 msgstr ""
 
-#: src/McBopomofo.h:149
+#: src/McBopomofo.h:150
 msgid "Run the hook script after adding a phrase"
 msgstr ""
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
+#, fuzzy
 msgid "McBopomofo"
-msgstr ""
+msgstr "Plain Bopomofo"
 
 #: src/mcbopomofo-plain.conf.in.in:3
 msgid "PlainBopomofo"
@@ -224,4 +225,13 @@ msgstr "Plain Bopomofo"
 
 #: src/mcbopomofo-addon.conf.in.in:4
 msgid "McBopomofo Input Method For Fcitx"
+msgstr ""
+
+#: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:7
+#, fuzzy
+msgid "McBopomofo for Fcitx 5"
+msgstr "Plain Bopomofo"
+
+#: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:8
+msgid "A bopomofo input method that predicts words intelligently"
 msgstr ""
