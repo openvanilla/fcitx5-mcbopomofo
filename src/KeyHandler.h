@@ -24,6 +24,7 @@
 #ifndef SRC_KEYHANDLER_H_
 #define SRC_KEYHANDLER_H_
 
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>
