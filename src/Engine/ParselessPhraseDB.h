@@ -25,6 +25,7 @@
 #define SOURCE_ENGINE_PARSELESSPHRASEDB_H_
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 
