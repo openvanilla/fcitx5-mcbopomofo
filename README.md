@@ -48,9 +48,9 @@ sudo make install
 sudo update-icon-caches /usr/share/icons/*
 ```
 
-## 在其他 Linux Distro 上安裝
+## 在其他 Linux Distro 或 FreeBSD 上安裝
 
-* 我們計畫利用 [wiki](https://github.com/openvanilla/fcitx5-mcbopomofo/wiki#%E5%AE%89%E8%A3%9D%E8%AA%AA%E6%98%8E) 收集在其他 Linux distro 上安裝的方式，歡迎提供內容與指正。
+* 我們利用 [wiki](https://github.com/openvanilla/fcitx5-mcbopomofo/wiki#%E5%AE%89%E8%A3%9D%E8%AA%AA%E6%98%8E) 收集在其他 Linux distro 或 FreeBSD 上安裝的方式，歡迎提供內容與指正。
 
 ## C++ 語法風格
 
