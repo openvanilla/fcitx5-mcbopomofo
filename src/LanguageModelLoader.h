@@ -29,8 +29,8 @@
 #include <string>
 #include <string_view>
 
+#include "Engine/McBopomofoLM.h"
 #include "InputMode.h"
-#include "McBopomofoLM.h"
 
 namespace McBopomofo {
 

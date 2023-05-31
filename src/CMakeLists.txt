@@ -12,17 +12,7 @@ set(MCBOPOMOFO_LIB_SOURCES
  KeyHandler.cpp
  LanguageModelLoader.cpp
  UTF8Helper.cpp
- Log.cpp  # Log is part of McBopomofoLib to facilitate debugging via logging.
- Engine/AssociatedPhrases.h
- Engine/AssociatedPhrases.cpp
- Engine/KeyValueBlobReader.cpp 
- Engine/McBopomofoLM.cpp
- Engine/ParselessLM.cpp
- Engine/ParselessPhraseDB.cpp
- Engine/PhraseReplacementMap.cpp
- Engine/UserOverrideModel.cpp
- Engine/UserPhrasesLM.cpp
- Engine/Mandarin/Mandarin.cpp)
+ Log.cpp)
 
 # https://stackoverflow.com/questions/26549137/shared-library-on-linux-and-fpic-error
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
@@ -30,9 +20,9 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 # Setup some compiler option that is generally useful and compatible with Fcitx 5 (C++17)
 include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cmake")
 
-add_library(McBopomofoLib STATIC ${MCBOPOMOFO_LIB_SOURCES})
+add_library(McBopomofoLib ${MCBOPOMOFO_LIB_SOURCES})
 target_compile_options(McBopomofoLib PRIVATE -Wno-unknown-pragmas)
-target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils gramambular2_lib)
+target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils gramambular2_lib McBopomofoLMLib MandarinLib)
 target_include_directories(McBopomofoLib PRIVATE Fcitx5::Utils)
 target_compile_definitions(McBopomofoLib PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 
@@ -68,6 +58,11 @@ fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-plain.conf
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-plain.conf" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/inputmethod")
 
 if (ENABLE_TEST)
+        enable_testing()
+        if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+                cmake_policy(SET CMP0135 NEW)
+        endif()
+
         # Let CMake fetch Google Test for us.
         # https://github.com/google/googletest/tree/main/googletest#incorporating-into-an-existing-cmake-project
         include(FetchContent)
