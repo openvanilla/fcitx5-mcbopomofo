@@ -30,15 +30,15 @@
 #include <string>
 #include <vector>
 
+#include "Engine/Mandarin/Mandarin.h"
+#include "Engine/McBopomofoLM.h"
+#include "Engine/UserOverrideModel.h"
 #include "Engine/gramambular2/language_model.h"
 #include "Engine/gramambular2/reading_grid.h"
 #include "InputMode.h"
 #include "InputState.h"
 #include "Key.h"
 #include "LanguageModelLoader.h"
-#include "Mandarin.h"
-#include "McBopomofoLM.h"
-#include "UserOverrideModel.h"
 
 namespace McBopomofo {
 

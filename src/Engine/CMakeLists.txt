@@ -2,15 +2,18 @@ cmake_minimum_required(VERSION 3.6)
 project(McBopomofoLMLib)
 
 set(CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 add_subdirectory(gramambular2)
+add_subdirectory(Mandarin)
 
-include_directories("Gramambular")
 add_library(McBopomofoLMLib
         AssociatedPhrases.h
         AssociatedPhrases.cpp
         KeyValueBlobReader.cpp
         KeyValueBlobReader.h
+        McBopomofoLM.cpp
+        McBopomofoLM.h
         ParselessPhraseDB.cpp
         ParselessPhraseDB.h
         ParselessLM.cpp
@@ -23,6 +26,11 @@ add_library(McBopomofoLMLib
         UserPhrasesLM.cpp)
 
 if (ENABLE_TEST)
+        enable_testing()
+        if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+                cmake_policy(SET CMP0135 NEW)
+        endif()
+
         # Let CMake fetch Google Test for us.
         # https://github.com/google/googletest/tree/main/googletest#incorporating-into-an-existing-cmake-project
         include(FetchContent)

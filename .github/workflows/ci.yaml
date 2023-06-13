@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build_ubuntu_22:
     runs-on: ubuntu-latest
-    container: ubuntu:jammy-20220531
+    container: ubuntu:22.04
 
     steps:
       - uses: actions/checkout@v1
@@ -20,7 +20,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
+          cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug
           make -j
           cd ../
           mkdir -p src/Engine/build
@@ -30,11 +30,11 @@ jobs:
       - name: Test
         run: |
           cd build
-          make runTest runGramambular2Test runMcBopomofoLMLibTest
+          ctest --output-on-failure
 
   build_ubuntu_20:
     runs-on: ubuntu-latest
-    container: ubuntu:focal-20220531
+    container: ubuntu:20.04
 
     steps:
       - uses: actions/checkout@v1
@@ -49,12 +49,12 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DUSE_LEGACY_FCITX5_API=1
+          cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DUSE_LEGACY_FCITX5_API=1 -DCMAKE_BUILD_TYPE=Debug
           make -j
       - name: Test
         run: |
           cd build
-          make runTest
+          ctest --output-on-failure
 
   build_archlinux:
     runs-on: ubuntu-latest

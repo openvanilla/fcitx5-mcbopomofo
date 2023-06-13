@@ -1,4 +1,4 @@
-// Copyright (c) 2022 and onwards The McBopomofo Authors.
+// Copyright (c) 2023 and onwards The McBopomofo Authors.
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -28,8 +28,15 @@
 
 namespace McBopomofo {
 
-std::u32string ToU32(const std::string& s);
-std::string ToU8(const std::u32string& s);
+// Count the number of code points of a string encoded in UTF-8. If it
+// encounters an invalid UTF-8 sequence, the returned value is the number of
+// code points up to before that invalid sequence.
+size_t CodePointCount(const std::string& s);
+
+// Clamp the string by the cp code points. If the string is shorter, the result
+// is a copy of s. If s contains some invalid UTF-8 sequence, the returned value
+// will be the string clamped up to before that invalid sequence.
+std::string SubstringToCodePoints(const std::string& s, size_t cp);
 
 }  // namespace McBopomofo
 
