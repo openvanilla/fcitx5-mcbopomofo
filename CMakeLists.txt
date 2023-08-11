@@ -16,6 +16,17 @@ include(ECMUninstallTarget)
 
 option(ENABLE_TEST "Build Test" On)
 
+# clang-tidy
+option(ENABLE_CLANG_TIDY "Enable clang-tidy" Off)
+if (ENABLE_CLANG_TIDY)
+    MESSAGE(STATUS "Enabled clang-tidy")
+    find_program(CLANG_TIDY NAMES "clang-tidy" REQUIRED)
+    MESSAGE(STATUS "Found clang-tidy: ${CLANG_TIDY}")
+    set(CLANG_TIDY_COMMAND "${CLANG_TIDY}" "-checks=-*,clang-analyzer-*,bugprone-*,cert-*,readability-*")
+    # one may wants to use the following instead to focus on a specific category
+    # set(CLANG_TIDY_COMMAND "${CLANG_TIDY}" "-checks=-*,clang-analyzer-*")
+endif ()
+
 # Setup some compiler option that is generally useful and compatible with Fcitx 5 (C++17)
 include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cmake")
 
