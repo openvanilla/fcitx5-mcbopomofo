@@ -26,6 +26,10 @@ target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils gramambular2_lib McBop
 target_include_directories(McBopomofoLib PRIVATE Fcitx5::Utils)
 target_compile_definitions(McBopomofoLib PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 
+if (ENABLE_CLANG_TIDY)
+    set_target_properties(McBopomofoLib PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+endif ()
+
 include_directories(Engine)
 include_directories(Engine/Gramambular)
 include_directories(Engine/Mandarin)
@@ -42,6 +46,10 @@ target_include_directories(mcbopomofo PRIVATE Fcitx5::Core fmt::fmt)
 set_target_properties(mcbopomofo PROPERTIES PREFIX "")
 target_compile_definitions(mcbopomofo PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 install(TARGETS mcbopomofo DESTINATION "${FCITX_INSTALL_LIBDIR}/fcitx5")
+
+if (ENABLE_CLANG_TIDY)
+    set_target_properties(mcbopomofo PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+endif ()
 
 # Addon config file
 # We need additional layer of conversion because we want PROJECT_VERSION in it.
@@ -95,3 +103,4 @@ if (ENABLE_TEST)
         )
         add_dependencies(runTest McBopomofoTest)
 endif ()
+

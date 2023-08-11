@@ -6,6 +6,10 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 add_library(gramambular2_lib language_model.h reading_grid.h reading_grid.cpp)
 
+if (ENABLE_CLANG_TIDY)
+    set_target_properties(gramambular2_lib PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+endif ()
+
 if (ENABLE_TEST)
         enable_testing()
         if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
