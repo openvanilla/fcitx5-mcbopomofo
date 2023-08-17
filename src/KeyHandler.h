@@ -79,7 +79,7 @@ class KeyHandler {
   void candidatePanelCancelled(const StateCallback& stateCallback);
 
   // Workaround for the Traditional Bopomofo mode.
-  bool handleCandidateKeyForTraditionalBompomofoIfRequired(
+  bool handleCandidateKeyForTraditionalBopomofoIfRequired(
       Key key,
       const SelectCurrentCandidateCallback& SelectCurrentCandidateCallback,
       const StateCallback& stateCallback, const ErrorCallback& errorCallback);
@@ -103,7 +103,7 @@ class KeyHandler {
   // Sets if we should move cursor after selection.
   void setMoveCursorAfterSelection(bool flag);
 
-  // Sets if we should put lowercasesd letters into the composing buffer.
+  // Sets if we should put lowercased letters into the composing buffer.
   void setPutLowercaseLettersToComposingBuffer(bool flag);
 
   /// Sets if the ESC key clears entire composing buffer.

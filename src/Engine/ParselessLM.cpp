@@ -70,7 +70,7 @@ bool McBopomofo::ParselessLM::open(const std::string_view& path)
     }
 
     db_ = std::unique_ptr<ParselessPhraseDB>(new ParselessPhraseDB(
-        static_cast<char*>(data_), length_, /*validate_pragme=*/
+        static_cast<char*>(data_), length_, /*validate_pragma=*/
         true));
     return true;
 }

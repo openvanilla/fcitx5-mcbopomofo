@@ -83,8 +83,7 @@ bool UserPhrasesLM::open(const char* path)
 
     KeyValueBlobReader reader(static_cast<char*>(data), length);
     KeyValueBlobReader::KeyValue keyValue;
-    KeyValueBlobReader::State state;
-    while ((state = reader.Next(&keyValue)) == KeyValueBlobReader::State::HAS_PAIR) {
+    while (reader.Next(&keyValue) == KeyValueBlobReader::State::HAS_PAIR) {
         // We invert the key and value, since in user phrases, "key" is the phrase value, and "value" is the BPMF reading.
         keyRowMap[keyValue.value].emplace_back(keyValue.value, keyValue.key);
     }
