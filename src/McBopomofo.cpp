@@ -249,6 +249,7 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
       "mcbopomofo-user-excluded-phrases-edit", excludedPhrasesAction_.get());
 
   // Required by convention of fcitx5 modules to load config on its own.
+  // NOLINTNEXTLINE(clang-analyzer-optin.cplusplus.VirtualCall)
   reloadConfig();
 }
 
@@ -293,6 +294,7 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
 
   keyHandler_->setInputMode(mode);
 
+  // NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
   auto layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
   switch (config_.bopomofoKeyboardLayout.value()) {
     case BopomofoKeyboardLayout::Standard:
@@ -541,20 +543,19 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  bool result =
-      keyHandler_->handleCandidateKeyForTraditionalBompomofoIfRequired(
-          MapFcitxKey(key),
-          [candidateList, context] {
-            auto idx = candidateList->cursorIndex();
-            if (idx < candidateList->size()) {
+  bool result = keyHandler_->handleCandidateKeyForTraditionalBopomofoIfRequired(
+      MapFcitxKey(key),
+      [candidateList, context] {
+        auto idx = candidateList->cursorIndex();
+        if (idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
-              candidateList->candidate(idx)->select(context);
+          candidateList->candidate(idx)->select(context);
 #else
-              candidateList->candidate(idx).select(context);
+          candidateList->candidate(idx).select(context);
 #endif
-            }
-          },
-          stateCallback, errorCallback);
+        }
+      },
+      stateCallback, errorCallback);
 
   if (result) {
     return;
@@ -676,7 +677,7 @@ void McBopomofoEngine::handleCandidatesState(
   }
 
   candidateList->setSelectionKey(selectionKeys_);
-  candidateList->setPageSize(selectionKeys_.size());
+  candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
 
   fcitx::CandidateLayoutHint layoutHint = getCandidateLayoutHint();
   candidateList->setLayoutHint(layoutHint);
@@ -772,9 +773,12 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
     preedit.append(marking->markedText, fcitx::TextFormatFlag::HighLight);
     preedit.append(marking->tail, normalFormat);
   } else {
+    // Note: dynamic_cast<InputStates::Marking*> in enterNewState() ensures
+    // state is not nullptr
+    // NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
     preedit.append(state->composingBuffer, normalFormat);
   }
-  preedit.setCursor(state->cursorIndex);
+  preedit.setCursor(static_cast<int>(state->cursorIndex));
 
   if (useClientPreedit) {
     context->inputPanel().setClientPreedit(preedit);

@@ -73,6 +73,9 @@ const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
   // lookup consonants and consume them
   bool independentConsonant = false;
 
+  // disable this check for if-else/switch blocks below
+  // NOLINTBEGIN(bugprone-branch-clone)
+
   // the y exceptions fist
   if (0) {
   } else if (PinyinParseHelper::ConsumePrefix(pinyin, "yuan")) {
@@ -101,7 +104,7 @@ const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
   }
 
   // try the first character
-  char c = pinyin.length() ? pinyin[0] : 0;
+  char c = pinyin.length() ? pinyin[0] : '\0';
   switch (c) {
     case 'b':
       firstComponent = BPMF::B;
@@ -160,7 +163,7 @@ const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
       pinyin = pinyin.substr(1);
       break;
 
-    // special hanlding for w and y
+    // special handling for w and y
     case 'w':
       secondComponent = BPMF::U;
       pinyin = pinyin.substr(1);
@@ -316,6 +319,7 @@ const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
       thirdComponent = BPMF::ER;
     }
   }
+  // NOLINTEND(bugprone-branch-clone)
 
   // at last!
   if (0) {
@@ -447,6 +451,7 @@ const std::string BPMF::HanyuPinyinString(bool includesTone,
       break;
   }
 
+  // NOLINTBEGIN(bugprone-branch-clone)
   switch (vc) {
     case A:
       vowel = "a";
@@ -488,6 +493,7 @@ const std::string BPMF::HanyuPinyinString(bool includesTone,
       vowel = "er";
       break;
   }
+  // NOLINTEND(bugprone-branch-clone)
 
   // combination rules
 
@@ -566,7 +572,7 @@ const BPMF BPMF::FromComposedString(const std::string& str) {
       break;
     }
 
-    size_t utf8_length = -1;
+    std::string::difference_type utf8_length = -1;
 
     // These are the code points for the tone markers.
     if ((*iter & (0x80 | 0x40)) && !(*iter & 0x20)) {
@@ -600,10 +606,10 @@ const BPMF BPMF::FromComposedString(const std::string& str) {
 const std::string BPMF::composedString() const {
   std::string result;
 #define APPEND(c)                                                         \
-  if (syllable_ & c)                                                      \
+  if (syllable_ & (c))                                                    \
   result +=                                                               \
       (*BopomofoCharacterMap::SharedInstance().componentToCharacter.find( \
-           syllable_ & c))                                                \
+           syllable_ & (c)))                                              \
           .second
   APPEND(ConsonantMask);
   APPEND(MiddleVowelMask);
@@ -667,6 +673,8 @@ BopomofoCharacterMap::BopomofoCharacterMap() {
     componentToCharacter[(*iter).second] = (*iter).first;
 }
 
+// we don't need parentheses for these macros
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define ASSIGNKEY1(m, vec, k, val) \
   m[k] = (vec.clear(), vec.push_back((BPMF::Component)val), vec)
 #define ASSIGNKEY2(m, vec, k, val1, val2)                    \
@@ -676,6 +684,7 @@ BopomofoCharacterMap::BopomofoCharacterMap() {
   m[k] = (vec.clear(), vec.push_back((BPMF::Component)val1), \
           vec.push_back((BPMF::Component)val2),              \
           vec.push_back((BPMF::Component)val3), vec)
+// NOLINTEND(bugprone-macro-parentheses)
 
 static BopomofoKeyboardLayout* CreateStandardLayout() {
   std::vector<BPMF::Component> vec;

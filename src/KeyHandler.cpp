@@ -101,7 +101,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                         const ErrorCallback& errorCallback) {
   // From Key's definition, if shiftPressed is true, it can't be a simple key
   // that can be represented by ASCII.
-  char simpleAscii = (key.ctrlPressed || key.shiftPressed) ? 0 : key.ascii;
+  char simpleAscii = (key.ctrlPressed || key.shiftPressed) ? '\0' : key.ascii;
 
   // See if it's valid BPMF reading.
   bool keyConsumedByReading = false;
@@ -424,7 +424,7 @@ void KeyHandler::candidatePanelCancelled(const StateCallback& stateCallback) {
   stateCallback(buildInputtingState());
 }
 
-bool KeyHandler::handleCandidateKeyForTraditionalBompomofoIfRequired(
+bool KeyHandler::handleCandidateKeyForTraditionalBopomofoIfRequired(
     Key key,
     const SelectCurrentCandidateCallback& SelectCurrentCandidateCallback,
     const StateCallback& stateCallback, const ErrorCallback& errorCallback) {
