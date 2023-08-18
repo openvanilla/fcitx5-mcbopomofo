@@ -48,6 +48,7 @@ constexpr double kNoOverrideThreshold = -8.0;
 
 static const char* GetKeyboardLayoutName(
     const Formosa::Mandarin::BopomofoKeyboardLayout* layout) {
+  // NOLINTBEGIN(readability-else-after-return)
   if (layout == Formosa::Mandarin::BopomofoKeyboardLayout::ETenLayout()) {
     return "ETen";
   } else if (layout == Formosa::Mandarin::BopomofoKeyboardLayout::HsuLayout()) {
@@ -62,6 +63,7 @@ static const char* GetKeyboardLayoutName(
     return "IBM";
   }
   return "Standard";
+  // NOLINTEND(readability-else-after-return)
 }
 
 static bool MarkedPhraseExists(
@@ -128,7 +130,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     if (!lm_->hasUnigrams(syllable)) {
       errorCallback();
-      if (!grid_.length()) {
+      if (grid_.length() == 0) {
         stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
       } else {
         stateCallback(buildInputtingState());
@@ -191,7 +193,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       walk();
       stateCallback(buildInputtingState());
     } else {
-      if (grid_.length()) {
+      if (grid_.length() != 0) {
         auto inputtingState = buildInputtingState();
         // Steal the composingBuffer built by the inputting state.
         auto committingState = std::make_unique<InputStates::Committing>(
@@ -206,7 +208,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   }
 
   // Space hit: see if we should enter the candidate choosing state.
-  auto maybeNotEmptyState = dynamic_cast<InputStates::NotEmpty*>(state);
+  auto* maybeNotEmptyState = dynamic_cast<InputStates::NotEmpty*>(state);
   if ((simpleAscii == Key::SPACE || key.name == Key::KeyName::DOWN) &&
       maybeNotEmptyState != nullptr && reading_.isEmpty()) {
     stateCallback(buildChoosingCandidateState(maybeNotEmptyState));
@@ -227,7 +229,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     if (!reading_.isEmpty()) {
       reading_.clear();
-      if (!grid_.length()) {
+      if (grid_.length() == 0) {
         stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
       } else {
         stateCallback(buildInputtingState());
@@ -281,7 +283,8 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         stateCallback(std::move(committingState));
         reset();
         return true;
-      } else if (ctrlEnterKey_ == KeyHandlerCtrlEnter::OutputHTMLRubyText) {
+      }
+      if (ctrlEnterKey_ == KeyHandlerCtrlEnter::OutputHTMLRubyText) {
         auto output = getHTMLRubyText();
         auto committingState =
             std::make_unique<InputStates::Committing>(output);
@@ -293,7 +296,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     }
 
     // See if we are in Marking state, and, if a valid mark, accept it.
-    if (auto marking = dynamic_cast<InputStates::Marking*>(state)) {
+    if (auto* marking = dynamic_cast<InputStates::Marking*>(state)) {
       if (marking->acceptable) {
         userPhraseAdder_->addUserPhrase(marking->reading, marking->markedText);
         onAddNewPhrase_(marking->markedText);
@@ -338,10 +341,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     std::string unigram;
     if (key.ctrlPressed) {
       unigram = std::string(kCtrlPunctuationKeyPrefix) + chrStr;
-      if (handlePunctuation(unigram, stateCallback, errorCallback)) {
-        return true;
-      }
-      return false;
+      return handlePunctuation(unigram, stateCallback, errorCallback);
     }
 
     // Bopomofo layout-specific punctuation handling.
@@ -515,7 +515,7 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
     return false;
   }
 
-  auto inputting = dynamic_cast<InputStates::Inputting*>(state);
+  auto* inputting = dynamic_cast<InputStates::Inputting*>(state);
 
   if (inputting == nullptr) {
     errorCallback();
@@ -594,7 +594,7 @@ bool KeyHandler::handleCursorKeys(Key key, McBopomofo::InputState* state,
     return false;
   }
   size_t markBeginCursorIndex = grid_.cursor();
-  auto marking = dynamic_cast<InputStates::Marking*>(state);
+  auto* marking = dynamic_cast<InputStates::Marking*>(state);
   if (marking != nullptr) {
     markBeginCursorIndex = marking->markStartGridCursorIndex;
   }

@@ -49,10 +49,7 @@ UserPhrasesLM::~UserPhrasesLM()
 
 bool UserPhrasesLM::isLoaded()
 {
-    if (data) {
-        return true;
-    }
-    return false;
+    return data != nullptr;
 }
 
 bool UserPhrasesLM::open(const char* path)

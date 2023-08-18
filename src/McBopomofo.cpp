@@ -112,7 +112,7 @@ class McBopomofoCandidateWord : public fcitx::CandidateWord {
         keyHandler_(std::move(keyHandler)),
         stateCallback_(std::move(callback)) {}
 
-  void select(fcitx::InputContext*) const override {
+  void select(fcitx::InputContext* /*unused*/) const override {
     keyHandler_->candidateSelected(candidate_, stateCallback_);
   }
 
@@ -295,7 +295,8 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
   keyHandler_->setInputMode(mode);
 
   // NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
-  auto layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
+  const auto* layout =
+      Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
   switch (config_.bopomofoKeyboardLayout.value()) {
     case BopomofoKeyboardLayout::Standard:
       layout = Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout();
@@ -335,7 +336,7 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
   languageModelLoader_->reloadUserModelsIfNeeded();
 }
 
-void McBopomofoEngine::reset(const fcitx::InputMethodEntry&,
+void McBopomofoEngine::reset(const fcitx::InputMethodEntry& /*unused*/,
                              fcitx::InputContextEvent& event) {
   keyHandler_->reset();
 
@@ -357,7 +358,7 @@ void McBopomofoEngine::reset(const fcitx::InputMethodEntry&,
   }
 }
 
-void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
+void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
                                 fcitx::KeyEvent& keyEvent) {
   if (!keyEvent.isInputContextEvent()) {
     return;
@@ -384,7 +385,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry&,
     auto maybeCandidateList = dynamic_cast<fcitx::CommonCandidateList*>(
         context->inputPanel().candidateList());
 #else
-    auto maybeCandidateList = dynamic_cast<fcitx::CommonCandidateList*>(
+    auto* maybeCandidateList = dynamic_cast<fcitx::CommonCandidateList*>(
         context->inputPanel().candidateList().get());
 #endif
     if (maybeCandidateList == nullptr) {
@@ -574,9 +575,9 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
   InputState* prevPtr = prevState.get();
   InputState* currentPtr = state_.get();
 
-  if (auto empty = dynamic_cast<InputStates::Empty*>(currentPtr)) {
+  if (auto* empty = dynamic_cast<InputStates::Empty*>(currentPtr)) {
     handleEmptyState(context, prevPtr, empty);
-  } else if (auto emptyIgnoringPrevious =
+  } else if (auto* emptyIgnoringPrevious =
                  dynamic_cast<InputStates::EmptyIgnoringPrevious*>(
                      currentPtr)) {
     handleEmptyIgnoringPreviousState(context, prevPtr, emptyIgnoringPrevious);
@@ -584,40 +585,41 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
     // Transition to Empty state as required by the spec: see
     // EmptyIgnoringPrevious's own definition for why.
     state_ = std::make_unique<InputStates::Empty>();
-  } else if (auto committing =
+  } else if (auto* committing =
                  dynamic_cast<InputStates::Committing*>(currentPtr)) {
     handleCommittingState(context, prevPtr, committing);
-  } else if (auto inputting =
+  } else if (auto* inputting =
                  dynamic_cast<InputStates::Inputting*>(currentPtr)) {
     handleInputtingState(context, prevPtr, inputting);
-  } else if (auto candidates =
+  } else if (auto* candidates =
                  dynamic_cast<InputStates::ChoosingCandidate*>(currentPtr)) {
     handleCandidatesState(context, prevPtr, candidates);
-  } else if (auto marking = dynamic_cast<InputStates::Marking*>(currentPtr)) {
+  } else if (auto* marking = dynamic_cast<InputStates::Marking*>(currentPtr)) {
     handleMarkingState(context, prevPtr, marking);
   }
 }
 
 void McBopomofoEngine::handleEmptyState(fcitx::InputContext* context,
-                                        InputState* prev, InputStates::Empty*) {
+                                        InputState* prev,
+                                        InputStates::Empty* /*unused*/) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-  if (auto notEmpty = dynamic_cast<InputStates::NotEmpty*>(prev)) {
+  if (auto* notEmpty = dynamic_cast<InputStates::NotEmpty*>(prev)) {
     context->commitString(notEmpty->composingBuffer);
   }
   context->updatePreedit();
 }
 
 void McBopomofoEngine::handleEmptyIgnoringPreviousState(
-    fcitx::InputContext* context, InputState*,
-    InputStates::EmptyIgnoringPrevious*) {
+    fcitx::InputContext* context, InputState* /*unused*/,
+    InputStates::EmptyIgnoringPrevious* /*unused*/) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   context->updatePreedit();
 }
 
 void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
-                                             InputState*,
+                                             InputState* /*unused*/,
                                              InputStates::Committing* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
@@ -628,7 +630,7 @@ void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
 }
 
 void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
-                                            InputState*,
+                                            InputState* /*unused*/,
                                             InputStates::Inputting* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
@@ -636,7 +638,7 @@ void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
 }
 
 void McBopomofoEngine::handleCandidatesState(
-    fcitx::InputContext* context, InputState*,
+    fcitx::InputContext* context, InputState* /*unused*/,
     InputStates::ChoosingCandidate* current) {
   std::unique_ptr<fcitx::CommonCandidateList> candidateList =
       std::make_unique<fcitx::CommonCandidateList>();
@@ -730,14 +732,14 @@ void McBopomofoEngine::handleCandidatesState(
 }
 
 void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
-                                          InputState*,
+                                          InputState* /*unused*/,
                                           InputStates::Marking* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   updatePreedit(context, current);
 }
 
-fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() {
+fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
   fcitx::CandidateLayoutHint layoutHint = fcitx::CandidateLayoutHint::NotSet;
   switch (config_.candidateLayout.value()) {
     case McBopomofo::CandidateLayoutHint::Vertical:
@@ -768,7 +770,7 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
                                           : fcitx::TextFormatFlag::NoFlag};
 #endif
   fcitx::Text preedit;
-  if (auto marking = dynamic_cast<InputStates::Marking*>(state)) {
+  if (auto* marking = dynamic_cast<InputStates::Marking*>(state)) {
     preedit.append(marking->head, normalFormat);
     preedit.append(marking->markedText, fcitx::TextFormatFlag::HighLight);
     preedit.append(marking->tail, normalFormat);

@@ -36,6 +36,7 @@ ParselessPhraseDB::ParselessPhraseDB(
     assert(buf != nullptr);
     assert(length > 0);
 
+    // NOLINTBEGIN(readability-magic-numbers)
     if (validate_pragma) {
         assert(length > SORTED_PRAGMA_HEADER.length());
 
@@ -51,6 +52,7 @@ ParselessPhraseDB::ParselessPhraseDB(
 
         begin_ += header.length();
     }
+    // NOLINTEND(readability-magic-numbers)
 }
 
 std::vector<std::string_view> ParselessPhraseDB::findRows(
