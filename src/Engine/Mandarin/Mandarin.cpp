@@ -77,8 +77,7 @@ const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
   // NOLINTBEGIN(bugprone-branch-clone)
 
   // the y exceptions fist
-  if (false) {  // NOLINT(readability-simplify-boolean-expr)
-  } else if (PinyinParseHelper::ConsumePrefix(pinyin, "yuan")) {
+  if (PinyinParseHelper::ConsumePrefix(pinyin, "yuan")) {
     secondComponent = BPMF::UE;
     thirdComponent = BPMF::AN;
   } else if (PinyinParseHelper::ConsumePrefix(pinyin, "ying")) {
@@ -177,8 +176,7 @@ const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
   }
 
   // then we try ZH, CH, SH, R, Z, C, S (in that order)
-  if (false) {  // NOLINT(readability-simplify-boolean-expr)
-  } else if (PinyinParseHelper::ConsumePrefix(pinyin, "zh")) {
+  if (PinyinParseHelper::ConsumePrefix(pinyin, "zh")) {
     firstComponent = BPMF::ZH;
     independentConsonant = true;
   } else if (PinyinParseHelper::ConsumePrefix(pinyin, "ch")) {
@@ -203,8 +201,7 @@ const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
 
   // consume exceptions first: (ien, in), (iou, iu), (uen, un), (veng, iong),
   // (ven, vn), (uei, ui), ung but longer sequence takes precedence
-  if (false) {  // NOLINT(readability-simplify-boolean-expr)
-  } else if (PinyinParseHelper::ConsumePrefix(pinyin, "veng")) {
+  if (PinyinParseHelper::ConsumePrefix(pinyin, "veng")) {
     secondComponent = BPMF::UE;
     thirdComponent = BPMF::ENG;
   } else if (PinyinParseHelper::ConsumePrefix(pinyin, "iong")) {
@@ -272,8 +269,7 @@ const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
   }
 
   // then consume the middle component...
-  if (false) {  // NOLINT(readability-simplify-boolean-expr)
-  } else if (PinyinParseHelper::ConsumePrefix(pinyin, "i")) {
+  if (PinyinParseHelper::ConsumePrefix(pinyin, "i")) {
     secondComponent = independentConsonant ? 0 : BPMF::I;
   } else if (PinyinParseHelper::ConsumePrefix(pinyin, "u")) {
     if (firstComponent == BPMF::J || firstComponent == BPMF::Q ||
@@ -287,8 +283,7 @@ const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
   }
 
   // the vowels, longer sequence takes precedence
-  if (false) {  // NOLINT(readability-simplify-boolean-expr)
-  } else if (PinyinParseHelper::ConsumePrefix(pinyin, "ang")) {
+  if (PinyinParseHelper::ConsumePrefix(pinyin, "ang")) {
     thirdComponent = BPMF::ANG;
   } else if (PinyinParseHelper::ConsumePrefix(pinyin, "eng")) {
     thirdComponent = BPMF::ENG;
@@ -322,8 +317,7 @@ const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
   // NOLINTEND(bugprone-branch-clone)
 
   // at last!
-  if (false) {  // NOLINT(readability-simplify-boolean-expr)
-  } else if (PinyinParseHelper::ConsumePrefix(pinyin, "1")) {
+  if (PinyinParseHelper::ConsumePrefix(pinyin, "1")) {
     toneComponent = BPMF::Tone1;
   } else if (PinyinParseHelper::ConsumePrefix(pinyin, "2")) {
     toneComponent = BPMF::Tone2;
