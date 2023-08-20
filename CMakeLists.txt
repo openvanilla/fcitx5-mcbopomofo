@@ -22,7 +22,18 @@ if (ENABLE_CLANG_TIDY)
     MESSAGE(STATUS "Enabled clang-tidy")
     find_program(CLANG_TIDY NAMES "clang-tidy" REQUIRED)
     MESSAGE(STATUS "Found clang-tidy: ${CLANG_TIDY}")
-    set(CLANG_TIDY_COMMAND "${CLANG_TIDY}" "-checks=-*,clang-analyzer-*,bugprone-*,-bugprone-easily-swappable-parameters,cert-*,readability-*")
+    string(CONCAT CLANG_TIDY_CHECKS "-checks=-*,"
+        "clang-analyzer-*,bugprone-*,cert-*,readability-*,"
+        "-bugprone-easily-swappable-parameters,"
+        "-readability-const-return-type,"
+        "-readability-convert-member-functions-to-static,"
+        "-readability-function-cognitive-complexity,"
+        "-readability-identifier-length,"
+        "-readability-implicit-bool-conversion,"
+        "-readability-isolate-declaration,"
+        "-readability-suspicious-call-argument"
+    )
+    set(CLANG_TIDY_COMMAND "${CLANG_TIDY}" "${CLANG_TIDY_CHECKS}")
     # one may wants to use the following instead to focus on a specific category
     # set(CLANG_TIDY_COMMAND "${CLANG_TIDY}" "-checks=-*,clang-analyzer-*")
 endif ()
