@@ -17,30 +17,25 @@ include(ECMUninstallTarget)
 option(ENABLE_TEST "Build Test" On)
 
 # clang-tidy
-option(ENABLE_CLANG_TIDY "Enable clang-tidy" On)
+option(ENABLE_CLANG_TIDY "Enable clang-tidy" Off)
 if (ENABLE_CLANG_TIDY)
-    MESSAGE(STATUS "Checking clang-tidy...")
-    find_program(CLANG_TIDY NAMES "clang-tidy")
-    if (CLANG_TIDY)
-        MESSAGE(STATUS "Found clang-tidy: ${CLANG_TIDY}")
-        string(CONCAT CLANG_TIDY_CHECKS "-checks=-*,"
-            "clang-analyzer-*,bugprone-*,cert-*,readability-*,"
-            "-bugprone-easily-swappable-parameters,"
-            "-readability-const-return-type,"
-            "-readability-convert-member-functions-to-static,"
-            "-readability-function-cognitive-complexity,"
-            "-readability-identifier-length,"
-            "-readability-implicit-bool-conversion,"
-            "-readability-isolate-declaration,"
-            "-readability-suspicious-call-argument"
-        )
-        set(CLANG_TIDY_COMMAND "${CLANG_TIDY}" "${CLANG_TIDY_CHECKS}")
-        # one may wants to use the following instead to focus on a specific category
-        # set(CLANG_TIDY_COMMAND "${CLANG_TIDY}" "-checks=-*,clang-analyzer-*")
-    else ()
-        MESSAGE(STATUS "clang-tidy not found, disable clang-tidy checks")
-        set(ENABLE_CLANG_TIDY Off)
-    endif ()
+    MESSAGE(STATUS "Enabled clang-tidy")
+    find_program(CLANG_TIDY NAMES "clang-tidy" REQUIRED)
+    MESSAGE(STATUS "Found clang-tidy: ${CLANG_TIDY}")
+    string(CONCAT CLANG_TIDY_CHECKS "-checks=-*,"
+        "clang-analyzer-*,bugprone-*,cert-*,readability-*,"
+        "-bugprone-easily-swappable-parameters,"
+        "-readability-const-return-type,"
+        "-readability-convert-member-functions-to-static,"
+        "-readability-function-cognitive-complexity,"
+        "-readability-identifier-length,"
+        "-readability-implicit-bool-conversion,"
+        "-readability-isolate-declaration,"
+        "-readability-suspicious-call-argument"
+    )
+    set(CLANG_TIDY_COMMAND "${CLANG_TIDY}" "${CLANG_TIDY_CHECKS}")
+    # one may wants to use the following instead to focus on a specific category
+    # set(CLANG_TIDY_COMMAND "${CLANG_TIDY}" "-checks=-*,clang-analyzer-*")
 endif ()
 
 # Setup some compiler option that is generally useful and compatible with Fcitx 5 (C++17)
