@@ -112,7 +112,7 @@ inline bool operator==(const ChoosingCandidate::Candidate& a,
 // a composingBuffer, and the invariant is that composingBuffer = head +
 // markedText + tail. Unlike cursorIndex, which is UTF-8 based,
 // markStartGridCursorIndex is in the same unit that a Gramambular's grid
-// builder uses. In other words, markStratGridCursorIndex is the beginning
+// builder uses. In other words, markStartGridCursorIndex is the beginning
 // position of the reading cursor. This makes it easy for a key handler to know
 // where the marked range is when combined with the grid builder's (reading)
 // cursor index.

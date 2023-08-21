@@ -55,7 +55,7 @@ namespace McBopomofo {
 ///
 /// The controller can ask the model to load the primary input method language
 /// model while launching and to load the user phrases anytime if the custom
-/// files are modified. It does not keep the reference of the data pathes but
+/// files are modified. It does not keep the reference of the data paths but
 /// you have to pass the paths when you ask it to do loading.
 class McBopomofoLM : public Formosa::Gramambular2::LanguageModel {
 public:
