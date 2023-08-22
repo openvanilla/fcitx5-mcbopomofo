@@ -29,7 +29,7 @@
 
 請先安裝 fcitx5, CMake, 以及以下開發用模組：
 
-```
+```bash
 sudo apt install \
     fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev \
     cmake extra-cmake-modules gettext libfmt-dev
@@ -37,7 +37,7 @@ sudo apt install \
 
 然後在本專案的 git 目錄下執行以下指令：
 
-```
+```bash
 mkdir -p build
 cd build
 cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
@@ -50,7 +50,7 @@ sudo update-icon-caches /usr/share/icons/*
 
 ## 在其他 Linux Distro 或 FreeBSD 上安裝
 
-* 我們利用 [wiki](https://github.com/openvanilla/fcitx5-mcbopomofo/wiki#%E5%AE%89%E8%A3%9D%E8%AA%AA%E6%98%8E) 收集在其他 Linux distro 或 FreeBSD 上安裝的方式，歡迎提供內容與指正。
+- 我們利用 [wiki](https://github.com/openvanilla/fcitx5-mcbopomofo/wiki#%E5%AE%89%E8%A3%9D%E8%AA%AA%E6%98%8E) 收集在其他 Linux distro 或 FreeBSD 上安裝的方式，歡迎提供內容與指正。
 
 ## C++ 語法風格
 
