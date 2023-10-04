@@ -25,7 +25,6 @@
 #define SOURCE_ENGINE_PARSELESSPHRASEDB_H_
 
 #include <cstddef>
-#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -50,6 +49,14 @@ public:
     std::vector<std::string_view> findRows(const std::string_view& key);
 
     const char* findFirstMatchingLine(const std::string_view& key);
+
+    // Find the rows whose text past the key column plus the field separator
+    // is a prefix match of the given value. For example, if the row is
+    // "foo bar -1.00", the values "b", "ba", "bar", "bar ", "bar -1.00" are
+    // are valid prefix matches, where as the value "barr" isn't. This
+    // performs linear scan since, unlike lookup-by-key, it cannot take
+    // advantage of the fact that the underlying data is sorted by keys.
+    std::vector<std::string> reverseFindRows(const std::string_view& value);
 
 private:
     const char* begin_;

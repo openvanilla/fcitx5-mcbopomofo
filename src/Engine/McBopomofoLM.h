@@ -105,6 +105,9 @@ public:
     const std::vector<std::string> associatedPhrasesForKey(const std::string& key);
     bool hasAssociatedPhrasesForKey(const std::string& key);
 
+    /// Returns the top-scored reading from the base model, given the value.
+    std::string getReading(const std::string& value);
+
 protected:
     /// Filters and converts the input unigrams and return a new list of unigrams.
     ///
