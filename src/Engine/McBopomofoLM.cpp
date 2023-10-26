@@ -24,6 +24,8 @@
 #include "McBopomofoLM.h"
 #include <algorithm>
 #include <iterator>
+#include <string>
+#include <vector>
 
 namespace McBopomofo {
 

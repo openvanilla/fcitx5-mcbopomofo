@@ -24,10 +24,12 @@
 #include "UserPhrasesLM.h"
 
 #include <fcntl.h>
-#include <fstream>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include <fstream>
+#include <vector>
 
 #include "KeyValueBlobReader.h"
 

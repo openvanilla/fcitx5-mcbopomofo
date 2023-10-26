@@ -27,6 +27,8 @@
 #include "gramambular2/reading_grid.h"
 #include <cassert>
 #include <cmath>
+#include <utility>
+#include <vector>
 
 namespace McBopomofo {
 

@@ -74,7 +74,7 @@ find src/ -name *.cpp -o -name *.h | xargs clang-format -i
 我們也推薦使用 [cpplint](https://github.com/cpplint/cpplint) 檢查 C++ 常見問題。
 
 ```bash
-cpplint --filter=-,+readability,-readability/nolint --recursive src/
+cpplint --filter=-,+readability,-readability/nolint,+build/include,-build/include_order,-build/include_alpha,-build/include_subdir --recursive src/
 ```
 
 ### clang-tidy

@@ -29,9 +29,11 @@
 #include "PhraseReplacementMap.h"
 #include "UserPhrasesLM.h"
 #include "gramambular2/language_model.h"
+#include <cstdio>
 #include <functional>
-#include <stdio.h>
+#include <string>
 #include <unordered_set>
+#include <vector>
 
 namespace McBopomofo {
 
