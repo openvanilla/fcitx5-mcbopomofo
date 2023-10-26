@@ -52,6 +52,6 @@ private:
     std::unique_ptr<ParselessPhraseDB> db_;
 };
 
-}; // namespace McBopomofo
+} // namespace McBopomofo
 
 #endif // SOURCE_ENGINE_PARSELESSLM_H_

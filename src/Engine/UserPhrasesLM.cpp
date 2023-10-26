@@ -70,7 +70,7 @@ bool UserPhrasesLM::open(const char* path)
         return false;
     }
 
-    length = (size_t)sb.st_size;
+    length = static_cast<size_t>(sb.st_size);
 
     data = mmap(NULL, length, PROT_READ, MAP_SHARED, fd, 0);
     if (!data) {
@@ -127,4 +127,4 @@ bool UserPhrasesLM::hasUnigrams(const std::string& key)
     return keyRowMap.find(key) != keyRowMap.end();
 }
 
-}; // namespace McBopomofo
+} // namespace McBopomofo

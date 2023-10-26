@@ -61,6 +61,6 @@ protected:
     size_t length;
 };
 
-}
+} // namespace McBopomofo
 
 #endif

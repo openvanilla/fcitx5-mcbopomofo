@@ -57,11 +57,11 @@ class LanguageModelLoader : public UserPhraseAdder {
 
   void reloadUserModelsIfNeeded();
 
-  std::string userDataPath() { return userDataPath_; };
+  std::string userDataPath() { return userDataPath_; }
 
   std::string userPhrasesPath() { return userPhrasesPath_; }
 
-  std::string excludedPhrasesPath() { return excludedPhrasesPath_; };
+  std::string excludedPhrasesPath() { return excludedPhrasesPath_; }
 
  private:
   void populateUserDataFilesIfNeeded();

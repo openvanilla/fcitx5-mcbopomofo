@@ -236,7 +236,7 @@ static double Score(size_t eventCount,
         return 0.0;
     }
 
-    double prob = (double)eventCount / (double)totalCount;
+    double prob = static_cast<double>(eventCount) / static_cast<double>(totalCount);
     return prob * decay;
 }
 

@@ -56,6 +56,6 @@ private:
     const char* end_;
 };
 
-}; // namespace McBopomofo
+} // namespace McBopomofo
 
 #endif // SOURCE_ENGINE_PARSELESSPHRASEDB_H_

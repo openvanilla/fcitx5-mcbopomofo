@@ -44,7 +44,7 @@ bool PhraseReplacementMap::open(const char* path)
         return false;
     }
 
-    length = (size_t)sb.st_size;
+    length = static_cast<size_t>(sb.st_size);
 
     data = mmap(NULL, length, PROT_READ, MAP_SHARED, fd, 0);
     if (!data) {
@@ -81,4 +81,4 @@ const std::string PhraseReplacementMap::valueForKey(const std::string& key)
     return string("");
 }
 
-}
+} // namespace McBopomofo

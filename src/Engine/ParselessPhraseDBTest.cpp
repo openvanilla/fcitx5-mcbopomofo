@@ -195,4 +195,4 @@ TEST(ParselessPhraseDBTest, StressTest)
     }
 }
 
-}; // namespace McBopomofo
+} // namespace McBopomofo

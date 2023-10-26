@@ -126,6 +126,6 @@ protected:
     bool m_externalConverterEnabled;
     std::function<std::string(std::string)> m_externalConverter;
 };
-};
+} // namespace McBopomofo
 
 #endif
