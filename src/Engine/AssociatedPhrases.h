@@ -25,8 +25,8 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 //
 
-#ifndef ASSOCIATEDPHRASES_H
-#define ASSOCIATEDPHRASES_H
+#ifndef SRC_ENGINE_ASSOCIATEDPHRASES_H_
+#define SRC_ENGINE_ASSOCIATEDPHRASES_H_
 
 #include <iostream>
 #include <map>
@@ -66,4 +66,4 @@ protected:
 
 } // namespace McBopomofo
 
-#endif // ASSOCIATEDPHRASES_H
+#endif // SRC_ENGINE_ASSOCIATEDPHRASES_H_

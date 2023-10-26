@@ -21,8 +21,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef USERPHRASESLM_H
-#define USERPHRASESLM_H
+#ifndef SRC_ENGINE_USERPHRASESLM_H_
+#define SRC_ENGINE_USERPHRASESLM_H_
 
 #include "gramambular2/language_model.h"
 #include <iostream>
@@ -64,4 +64,4 @@ protected:
 
 } // namespace McBopomofo
 
-#endif
+#endif // SRC_ENGINE_USERPHRASESLM_H_

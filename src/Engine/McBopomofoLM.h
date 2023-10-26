@@ -21,8 +21,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef MCBOPOMOFOLM_H
-#define MCBOPOMOFOLM_H
+#ifndef SRC_ENGINE_MCBOPOMOFOLM_H_
+#define SRC_ENGINE_MCBOPOMOFOLM_H_
 
 #include "AssociatedPhrases.h"
 #include "ParselessLM.h"
@@ -130,4 +130,4 @@ protected:
 };
 } // namespace McBopomofo
 
-#endif
+#endif // SRC_ENGINE_MCBOPOMOFOLM_H_
