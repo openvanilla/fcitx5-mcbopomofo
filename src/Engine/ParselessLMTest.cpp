@@ -56,4 +56,4 @@ TEST(ParselessLMTest, SanityCheckTest)
     lm.close();
 }
 
-}; // namespace McBopomofo
+} // namespace McBopomofo

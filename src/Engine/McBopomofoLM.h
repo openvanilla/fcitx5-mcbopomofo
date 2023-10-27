@@ -21,17 +21,19 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef MCBOPOMOFOLM_H
-#define MCBOPOMOFOLM_H
+#ifndef SRC_ENGINE_MCBOPOMOFOLM_H_
+#define SRC_ENGINE_MCBOPOMOFOLM_H_
 
 #include "AssociatedPhrases.h"
 #include "ParselessLM.h"
 #include "PhraseReplacementMap.h"
 #include "UserPhrasesLM.h"
 #include "gramambular2/language_model.h"
+#include <cstdio>
 #include <functional>
-#include <stdio.h>
+#include <string>
 #include <unordered_set>
+#include <vector>
 
 namespace McBopomofo {
 
@@ -126,6 +128,6 @@ protected:
     bool m_externalConverterEnabled;
     std::function<std::string(std::string)> m_externalConverter;
 };
-};
+} // namespace McBopomofo
 
-#endif
+#endif // SRC_ENGINE_MCBOPOMOFOLM_H_

@@ -54,7 +54,13 @@ sudo update-icon-caches /usr/share/icons/*
 
 ## C++ 語法風格
 
+### clang-format
+
 本專案的程式碼大致採用 [Google C++ style](https://google.github.io/styleguide/cppguide.html)。我們已經設定好 `.clang-format` 檔案，請在發送 PR 前使用 clang-format 重整風格即可。
+
+```bash
+find src/ -name *.cpp -o -name *.h | xargs clang-format -i
+```
 
 本專案跟 Google C++ style 不同的地方如下：
 
@@ -63,7 +69,21 @@ sudo update-icon-caches /usr/share/icons/*
 
 此外，`src/Engine/` 目錄裡的程式碼，傳統上使用 [WebKit style](https://webkit.org/code-style-guidelines/)，未來繼續使用 WebKit 風格。我們也在該目錄放置了符合該風格的 `.clang-format`。
 
+### cpplint
+
 我們也推薦使用 [cpplint](https://github.com/cpplint/cpplint) 檢查 C++ 常見問題。
+
+```bash
+cpplint --filter=-build/c++11,-build/include_alpha,-build/include_order,-build/include_subdir,-readability/nolint,-runtime/references,-whitespace --recursive src/
+```
+
+### clang-tidy
+
+編譯時開啟 `-DENABLE_CLANG_TIDY=On` cmake flag 以啟用 `clang-tidy` 檢查 (需要 clang 14+)。
+
+```bash
+cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DENABLE_CLANG_TIDY=On
+```
 
 ## 社群公約
 

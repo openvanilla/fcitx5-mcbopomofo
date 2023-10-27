@@ -156,4 +156,4 @@ const char* ParselessPhraseDB::findFirstMatchingLine(
     return nullptr;
 }
 
-}; // namespace McBopomofo
+} // namespace McBopomofo
