@@ -31,8 +31,8 @@ namespace McBopomofo {
 constexpr char32_t kMaxUnicode = 0x10FFFF;
 static inline bool IsContinuationByte(char32_t c) { return (c & 0xC0) == 0x80; }
 
-// Decodes one UTF-8 code point and advances the string iterator past the code
-// point. Returns false if i is already at the end, or if the iterated UTF-8
+// Decodes one UTF-8 code point and advances the iterator `i` past the code
+// point. Returns false if `i` is already at the end, or if the iterated UTF-8
 // sequence is not valid.
 static inline bool DecodeUTF8(std::string::const_iterator& i,
                               const std::string::const_iterator& end) {
