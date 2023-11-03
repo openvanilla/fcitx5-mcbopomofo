@@ -31,6 +31,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace McBopomofo {
@@ -48,13 +49,13 @@ public:
 
 protected:
     struct Row {
-        Row(std::string_view& k, std::string_view& v)
-            : key(k)
-            , value(v)
+        Row(std::string_view k, std::string_view v)
+            : key(std::move(k))
+            , value(std::move(v))
         {
         }
-        std::string_view key;
-        std::string_view value;
+        const std::string_view key;
+        const std::string_view value;
     };
 
     std::map<std::string_view, std::vector<Row>> keyRowMap;
