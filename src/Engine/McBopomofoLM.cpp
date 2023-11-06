@@ -24,6 +24,7 @@
 #include "McBopomofoLM.h"
 #include <algorithm>
 #include <iterator>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -135,6 +136,20 @@ bool McBopomofoLM::hasUnigrams(const std::string& key)
     }
 
     return !getUnigrams(key).empty();
+}
+
+std::string McBopomofoLM::getReading(const std::string& value)
+{
+    std::vector<ParselessLM::FoundReading> foundReadings = m_languageModel.getReadings(value);
+    double topScore = std::numeric_limits<double>::lowest();
+    std::string topValue;
+    for (const auto& foundReading : foundReadings) {
+        if (foundReading.score > topScore) {
+            topValue = foundReading.reading;
+            topScore = foundReading.score;
+        }
+    }
+    return topValue;
 }
 
 void McBopomofoLM::setPhraseReplacementEnabled(bool enabled)
