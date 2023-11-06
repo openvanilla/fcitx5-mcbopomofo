@@ -8,7 +8,7 @@ jobs:
     container: ubuntu:22.04
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           export DEBIAN_FRONTEND=noninteractive
@@ -37,7 +37,7 @@ jobs:
     container: ubuntu:20.04
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           export DEBIAN_FRONTEND=noninteractive
