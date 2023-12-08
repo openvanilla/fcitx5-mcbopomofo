@@ -60,7 +60,8 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-data-plain-bpmf.txt" DESTI
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-add-phrase-hook.sh" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
 
 fcitx5_translate_desktop_file(org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in
-                              org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml XML)
+                              org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml XML
+                              PO_DIRECTORY "${CMAKE_SOURCE_DIR}/po")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml" DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
