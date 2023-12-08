@@ -54,15 +54,15 @@ endif ()
 # Addon config file
 # We need additional layer of conversion because we want PROJECT_VERSION in it.
 configure_file(mcbopomofo-addon.conf.in.in mcbopomofo-addon.conf.in)
-fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-addon.conf.in" mcbopomofo-addon.conf)
+fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-addon.conf.in" mcbopomofo-addon.conf PO_DIRECTORY "${CMAKE_SOURCE_DIR}/po")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-addon.conf" RENAME mcbopomofo.conf DESTINATION "${FCITX_INSTALL_PKGDATADIR}/addon")
 
 # Input Method registration file
 configure_file(mcbopomofo.conf.in.in mcbopomofo.conf.in)
-fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo.conf.in" mcbopomofo.conf)
+fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo.conf.in" mcbopomofo.conf PO_DIRECTORY "${CMAKE_SOURCE_DIR}/po")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo.conf" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/inputmethod")
 configure_file(mcbopomofo-plain.conf.in.in mcbopomofo-plain.conf.in)
-fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-plain.conf.in" mcbopomofo-plain.conf)
+fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-plain.conf.in" mcbopomofo-plain.conf PO_DIRECTORY "${CMAKE_SOURCE_DIR}/po")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-plain.conf" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/inputmethod")
 
 if (ENABLE_TEST)
