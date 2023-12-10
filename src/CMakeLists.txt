@@ -5,6 +5,7 @@ find_package(Fcitx5Core REQUIRED)
 find_package(Fcitx5Utils REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
+find_package(ICU COMPONENTS uc i18n REQUIRED)
 
 add_subdirectory(Engine)
 
@@ -12,6 +13,7 @@ set(MCBOPOMOFO_LIB_SOURCES
  KeyHandler.cpp
  LanguageModelLoader.cpp
  UTF8Helper.cpp
+ InputMacro.cpp
  Log.cpp)
 
 # https://stackoverflow.com/questions/26549137/shared-library-on-linux-and-fpic-error
@@ -22,7 +24,7 @@ include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cma
 
 add_library(McBopomofoLib ${MCBOPOMOFO_LIB_SOURCES})
 target_compile_options(McBopomofoLib PRIVATE -Wno-unknown-pragmas)
-target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils gramambular2_lib McBopomofoLMLib MandarinLib)
+target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils ICU::uc ICU::i18n gramambular2_lib McBopomofoLMLib MandarinLib)
 target_include_directories(McBopomofoLib PRIVATE Fcitx5::Utils)
 target_compile_definitions(McBopomofoLib PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 

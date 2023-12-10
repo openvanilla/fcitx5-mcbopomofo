@@ -30,6 +30,7 @@
 #include <string_view>
 
 #include "Engine/McBopomofoLM.h"
+#include "InputMacro.h"
 #include "InputMode.h"
 
 namespace McBopomofo {
@@ -75,6 +76,7 @@ class LanguageModelLoader : public UserPhraseAdder {
   std::filesystem::file_time_type userPhrasesTimestamp_;
   std::string excludedPhrasesPath_;
   std::filesystem::file_time_type excludedPhrasesTimestamp_;
+  McBopomofo::InputMacroController inputMacroController_;
 
  public:
   class LocalizedStrings {
