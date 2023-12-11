@@ -16,23 +16,10 @@ if (ENABLE_TEST)
                 cmake_policy(SET CMP0135 NEW)
         endif()
 
-        # Let CMake fetch Google Test for us.
-        # https://github.com/google/googletest/tree/main/googletest#incorporating-into-an-existing-cmake-project
-        include(FetchContent)
-
-        FetchContent_Declare(
-                googletest
-                # Specify the commit you depend on and update it regularly.
-                URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-        )
-        # For Windows: Prevent overriding the parent project's compiler/linker settings
-        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-        FetchContent_MakeAvailable(googletest)
-
         # Test target declarations.
         add_executable(gramambular2_test reading_grid_test.cpp)
         target_include_directories(gramambular2_test PRIVATE "${GMOCK_INCLUDE_DIRS}" "${GTEST_INCLUDE_DIRS}")
-        target_link_libraries(gramambular2_test gtest_main gramambular2_lib)
+        target_link_libraries(gramambular2_test GTest::gtest_main gramambular2_lib)
         include(GoogleTest)
         gtest_discover_tests(gramambular2_test)
 

@@ -16,22 +16,9 @@ if (ENABLE_TEST)
                 cmake_policy(SET CMP0135 NEW)
         endif()
 
-        # Let CMake fetch Google Test for us.
-        # https://github.com/google/googletest/tree/main/googletest#incorporating-into-an-existing-cmake-project
-        include(FetchContent)
-
-        FetchContent_Declare(
-                googletest
-                # Specify the commit you depend on and update it regularly.
-                URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-        )
-        # For Windows: Prevent overriding the parent project's compiler/linker settings
-        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-        FetchContent_MakeAvailable(googletest)
-
         # Test target declarations.
         add_executable(MandarinTest MandarinTest.cpp)
-        target_link_libraries(MandarinTest gtest_main MandarinLib)
+        target_link_libraries(MandarinTest GTest::gtest_main MandarinLib)
         include(GoogleTest)
         gtest_discover_tests(MandarinTest)
 
