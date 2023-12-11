@@ -4,6 +4,7 @@
 #include <unicode/smpdtfmt.h>
 
 #include <iostream>
+#include <vector>
 
 namespace McBopomofo {
 
@@ -139,38 +140,43 @@ class InputMacroNextYearChineseZodiac : public InputMacro {
   std::string replacement() const;
 };
 
+static void AddMacro(
+    std::unordered_map<std::string, std::unique_ptr<InputMacro>>& m,
+    std::unique_ptr<InputMacro> p) {
+  m.insert({p->name(), std::move(p)});
+}
+
 InputMacroController::InputMacroController() {
-  macros_.push_back(std::make_unique<InputMacroDateTodayShort>());
-  macros_.push_back(std::make_unique<InputMacroDateTodayMedium>());
-  macros_.push_back(std::make_unique<InputMacroDateTodayMediumRoc>());
-  macros_.push_back(std::make_unique<InputMacroDateTodayMediumChinese>());
-  macros_.push_back(std::make_unique<InputMacroDateYesterdayShort>());
-  macros_.push_back(std::make_unique<InputMacroDateYesterdayMedium>());
-  macros_.push_back(std::make_unique<InputMacroDateYesterdayMediumRoc>());
-  macros_.push_back(std::make_unique<InputMacroDateYesterdayMediumChinese>());
-  macros_.push_back(std::make_unique<InputMacroDateTomorrowShort>());
-  macros_.push_back(std::make_unique<InputMacroDateTomorrowMedium>());
-  macros_.push_back(std::make_unique<InputMacroDateTomorrowMediumRoc>());
-  macros_.push_back(std::make_unique<InputMacroDateTomorrowMediumChinese>());
-  macros_.push_back(std::make_unique<InputMacroDateTimeNowShort>());
-  macros_.push_back(std::make_unique<InputMacroDateTimeNowMedium>());
-  macros_.push_back(std::make_unique<InputMacroTimeZoneStandard>());
-  macros_.push_back(std::make_unique<InputMacroTimeZoneShortGeneric>());
-  macros_.push_back(std::make_unique<InputMacroThisYearGanZhi>());
-  macros_.push_back(std::make_unique<InputMacroLastYearGanZhi>());
-  macros_.push_back(std::make_unique<InputMacroNextYearGanZhi>());
-  macros_.push_back(std::make_unique<InputMacroThisYearChineseZodiac>());
-  macros_.push_back(std::make_unique<InputMacroLastYearChineseZodiac>());
-  macros_.push_back(std::make_unique<InputMacroNextYearChineseZodiac>());
+  AddMacro(macros_, std::make_unique<InputMacroDateTodayShort>());
+  AddMacro(macros_, std::make_unique<InputMacroDateTodayMedium>());
+  AddMacro(macros_, std::make_unique<InputMacroDateTodayMediumRoc>());
+  AddMacro(macros_, std::make_unique<InputMacroDateTodayMediumChinese>());
+  AddMacro(macros_, std::make_unique<InputMacroDateYesterdayShort>());
+  AddMacro(macros_, std::make_unique<InputMacroDateYesterdayMedium>());
+  AddMacro(macros_, std::make_unique<InputMacroDateYesterdayMediumRoc>());
+  AddMacro(macros_, std::make_unique<InputMacroDateYesterdayMediumChinese>());
+  AddMacro(macros_, std::make_unique<InputMacroDateTomorrowShort>());
+  AddMacro(macros_, std::make_unique<InputMacroDateTomorrowMedium>());
+  AddMacro(macros_, std::make_unique<InputMacroDateTomorrowMediumRoc>());
+  AddMacro(macros_, std::make_unique<InputMacroDateTomorrowMediumChinese>());
+  AddMacro(macros_, std::make_unique<InputMacroDateTimeNowShort>());
+  AddMacro(macros_, std::make_unique<InputMacroDateTimeNowMedium>());
+  AddMacro(macros_, std::make_unique<InputMacroTimeZoneStandard>());
+  AddMacro(macros_, std::make_unique<InputMacroTimeZoneShortGeneric>());
+  AddMacro(macros_, std::make_unique<InputMacroThisYearGanZhi>());
+  AddMacro(macros_, std::make_unique<InputMacroLastYearGanZhi>());
+  AddMacro(macros_, std::make_unique<InputMacroNextYearGanZhi>());
+  AddMacro(macros_, std::make_unique<InputMacroThisYearChineseZodiac>());
+  AddMacro(macros_, std::make_unique<InputMacroLastYearChineseZodiac>());
+  AddMacro(macros_, std::make_unique<InputMacroNextYearChineseZodiac>());
 }
 
 InputMacroController::~InputMacroController() {}
 
 std::string InputMacroController::handle(std::string input) {
-  for (auto& macro : macros_) {
-    if (input == macro->name()) {
-      return macro->replacement();
-    }
+  const auto& it = macros_.find(input);
+  if (it != macros_.cend()) {
+    return it->second->replacement();
   }
   return input;
 }

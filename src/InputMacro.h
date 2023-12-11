@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <string>
-#include <vector>
+#include <unordered_map>
 
 namespace McBopomofo {
 class InputMacro {
@@ -19,7 +19,7 @@ class InputMacroController {
   std::string handle(std::string input);
 
  private:
-  std::vector<std::unique_ptr<InputMacro>> macros_;
+  std::unordered_map<std::string, std::unique_ptr<InputMacro>> macros_;
 };
 
 }  // namespace McBopomofo
