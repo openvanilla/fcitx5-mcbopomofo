@@ -11,6 +11,14 @@ InputMacroController::InputMacroController() {
   macros_.push_back(std::make_unique<InputMacroDateTodayMedium>());
   macros_.push_back(std::make_unique<InputMacroDateTodayMediumRoc>());
   macros_.push_back(std::make_unique<InputMacroDateTodayMediumChinese>());
+  macros_.push_back(std::make_unique<InputMacroDateYesterdayShort>());
+  macros_.push_back(std::make_unique<InputMacroDateYesterdayMedium>());
+  macros_.push_back(std::make_unique<InputMacroDateYesterdayMediumRoc>());
+  macros_.push_back(std::make_unique<InputMacroDateYesterdayMediumChinese>());
+  macros_.push_back(std::make_unique<InputMacroDateTomorrowShort>());
+  macros_.push_back(std::make_unique<InputMacroDateTomorrowMedium>());
+  macros_.push_back(std::make_unique<InputMacroDateTomorrowMediumRoc>());
+  macros_.push_back(std::make_unique<InputMacroDateTomorrowMediumChinese>());
 }
 
 InputMacroController::~InputMacroController() {}
@@ -24,12 +32,21 @@ std::string InputMacroController::handle(std::string input) {
   return input;
 }
 
-std::string formatDate(icu::Calendar* calendar, int DayOffset,
+std::string formatDate(std::string calendarName, int DayOffset,
                        icu::DateFormat::EStyle dateStyle) {
   UErrorCode status = U_ZERO_ERROR;
+  icu::TimeZone* timezone = icu::TimeZone::createDefault();
+  std::string calendarNameBase = "zh_Hant_TW";
+  if (calendarName.empty() == false) {
+    calendarNameBase += "@calendar=" + calendarName;
+  }
+
+  const icu::Locale locale =
+      icu::Locale::createCanonical(calendarNameBase.c_str());
+  icu::Calendar* calendar =
+      icu::Calendar::createInstance(timezone, locale, status);
   calendar->setTime(icu::Calendar::getNow(), status);
   calendar->add(icu::Calendar::DATE, DayOffset, status);
-  icu::Locale locale = icu::Locale::createCanonical("zh_Hant_TW");
   icu::DateFormat* dateFormatter = icu::DateFormat::createDateTimeInstance(
       dateStyle, icu::DateFormat::EStyle::kNone, locale);
   icu::UnicodeString formattedDate;
@@ -37,43 +54,57 @@ std::string formatDate(icu::Calendar* calendar, int DayOffset,
   dateFormatter->format(*calendar, formattedDate, fieldPosition);
   std::string output;
   formattedDate.toUTF8String(output);
+  delete calendar;
   delete dateFormatter;
   return output;
 }
 
 std::string InputMacroDateTodayShort::replacement() {
-  UErrorCode status = U_ZERO_ERROR;
-  icu::GregorianCalendar calendar(status);
-  return formatDate(&calendar, 0, icu::DateFormat::EStyle::kShort);
+  return formatDate("", 0, icu::DateFormat::EStyle::kShort);
 }
 
 std::string InputMacroDateTodayMedium::replacement() {
-  UErrorCode status = U_ZERO_ERROR;
-  icu::GregorianCalendar calendar(status);
-  return formatDate(&calendar, 0, icu::DateFormat::EStyle::kMedium);
+  return formatDate("", 0, icu::DateFormat::EStyle::kMedium);
 }
 
 std::string InputMacroDateTodayMediumRoc::replacement() {
-  UErrorCode status = U_ZERO_ERROR;
-  const icu::Locale locale =
-      icu::Locale::createCanonical("zh_Hant_TW@calendar=republic_of_china");
-  icu::Calendar* calendar = icu::Calendar::createInstance(locale, status);
-  if (status) {
-    std::cout << "Failed to create chinese calendar" << status << std::endl;
-  }
-  return formatDate(calendar, 0, icu::DateFormat::EStyle::kMedium);
+  return formatDate("roc", 0, icu::DateFormat::EStyle::kMedium);
 }
 
 std::string InputMacroDateTodayMediumChinese::replacement() {
-  UErrorCode status = U_ZERO_ERROR;
-  const icu::Locale locale =
-      icu::Locale::createCanonical("zh_Hant_TW@calendar=chinese");
-  icu::Calendar* calendar = icu::Calendar::createInstance(locale, status);
+  return formatDate("chinese", 0, icu::DateFormat::EStyle::kMedium);
+}
 
-  if (status) {
-    std::cout << "Failed to create chinese calendar" << status << std::endl;
-  }
-  return formatDate(calendar, 0, icu::DateFormat::EStyle::kMedium);
+std::string InputMacroDateYesterdayShort::replacement() {
+  return formatDate("", -1, icu::DateFormat::EStyle::kShort);
+}
+
+std::string InputMacroDateYesterdayMedium::replacement() {
+  return formatDate("", -1, icu::DateFormat::EStyle::kMedium);
+}
+
+std::string InputMacroDateYesterdayMediumRoc::replacement() {
+  return formatDate("roc", -1, icu::DateFormat::EStyle::kMedium);
+}
+
+std::string InputMacroDateYesterdayMediumChinese::replacement() {
+  return formatDate("chinese", -1, icu::DateFormat::EStyle::kMedium);
+}
+
+std::string InputMacroDateTomorrowShort::replacement() {
+  return formatDate("", 1, icu::DateFormat::EStyle::kShort);
+}
+
+std::string InputMacroDateTomorrowMedium::replacement() {
+  return formatDate("", 1, icu::DateFormat::EStyle::kMedium);
+}
+
+std::string InputMacroDateTomorrowMediumRoc::replacement() {
+  return formatDate("roc", 1, icu::DateFormat::EStyle::kMedium);
+}
+
+std::string InputMacroDateTomorrowMediumChinese::replacement() {
+  return formatDate("chinese", 1, icu::DateFormat::EStyle::kMedium);
 }
 
 }  // namespace McBopomofo

@@ -46,6 +46,58 @@ class InputMacroDateTodayMediumChinese : public InputMacro {
   std::string replacement();
 };
 
+class InputMacroDateYesterdayShort : public InputMacro {
+ public:
+  std::string name() { return std::string("MACRO@DATE_YESTERDAY_SHORT"); };
+  std::string replacement();
+};
+
+class InputMacroDateYesterdayMedium : public InputMacro {
+ public:
+  std::string name() { return std::string("MACRO@DATE_YESTERDAY_MEDIUM"); };
+  std::string replacement();
+};
+
+class InputMacroDateYesterdayMediumRoc : public InputMacro {
+ public:
+  std::string name() { return std::string("MACRO@DATE_YESTERDAY_MEDIUM_ROC"); };
+  std::string replacement();
+};
+
+class InputMacroDateYesterdayMediumChinese : public InputMacro {
+ public:
+  std::string name() {
+    return std::string("MACRO@DATE_YESTERDAY_MEDIUM_CHINESE");
+  };
+  std::string replacement();
+};
+
+class InputMacroDateTomorrowShort : public InputMacro {
+ public:
+  std::string name() { return std::string("MACRO@DATE_TOMORROW_SHORT"); };
+  std::string replacement();
+};
+
+class InputMacroDateTomorrowMedium : public InputMacro {
+ public:
+  std::string name() { return std::string("MACRO@DATE_TOMORROW_MEDIUM"); };
+  std::string replacement();
+};
+
+class InputMacroDateTomorrowMediumRoc : public InputMacro {
+ public:
+  std::string name() { return std::string("MACRO@DATE_TOMORROW_MEDIUM_ROC"); };
+  std::string replacement();
+};
+
+class InputMacroDateTomorrowMediumChinese : public InputMacro {
+ public:
+  std::string name() {
+    return std::string("MACRO@DATE_TOMORROW_MEDIUM_CHINESE");
+  };
+  std::string replacement();
+};
+
 }  // namespace McBopomofo
 
 #endif /* INPUTMACRO */
