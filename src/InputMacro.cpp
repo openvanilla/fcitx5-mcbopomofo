@@ -19,6 +19,10 @@ InputMacroController::InputMacroController() {
   macros_.push_back(std::make_unique<InputMacroDateTomorrowMedium>());
   macros_.push_back(std::make_unique<InputMacroDateTomorrowMediumRoc>());
   macros_.push_back(std::make_unique<InputMacroDateTomorrowMediumChinese>());
+  macros_.push_back(std::make_unique<InputMacroDateTimeNowShort>());
+  macros_.push_back(std::make_unique<InputMacroDateTimeNowMedium>());
+  macros_.push_back(std::make_unique<InputMacroTimeZoneStandard>());
+  macros_.push_back(std::make_unique<InputMacroTimeZoneShortGeneric>());
 }
 
 InputMacroController::~InputMacroController() {}
@@ -105,6 +109,54 @@ std::string InputMacroDateTomorrowMediumRoc::replacement() {
 
 std::string InputMacroDateTomorrowMediumChinese::replacement() {
   return formatDate("chinese", 1, icu::DateFormat::EStyle::kMedium);
+}
+
+std::string formatTime(icu::DateFormat::EStyle timeStyle) {
+  UErrorCode status = U_ZERO_ERROR;
+  icu::TimeZone* timezone = icu::TimeZone::createDefault();
+  std::string calendarNameBase = "zh_Hant_TW";
+  const icu::Locale locale =
+      icu::Locale::createCanonical(calendarNameBase.c_str());
+  icu::Calendar* calendar =
+      icu::Calendar::createInstance(timezone, locale, status);
+  calendar->setTime(icu::Calendar::getNow(), status);
+  icu::DateFormat* dateFormatter = icu::DateFormat::createDateTimeInstance(
+      icu::DateFormat::EStyle::kNone, timeStyle, locale);
+  icu::UnicodeString formattedDate;
+  icu::FieldPosition fieldPosition;
+  dateFormatter->format(*calendar, formattedDate, fieldPosition);
+  std::string output;
+  formattedDate.toUTF8String(output);
+  delete calendar;
+  delete dateFormatter;
+  return output;
+}
+
+std::string InputMacroDateTimeNowShort::replacement() {
+  return formatTime(icu::DateFormat::EStyle::kShort);
+}
+
+std::string InputMacroDateTimeNowMedium::replacement() {
+  return formatTime(icu::DateFormat::EStyle::kMedium);
+}
+
+std::string formatTimeZone(icu::TimeZone::EDisplayType type) {
+  icu::TimeZone* timezone = icu::TimeZone::createDefault();
+  const icu::Locale locale = icu::Locale::createCanonical("zh_Hant_TW");
+  icu::UnicodeString formatted;
+  timezone->getDisplayName(false, type, locale, formatted);
+  std::string output;
+  formatted.toUTF8String(output);
+  delete timezone;
+  return output;
+}
+
+std::string InputMacroTimeZoneStandard::replacement() {
+  return formatTimeZone(icu::TimeZone::EDisplayType::LONG_GENERIC);
+}
+
+std::string InputMacroTimeZoneShortGeneric::replacement() {
+  return formatTimeZone(icu::TimeZone::EDisplayType::SHORT_GENERIC);
 }
 
 }  // namespace McBopomofo
