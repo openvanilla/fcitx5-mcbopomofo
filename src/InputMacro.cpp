@@ -121,6 +121,24 @@ class InputMacroNextYearGanZhi : public InputMacro {
   std::string replacement() const;
 };
 
+class InputMacroThisYearChineseZodiac : public InputMacro {
+ public:
+  std::string name() const { return "MACRO@THIS_YEAR_CHINESE_ZODIAC"; };
+  std::string replacement() const;
+};
+
+class InputMacroLastYearChineseZodiac : public InputMacro {
+ public:
+  std::string name() const { return "MACRO@LAST_YEAR_CHINESE_ZODIAC"; };
+  std::string replacement() const;
+};
+
+class InputMacroNextYearChineseZodiac : public InputMacro {
+ public:
+  std::string name() const { return "MACRO@NEXT_YEAR_CHINESE_ZODIAC"; };
+  std::string replacement() const;
+};
+
 InputMacroController::InputMacroController() {
   macros_.push_back(std::make_unique<InputMacroDateTodayShort>());
   macros_.push_back(std::make_unique<InputMacroDateTodayMedium>());
@@ -141,6 +159,9 @@ InputMacroController::InputMacroController() {
   macros_.push_back(std::make_unique<InputMacroThisYearGanZhi>());
   macros_.push_back(std::make_unique<InputMacroLastYearGanZhi>());
   macros_.push_back(std::make_unique<InputMacroNextYearGanZhi>());
+  macros_.push_back(std::make_unique<InputMacroThisYearChineseZodiac>());
+  macros_.push_back(std::make_unique<InputMacroLastYearChineseZodiac>());
+  macros_.push_back(std::make_unique<InputMacroNextYearChineseZodiac>());
 }
 
 InputMacroController::~InputMacroController() {}
@@ -328,6 +349,21 @@ std::string InputMacroLastYearGanZhi::replacement() const {
 std::string InputMacroNextYearGanZhi::replacement() const {
   int year = currentYear();
   return ganzhi(year + 1);
+}
+
+std::string InputMacroThisYearChineseZodiac::replacement() const {
+  int year = currentYear();
+  return chineseZodiac(year);
+}
+
+std::string InputMacroLastYearChineseZodiac::replacement() const {
+  int year = currentYear();
+  return chineseZodiac(year - 1);
+}
+
+std::string InputMacroNextYearChineseZodiac::replacement() const {
+  int year = currentYear();
+  return chineseZodiac(year + 1);
 }
 
 }  // namespace McBopomofo

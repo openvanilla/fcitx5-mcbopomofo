@@ -35,6 +35,12 @@ sudo apt install \
     cmake extra-cmake-modules gettext libfmt-dev
 ```
 
+在某些版本上可能需要另外安装 [ICU](https://icu.unicode.org/)。
+
+```bash
+apt install -y libicu-dev
+```
+
 然後在本專案的 git 目錄下執行以下指令：
 
 ```bash
