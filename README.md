@@ -32,13 +32,7 @@
 ```bash
 sudo apt install \
     fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev \
-    cmake extra-cmake-modules gettext libfmt-dev
-```
-
-在某些版本上可能需要另外安装 [ICU](https://icu.unicode.org/)。
-
-```bash
-apt install -y libicu-dev
+    cmake extra-cmake-modules gettext libfmt-dev libicu-dev
 ```
 
 然後在本專案的 git 目錄下執行以下指令：
