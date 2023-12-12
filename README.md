@@ -32,7 +32,7 @@
 ```bash
 sudo apt install \
     fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev \
-    cmake extra-cmake-modules gettext libfmt-dev
+    cmake extra-cmake-modules gettext libfmt-dev libicu-dev
 ```
 
 然後在本專案的 git 目錄下執行以下指令：

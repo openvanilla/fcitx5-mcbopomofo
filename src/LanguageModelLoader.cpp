@@ -51,6 +51,12 @@ LanguageModelLoader::LanguageModelLoader(
     FCITX_MCBOPOMOFO_INFO() << "Failed to open built-in LM";
   }
 
+  FCITX_MCBOPOMOFO_INFO() << "Set macro converter";
+  auto converter = [this](std::string input) {
+    return this->inputMacroController_.handle(input);
+  };
+  lm_->setMacroConverter(converter);
+
   std::string userDataPath = fcitx::StandardPath::global().userDirectory(
       fcitx::StandardPath::Type::PkgData);
 
@@ -105,6 +111,7 @@ void LanguageModelLoader::loadModelForMode(McBopomofo::InputMode mode) {
   lm_->loadLanguageModel(buildInLMPath.c_str());
   if (!lm_->isDataModelLoaded()) {
     FCITX_MCBOPOMOFO_INFO() << "Failed to open built-in LM";
+    return;
   }
 }
 
