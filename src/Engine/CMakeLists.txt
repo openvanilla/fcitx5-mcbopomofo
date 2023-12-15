@@ -35,19 +35,6 @@ if (ENABLE_TEST)
                 cmake_policy(SET CMP0135 NEW)
         endif()
 
-        # Let CMake fetch Google Test for us.
-        # https://github.com/google/googletest/tree/main/googletest#incorporating-into-an-existing-cmake-project
-        include(FetchContent)
-
-        FetchContent_Declare(
-                googletest
-                # Specify the commit you depend on and update it regularly.
-                URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-        )
-        # For Windows: Prevent overriding the parent project's compiler/linker settings
-        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-        FetchContent_MakeAvailable(googletest)
-
         # Test target declarations.
         add_executable(McBopomofoLMLibTest
                 KeyValueBlobReaderTest.cpp
@@ -56,7 +43,7 @@ if (ENABLE_TEST)
                 PhraseReplacementMapTest.cpp
                 UserOverrideModelTest.cpp
                 UserPhrasesLMTest.cpp)
-        target_link_libraries(McBopomofoLMLibTest gtest_main McBopomofoLMLib gramambular2_lib)
+        target_link_libraries(McBopomofoLMLibTest GTest::gtest_main McBopomofoLMLib gramambular2_lib)
         include(GoogleTest)
         gtest_discover_tests(McBopomofoLMLibTest)
 
