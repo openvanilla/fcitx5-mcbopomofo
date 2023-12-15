@@ -24,6 +24,9 @@ if (ENABLE_CLANG_TIDY)
     MESSAGE(STATUS "Found clang-tidy: ${CLANG_TIDY}")
     string(CONCAT CLANG_TIDY_CHECKS "-checks=-*,"
         "clang-analyzer-*,bugprone-*,cert-*,readability-*,"
+        "clang-diagnostic-*,"
+        "cppcoreguidelines-explicit-virtual-functions,"
+        "cppcoreguidelines-virtual-class-destructor,"
         "-bugprone-easily-swappable-parameters,"
         "-readability-const-return-type,"
         "-readability-convert-member-functions-to-static,"

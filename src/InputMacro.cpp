@@ -3,160 +3,271 @@
 #include <unicode/gregocal.h>
 #include <unicode/smpdtfmt.h>
 
+#include <functional>
 #include <iostream>
+#include <memory>
 #include <utility>
 #include <vector>
 
 namespace McBopomofo {
 
-class InputMacroDateTodayShort : public InputMacro {
+std::string formatDate(std::string calendarName, int DayOffset,
+                       icu::DateFormat::EStyle dateStyle);
+std::string formatTime(icu::DateFormat::EStyle timeStyle);
+std::string formatTimeZone(icu::TimeZone::EDisplayType type);
+int currentYear();
+std::string ganzhi(int year);
+std::string chineseZodiac(int year);
+
+class InputMacroDate : public InputMacro {
  public:
-  std::string name() const { return "MACRO@DATE_TODAY_SHORT"; }
-  std::string replacement() const;
+  InputMacroDate(std::string macroName, std::string calendar, int offset,
+                 icu::DateFormat::EStyle style)
+      : name_(macroName),
+        calendarName_(calendar),
+        DayOffset_(offset),
+        dateStyle_(style) {}
+  std::string name() const override { return name_; }
+  std::string replacement() const override {
+    return formatDate(calendarName_, DayOffset_, dateStyle_);
+  }
+
+ private:
+  std::string name_;
+  std::string calendarName_;
+  int DayOffset_;
+  icu::DateFormat::EStyle dateStyle_;
 };
 
-class InputMacroDateTodayMedium : public InputMacro {
+class InputMacroDateTime : public InputMacro {
  public:
-  std::string name() const { return "MACRO@DATE_TODAY_MEDIUM"; }
-  std::string replacement() const;
+  InputMacroDateTime(std::string macroName, icu::DateFormat::EStyle style)
+      : name_(macroName), timeStyle_(style) {}
+  std::string name() const override { return name_; }
+  std::string replacement() const override {
+    return formatTime(timeStyle_);
+  }
+
+ private:
+  std::string name_;
+  icu::DateFormat::EStyle timeStyle_;
 };
 
-class InputMacroDateTodayMediumRoc : public InputMacro {
+class InputMacroTimeZone : public InputMacro {
  public:
-  std::string name() const { return "MACRO@DATE_TODAY_MEDIUM_ROC"; }
-  std::string replacement() const;
+  InputMacroTimeZone(std::string macroName, icu::TimeZone::EDisplayType type)
+      : name_(macroName), type_(type) {}
+  std::string name() const override { return name_; }
+  std::string replacement() const override {
+    return formatTimeZone(type_);
+  }
+
+ private:
+  std::string name_;
+  icu::TimeZone::EDisplayType type_;
 };
 
-class InputMacroDateTodayMediumChinese : public InputMacro {
+
+// transform is a function that takes an int and returns a string
+template <typename transform>
+class InputMacroTransform : public InputMacro {
  public:
-  std::string name() const { return "MACRO@DATE_TODAY_MEDIUM_CHINESE"; }
-  std::string replacement() const;
+  InputMacroTransform(std::string macroName, int yearOffset, transform t)
+      : name_(macroName), yearOffset_(yearOffset), t_(t) {}
+  std::string name() const override { return name_; }
+  std::string replacement() const override {
+    int year = currentYear();
+    return t_(year + yearOffset_);
+  }
+
+ private:
+  std::string name_;
+  int yearOffset_;
+  transform t_;
 };
 
-class InputMacroDateTodayMediumJapanese : public InputMacro {
- public:
-  std::string name() const { return "MACRO@DATE_TODAY_MEDIUM_JAPANESE"; }
-  std::string replacement() const;
+// currying
+class InputMacroGanZhi : public InputMacroTransform<std::function<decltype(ganzhi)>> {
+  public:
+  InputMacroGanZhi(std::string macroName, int yearOffset)
+      : InputMacroTransform(macroName, yearOffset, ganzhi) {}
 };
 
-class InputMacroDateYesterdayShort : public InputMacro {
- public:
-  std::string name() const { return "MACRO@DATE_YESTERDAY_SHORT"; }
-  std::string replacement() const;
+class InputMacroZodiac : public InputMacroTransform<std::function<decltype(chineseZodiac)>> {
+  public:
+  InputMacroZodiac(std::string macroName, int yearOffset)
+      : InputMacroTransform(macroName, yearOffset, chineseZodiac) {}
 };
 
-class InputMacroDateYesterdayMedium : public InputMacro {
- public:
-  std::string name() const { return "MACRO@DATE_YESTERDAY_MEDIUM"; }
-  std::string replacement() const;
+class InputMacroDateTodayShort : public InputMacroDate {
+  public:
+  InputMacroDateTodayShort()
+      : InputMacroDate("MACRO@DATE_TODAY_SHORT", "", 0,
+                       icu::DateFormat::EStyle::kShort) {}
 };
 
-class InputMacroDateYesterdayMediumRoc : public InputMacro {
- public:
-  std::string name() const { return "MACRO@DATE_YESTERDAY_MEDIUM_ROC"; }
-  std::string replacement() const;
+class InputMacroDateTodayMedium : public InputMacroDate {
+  public:
+  InputMacroDateTodayMedium()
+      : InputMacroDate("MACRO@DATE_TODAY_MEDIUM", "", 0,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroDateYesterdayMediumChinese : public InputMacro {
- public:
-  std::string name() const { return "MACRO@DATE_YESTERDAY_MEDIUM_CHINESE"; }
-  std::string replacement() const;
+class InputMacroDateTodayMediumRoc : public InputMacroDate {
+  public:
+  InputMacroDateTodayMediumRoc()
+      : InputMacroDate("MACRO@DATE_TODAY_MEDIUM_ROC", "roc", 0,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroDateYesterdayMediumJapanese : public InputMacro {
- public:
-  std::string name() const { return "MACRO@DATE_YESTERDAY_MEDIUM_JAPANESE"; }
-  std::string replacement() const;
+class InputMacroDateTodayMediumChinese : public InputMacroDate {
+  public:
+  InputMacroDateTodayMediumChinese()
+      : InputMacroDate("MACRO@DATE_TODAY_MEDIUM_CHINESE", "chinese", 0,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroDateTomorrowShort : public InputMacro {
- public:
-  std::string name() const { return "MACRO@DATE_TOMORROW_SHORT"; }
-  std::string replacement() const;
+class InputMacroDateTodayMediumJapanese : public InputMacroDate {
+  public:
+  InputMacroDateTodayMediumJapanese()
+      : InputMacroDate("MACRO@DATE_TODAY_MEDIUM_JAPANESE", "japanese", 0,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroDateTomorrowMedium : public InputMacro {
- public:
-  std::string name() const { return "MACRO@DATE_TOMORROW_MEDIUM"; }
-  std::string replacement() const;
+class InputMacroDateYesterdayShort : public InputMacroDate {
+  public:
+  InputMacroDateYesterdayShort()
+      : InputMacroDate("MACRO@DATE_YESTERDAY_SHORT", "", -1,
+                       icu::DateFormat::EStyle::kShort) {}
 };
 
-class InputMacroDateTomorrowMediumRoc : public InputMacro {
- public:
-  std::string name() const { return "MACRO@DATE_TOMORROW_MEDIUM_ROC"; }
-  std::string replacement() const;
+class InputMacroDateYesterdayMedium : public InputMacroDate {
+  public:
+  InputMacroDateYesterdayMedium()
+      : InputMacroDate("MACRO@DATE_YESTERDAY_MEDIUM", "", -1,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroDateTomorrowMediumChinese : public InputMacro {
- public:
-  std::string name() const { return "MACRO@DATE_TOMORROW_MEDIUM_CHINESE"; }
-  std::string replacement() const;
+class InputMacroDateYesterdayMediumRoc : public InputMacroDate {
+  public:
+  InputMacroDateYesterdayMediumRoc()
+      : InputMacroDate("MACRO@DATE_YESTERDAY_MEDIUM_ROC", "roc", -1,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroDateTomorrowMediumJapanese : public InputMacro {
- public:
-  std::string name() const { return "MACRO@DATE_TOMORROW_MEDIUM_JAPANESE"; }
-  std::string replacement() const;
+class InputMacroDateYesterdayMediumChinese : public InputMacroDate {
+  public:
+  InputMacroDateYesterdayMediumChinese()
+      : InputMacroDate("MACRO@DATE_YESTERDAY_MEDIUM_CHINESE", "chinese", -1,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroDateTimeNowShort : public InputMacro {
- public:
-  std::string name() const { return "MACRO@TIME_NOW_SHORT"; }
-  std::string replacement() const;
+class InputMacroDateYesterdayMediumJapanese : public InputMacroDate {
+  public:
+  InputMacroDateYesterdayMediumJapanese()
+      : InputMacroDate("MACRO@DATE_YESTERDAY_MEDIUM_JAPANESE", "japanese", -1,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroDateTimeNowMedium : public InputMacro {
- public:
-  std::string name() const { return "MACRO@TIME_NOW_MEDIUM"; }
-  std::string replacement() const;
+class InputMacroDateTomorrowShort : public InputMacroDate {
+  public:
+  InputMacroDateTomorrowShort()
+      : InputMacroDate("MACRO@DATE_TOMORROW_SHORT", "", 1,
+                       icu::DateFormat::EStyle::kShort) {}
 };
 
-class InputMacroTimeZoneStandard : public InputMacro {
- public:
-  std::string name() const { return "MACRO@TIMEZONE_STANDARD"; }
-  std::string replacement() const;
+class InputMacroDateTomorrowMedium : public InputMacroDate {
+  public:
+  InputMacroDateTomorrowMedium()
+      : InputMacroDate("MACRO@DATE_TOMORROW_MEDIUM", "", 1,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroTimeZoneShortGeneric : public InputMacro {
- public:
-  std::string name() const { return "MACRO@TIMEZONE_GENERIC_SHORT"; }
-  std::string replacement() const;
+class InputMacroDateTomorrowMediumRoc : public InputMacroDate {
+  public:
+  InputMacroDateTomorrowMediumRoc()
+      : InputMacroDate("MACRO@DATE_TOMORROW_MEDIUM_ROC", "roc", 1,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroThisYearGanZhi : public InputMacro {
- public:
-  std::string name() const { return "MACRO@THIS_YEAR_GANZHI"; }
-  std::string replacement() const;
+class InputMacroDateTomorrowMediumChinese : public InputMacroDate {
+  public:
+  InputMacroDateTomorrowMediumChinese()
+      : InputMacroDate("MACRO@DATE_TOMORROW_MEDIUM_CHINESE", "chinese", 1,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroLastYearGanZhi : public InputMacro {
- public:
-  std::string name() const { return "MACRO@LAST_YEAR_GANZHI"; }
-  std::string replacement() const;
+class InputMacroDateTomorrowMediumJapanese : public InputMacroDate {
+  public:
+  InputMacroDateTomorrowMediumJapanese()
+      : InputMacroDate("MACRO@DATE_TOMORROW_MEDIUM_JAPANESE", "japanese", 1,
+                       icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroNextYearGanZhi : public InputMacro {
- public:
-  std::string name() const { return "MACRO@NEXT_YEAR_GANZHI"; }
-  std::string replacement() const;
+class InputMacroDateTimeNowShort : public InputMacroDateTime {
+  public:
+  InputMacroDateTimeNowShort()
+      : InputMacroDateTime("MACRO@TIME_NOW_SHORT",
+                           icu::DateFormat::EStyle::kShort) {}
 };
 
-class InputMacroThisYearChineseZodiac : public InputMacro {
- public:
-  std::string name() const { return "MACRO@THIS_YEAR_CHINESE_ZODIAC"; }
-  std::string replacement() const;
+class InputMacroDateTimeNowMedium : public InputMacroDateTime {
+  public:
+  InputMacroDateTimeNowMedium()
+      : InputMacroDateTime("MACRO@TIME_NOW_MEDIUM",
+                           icu::DateFormat::EStyle::kMedium) {}
 };
 
-class InputMacroLastYearChineseZodiac : public InputMacro {
- public:
-  std::string name() const { return "MACRO@LAST_YEAR_CHINESE_ZODIAC"; }
-  std::string replacement() const;
+
+class InputMacroTimeZoneStandard : public InputMacroTimeZone {
+  public:
+  InputMacroTimeZoneStandard()
+      : InputMacroTimeZone("MACRO@TIMEZONE_STANDARD",
+                           icu::TimeZone::EDisplayType::LONG_GENERIC) {}
 };
 
-class InputMacroNextYearChineseZodiac : public InputMacro {
- public:
-  std::string name() const { return "MACRO@NEXT_YEAR_CHINESE_ZODIAC"; }
-  std::string replacement() const;
+
+class InputMacroTimeZoneShortGeneric : public InputMacroTimeZone {
+  public:
+  InputMacroTimeZoneShortGeneric()
+      : InputMacroTimeZone("MACRO@TIMEZONE_GENERIC_SHORT",
+                           icu::TimeZone::EDisplayType::SHORT_GENERIC) {}
+};
+
+class InputMacroThisYearGanZhi : public InputMacroGanZhi {
+  public:
+  InputMacroThisYearGanZhi()
+      : InputMacroGanZhi("MACRO@THIS_YEAR_GANZHI", 0) {}
+};
+
+class InputMacroLastYearGanZhi : public InputMacroGanZhi {
+  public:
+  InputMacroLastYearGanZhi()
+      : InputMacroGanZhi("MACRO@LAST_YEAR_GANZHI", -1) {}
+};
+
+class InputMacroNextYearGanZhi : public InputMacroGanZhi {
+  public:
+  InputMacroNextYearGanZhi()
+      : InputMacroGanZhi("MACRO@NEXT_YEAR_GANZHI", 1) {}
+};
+
+class InputMacroThisYearChineseZodiac : public InputMacroZodiac {
+  public:
+  InputMacroThisYearChineseZodiac()
+      : InputMacroZodiac("MACRO@THIS_YEAR_CHINESE_ZODIAC", 0) {}
+};
+
+class InputMacroLastYearChineseZodiac : public InputMacroZodiac {
+  public:
+  InputMacroLastYearChineseZodiac()
+      : InputMacroZodiac("MACRO@LAST_YEAR_CHINESE_ZODIAC", -1) {}
+};
+
+class InputMacroNextYearChineseZodiac : public InputMacroZodiac {
+  public:
+  InputMacroNextYearChineseZodiac()
+      : InputMacroZodiac("MACRO@NEXT_YEAR_CHINESE_ZODIAC", 1) {}
 };
 
 static void AddMacro(
@@ -207,87 +318,25 @@ std::string formatDate(std::string calendarName, int DayOffset,
                        icu::DateFormat::EStyle dateStyle) {
   UErrorCode status = U_ZERO_ERROR;
   icu::TimeZone* timezone = icu::TimeZone::createDefault();
-  std::string calendarNameBase = calendarName == "japanese" ? "ja_JP" : "zh_Hant_TW";
+  std::string calendarNameBase =
+      calendarName == "japanese" ? "ja_JP" : "zh_Hant_TW";
   if (!calendarName.empty()) {
     calendarNameBase += "@calendar=" + calendarName;
   }
 
   const icu::Locale locale =
       icu::Locale::createCanonical(calendarNameBase.c_str());
-  icu::Calendar* calendar =
-      icu::Calendar::createInstance(timezone, locale, status);
+  std::unique_ptr<icu::Calendar> calendar(icu::Calendar::createInstance(timezone, locale, status));
   calendar->setTime(icu::Calendar::getNow(), status);
   calendar->add(icu::Calendar::DATE, DayOffset, status);
-  icu::DateFormat* dateFormatter = icu::DateFormat::createDateTimeInstance(
-      dateStyle, icu::DateFormat::EStyle::kNone, locale);
+  std::unique_ptr<icu::DateFormat> dateFormatter(icu::DateFormat::createDateTimeInstance(
+      dateStyle, icu::DateFormat::EStyle::kNone, locale));
   icu::UnicodeString formattedDate;
   icu::FieldPosition fieldPosition;
   dateFormatter->format(*calendar, formattedDate, fieldPosition);
   std::string output;
   formattedDate.toUTF8String(output);
-  delete calendar;
-  delete dateFormatter;
   return output;
-}
-
-std::string InputMacroDateTodayShort::replacement() const {
-  return formatDate("", 0, icu::DateFormat::EStyle::kShort);
-}
-
-std::string InputMacroDateTodayMedium::replacement() const {
-  return formatDate("", 0, icu::DateFormat::EStyle::kMedium);
-}
-
-std::string InputMacroDateTodayMediumRoc::replacement() const {
-  return formatDate("roc", 0, icu::DateFormat::EStyle::kMedium);
-}
-
-std::string InputMacroDateTodayMediumChinese::replacement() const {
-  return formatDate("chinese", 0, icu::DateFormat::EStyle::kMedium);
-}
-
-std::string InputMacroDateTodayMediumJapanese::replacement() const {
-  return formatDate("japanese", 0, icu::DateFormat::EStyle::kMedium);
-}
-
-std::string InputMacroDateYesterdayShort::replacement() const {
-  return formatDate("", -1, icu::DateFormat::EStyle::kShort);
-}
-
-std::string InputMacroDateYesterdayMedium::replacement() const {
-  return formatDate("", -1, icu::DateFormat::EStyle::kMedium);
-}
-
-std::string InputMacroDateYesterdayMediumRoc::replacement() const {
-  return formatDate("roc", -1, icu::DateFormat::EStyle::kMedium);
-}
-
-std::string InputMacroDateYesterdayMediumChinese::replacement() const {
-  return formatDate("chinese", -1, icu::DateFormat::EStyle::kMedium);
-}
-
-std::string InputMacroDateYesterdayMediumJapanese::replacement() const {
-  return formatDate("japanese", -1, icu::DateFormat::EStyle::kMedium);
-}
-
-std::string InputMacroDateTomorrowShort::replacement() const {
-  return formatDate("", 1, icu::DateFormat::EStyle::kShort);
-}
-
-std::string InputMacroDateTomorrowMedium::replacement() const {
-  return formatDate("", 1, icu::DateFormat::EStyle::kMedium);
-}
-
-std::string InputMacroDateTomorrowMediumRoc::replacement() const {
-  return formatDate("roc", 1, icu::DateFormat::EStyle::kMedium);
-}
-
-std::string InputMacroDateTomorrowMediumChinese::replacement() const {
-  return formatDate("chinese", 1, icu::DateFormat::EStyle::kMedium);
-}
-
-std::string InputMacroDateTomorrowMediumJapanese::replacement() const {
-  return formatDate("japanese", 1, icu::DateFormat::EStyle::kMedium);
 }
 
 std::string formatTime(icu::DateFormat::EStyle timeStyle) {
@@ -296,46 +345,26 @@ std::string formatTime(icu::DateFormat::EStyle timeStyle) {
   std::string calendarNameBase = "zh_Hant_TW";
   const icu::Locale locale =
       icu::Locale::createCanonical(calendarNameBase.c_str());
-  icu::Calendar* calendar =
-      icu::Calendar::createInstance(timezone, locale, status);
+  std::unique_ptr<icu::Calendar> calendar(icu::Calendar::createInstance(timezone, locale, status));
   calendar->setTime(icu::Calendar::getNow(), status);
-  icu::DateFormat* dateFormatter = icu::DateFormat::createDateTimeInstance(
-      icu::DateFormat::EStyle::kNone, timeStyle, locale);
+  std::unique_ptr<icu::DateFormat> dateFormatter(icu::DateFormat::createDateTimeInstance(
+      icu::DateFormat::EStyle::kNone, timeStyle, locale));
   icu::UnicodeString formattedDate;
   icu::FieldPosition fieldPosition;
   dateFormatter->format(*calendar, formattedDate, fieldPosition);
   std::string output;
   formattedDate.toUTF8String(output);
-  delete calendar;
-  delete dateFormatter;
   return output;
 }
 
-std::string InputMacroDateTimeNowShort::replacement() const {
-  return formatTime(icu::DateFormat::EStyle::kShort);
-}
-
-std::string InputMacroDateTimeNowMedium::replacement() const {
-  return formatTime(icu::DateFormat::EStyle::kMedium);
-}
-
 std::string formatTimeZone(icu::TimeZone::EDisplayType type) {
-  icu::TimeZone* timezone = icu::TimeZone::createDefault();
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createDefault());
   const icu::Locale locale = icu::Locale::createCanonical("zh_Hant_TW");
   icu::UnicodeString formatted;
   timezone->getDisplayName(false, type, locale, formatted);
   std::string output;
   formatted.toUTF8String(output);
-  delete timezone;
   return output;
-}
-
-std::string InputMacroTimeZoneStandard::replacement() const {
-  return formatTimeZone(icu::TimeZone::EDisplayType::LONG_GENERIC);
-}
-
-std::string InputMacroTimeZoneShortGeneric::replacement() const {
-  return formatTimeZone(icu::TimeZone::EDisplayType::SHORT_GENERIC);
 }
 
 int currentYear() {
@@ -354,15 +383,16 @@ int getYearBase(int year) {
   }
   return (year - 3) % 60;
 }
+// NOLINTEND(readability-magic-numbers)
 
 std::string ganzhi(int year) {
   const std::vector<std::string> gan(
       {"癸", "甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬"});
   const std::vector<std::string> zhi(
       {"亥", "子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌"});
-  int base = getYearBase(year);
-  int ganIndex = base % 10;
-  int zhiIndex = base % 12;
+  size_t base = static_cast<size_t>(getYearBase(year));
+  size_t ganIndex = base % gan.size();
+  size_t zhiIndex = base % zhi.size();
   return gan[ganIndex] + zhi[zhiIndex] + "年";
 }
 
@@ -371,41 +401,10 @@ std::string chineseZodiac(int year) {
       {"水", "木", "木", "火", "火", "土", "土", "金", "金", "水"});
   const std::vector<std::string> zhi(
       {"豬", "鼠", "牛", "虎", "兔", "龍", "蛇", "馬", "羊", "猴", "雞", "狗"});
-  int base = getYearBase(year);
-  int ganIndex = base % 10;
-  int zhiIndex = base % 12;
+  size_t base = static_cast<size_t>(getYearBase(year));
+  size_t ganIndex = base % gan.size();
+  size_t zhiIndex = base % zhi.size();
   return gan[ganIndex] + zhi[zhiIndex] + "年";
-}
-// NOLINTEND(readability-magic-numbers)
-
-std::string InputMacroThisYearGanZhi::replacement() const {
-  int year = currentYear();
-  return ganzhi(year);
-}
-
-std::string InputMacroLastYearGanZhi::replacement() const {
-  int year = currentYear();
-  return ganzhi(year - 1);
-}
-
-std::string InputMacroNextYearGanZhi::replacement() const {
-  int year = currentYear();
-  return ganzhi(year + 1);
-}
-
-std::string InputMacroThisYearChineseZodiac::replacement() const {
-  int year = currentYear();
-  return chineseZodiac(year);
-}
-
-std::string InputMacroLastYearChineseZodiac::replacement() const {
-  int year = currentYear();
-  return chineseZodiac(year - 1);
-}
-
-std::string InputMacroNextYearChineseZodiac::replacement() const {
-  int year = currentYear();
-  return chineseZodiac(year + 1);
 }
 
 }  // namespace McBopomofo
