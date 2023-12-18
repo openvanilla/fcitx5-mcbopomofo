@@ -60,6 +60,25 @@ class InputMacroYear : public InputMacro {
   icu::UnicodeString pattern_;
 };
 
+class InputMacroDayOfTheWeek : public InputMacro {
+ public:
+  InputMacroDayOfTheWeek(std::string macroName, std::string calendar, int offset, icu::UnicodeString pattern)
+      : name_(macroName),
+        calendarName_(calendar),
+        dayOffset_(offset),
+        pattern_(pattern) {}
+  std::string name() const override { return name_; }
+  std::string replacement() const override {
+    return formatWithPattern(calendarName_, /*yearOffset*/ 0, dayOffset_, pattern_);
+  }
+
+ private:
+  std::string name_;
+  std::string calendarName_;
+  int dayOffset_;
+  icu::UnicodeString pattern_;
+};
+
 class InputMacroDateTime : public InputMacro {
  public:
   InputMacroDateTime(std::string macroName, icu::DateFormat::EStyle style)
@@ -297,6 +316,97 @@ class InputMacroNextYearJapanese : public InputMacroYear {
       : InputMacroYear("MACRO@NEXT_YEAR_JAPANESE", "japanese", 1, "Gy") {}
 };
 
+std::string convertWeekdayUnit(std::string& original) {
+  // s/星期/禮拜/
+  std::string src = "星期";
+  std::string dst = "禮拜";
+  return original.replace(original.find(src), src.length(), dst);
+}
+
+class InputMacroWeekdayTodayShort : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayTodayShort()
+      : InputMacroDayOfTheWeek("MACRO@DATE_TODAY_WEEKDAY_SHORT", "", 0, "E") {}
+};
+
+class InputMacroWeekdayToday : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayToday()
+      : InputMacroDayOfTheWeek("MACRO@DATE_TODAY_WEEKDAY", "", 0, "EEEE") {}
+};
+
+class InputMacroWeekdayToday2 : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayToday2()
+      : InputMacroDayOfTheWeek("MACRO@DATE_TODAY2_WEEKDAY", "", 0, "EEEE") {}
+  std::string replacement () const override {
+    std::string original(InputMacroDayOfTheWeek::replacement());
+    return convertWeekdayUnit(original);
+  }
+};
+
+class InputMacroWeekdayTodayJapanese : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayTodayJapanese()
+      : InputMacroDayOfTheWeek("MACRO@DATE_TODAY_WEEKDAY_JAPANESE", "japanese", 0, "EEEE") {}
+};
+
+class InputMacroWeekdayYesterdayShort : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayYesterdayShort()
+      : InputMacroDayOfTheWeek("MACRO@DATE_YESTERDAY_WEEKDAY_SHORT", "", -1, "E") {}
+};
+
+class InputMacroWeekdayYesterday : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayYesterday()
+      : InputMacroDayOfTheWeek("MACRO@DATE_YESTERDAY_WEEKDAY", "", -1, "EEEE") {}
+};
+
+class InputMacroWeekdayYesterday2 : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayYesterday2()
+      : InputMacroDayOfTheWeek("MACRO@DATE_YESTERDAY2_WEEKDAY", "", -1, "EEEE") {}
+  std::string replacement () const override {
+    std::string original(InputMacroDayOfTheWeek::replacement());
+    return convertWeekdayUnit(original);
+  }
+};
+
+class InputMacroWeekdayYesterdayJapanese : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayYesterdayJapanese()
+      : InputMacroDayOfTheWeek("MACRO@DATE_YESTERDAY_WEEKDAY_JAPANESE", "japanese", -1, "EEEE") {}
+};
+
+class InputMacroWeekdayTomorrowShort : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayTomorrowShort()
+      : InputMacroDayOfTheWeek("MACRO@DATE_TOMORROW_WEEKDAY_SHORT", "", 1, "E") {}
+};
+
+class InputMacroWeekdayTomorrow : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayTomorrow()
+      : InputMacroDayOfTheWeek("MACRO@DATE_TOMORROW_WEEKDAY", "", 1, "EEEE") {}
+};
+
+class InputMacroWeekdayTomorrow2 : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayTomorrow2()
+      : InputMacroDayOfTheWeek("MACRO@DATE_TOMORROW2_WEEKDAY", "", 1, "EEEE") {}
+  std::string replacement () const override {
+    std::string original(InputMacroDayOfTheWeek::replacement());
+    return convertWeekdayUnit(original);
+  }
+};
+
+class InputMacroWeekdayTomorrowJapanese : public InputMacroDayOfTheWeek {
+  public:
+  InputMacroWeekdayTomorrowJapanese()
+      : InputMacroDayOfTheWeek("MACRO@DATE_TOMORROW_WEEKDAY_JAPANESE", "japanese", 1, "EEEE") {}
+};
+
 class InputMacroDateTimeNowShort : public InputMacroDateTime {
   public:
   InputMacroDateTimeNowShort()
@@ -387,6 +497,18 @@ InputMacroController::InputMacroController() {
   AddMacro(macros_, std::make_unique<InputMacroNextYearPlainWithEra>());
   AddMacro(macros_, std::make_unique<InputMacroNextYearRoc>());
   AddMacro(macros_, std::make_unique<InputMacroNextYearJapanese>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayTodayShort>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayToday>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayToday2>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayTodayJapanese>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayYesterdayShort>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayYesterday>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayYesterday2>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayYesterdayJapanese>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayTomorrowShort>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayTomorrow>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayTomorrow2>());
+  AddMacro(macros_, std::make_unique<InputMacroWeekdayTomorrowJapanese>());
   AddMacro(macros_, std::make_unique<InputMacroDateYesterdayShort>());
   AddMacro(macros_, std::make_unique<InputMacroDateYesterdayMedium>());
   AddMacro(macros_, std::make_unique<InputMacroDateYesterdayMediumRoc>());
