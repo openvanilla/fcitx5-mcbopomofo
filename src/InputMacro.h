@@ -1,5 +1,5 @@
-#ifndef INPUTMACRO
-#define INPUTMACRO
+#ifndef SRC_INPUTMACRO_H_
+#define SRC_INPUTMACRO_H_
 
 #include <memory>
 #include <string>
@@ -8,6 +8,8 @@
 namespace McBopomofo {
 class InputMacro {
  public:
+  virtual ~InputMacro() = default;
+
   virtual std::string name() const = 0;
   virtual std::string replacement() const = 0;
 };
@@ -24,4 +26,4 @@ class InputMacroController {
 
 }  // namespace McBopomofo
 
-#endif /* INPUTMACRO */
+#endif /* SRC_INPUTMACRO_H_ */
