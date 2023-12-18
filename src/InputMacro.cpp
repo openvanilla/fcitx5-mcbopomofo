@@ -11,8 +11,9 @@
 
 namespace McBopomofo {
 
-std::string formatDate(std::string calendarName, int DayOffset,
+std::string formatDate(std::string calendarName, int dayOffset,
                        icu::DateFormat::EStyle dateStyle);
+std::string formatWithPattern(std::string calendarName, int yearOffset, int dateOffset, icu::UnicodeString pattern);
 std::string formatTime(icu::DateFormat::EStyle timeStyle);
 std::string formatTimeZone(icu::TimeZone::EDisplayType type);
 int currentYear();
@@ -25,18 +26,38 @@ class InputMacroDate : public InputMacro {
                  icu::DateFormat::EStyle style)
       : name_(macroName),
         calendarName_(calendar),
-        DayOffset_(offset),
+        dayOffset_(offset),
         dateStyle_(style) {}
   std::string name() const override { return name_; }
   std::string replacement() const override {
-    return formatDate(calendarName_, DayOffset_, dateStyle_);
+    return formatDate(calendarName_, dayOffset_, dateStyle_);
   }
 
  private:
   std::string name_;
   std::string calendarName_;
-  int DayOffset_;
+  int dayOffset_;
   icu::DateFormat::EStyle dateStyle_;
+};
+
+class InputMacroYear : public InputMacro {
+ public:
+  InputMacroYear(std::string macroName, std::string calendar, int offset, icu::UnicodeString pattern)
+      : name_(macroName),
+        calendarName_(calendar),
+        yearOffset_(offset),
+        pattern_(pattern) {}
+  std::string name() const override { return name_; }
+  std::string replacement() const override {
+    return formatWithPattern(calendarName_, yearOffset_, /*dateOffset*/ 0, pattern_) + "年";
+  }
+
+ private:
+  std::string name_;
+  std::string calendarName_;
+  int yearOffset_;
+  // ref: https://unicode-org.github.io/icu/userguide/format_parse/datetime/index#datetime-format-syntax
+  icu::UnicodeString pattern_;
 };
 
 class InputMacroDateTime : public InputMacro {
@@ -204,6 +225,78 @@ class InputMacroDateTomorrowMediumJapanese : public InputMacroDate {
                        icu::DateFormat::EStyle::kMedium) {}
 };
 
+class InputMacroThisYearPlain : public InputMacroYear {
+  public:
+  InputMacroThisYearPlain()
+      : InputMacroYear("MACRO@THIS_YEAR_PLAIN", "", 0, "y") {}
+};
+
+class InputMacroThisYearPlainWithEra : public InputMacroYear {
+  public:
+  InputMacroThisYearPlainWithEra()
+      : InputMacroYear("MACRO@THIS_YEAR_PLAIN_WITH_ERA", "", 0, "Gy") {}
+};
+
+class InputMacroThisYearRoc : public InputMacroYear {
+  public:
+  InputMacroThisYearRoc()
+      : InputMacroYear("MACRO@THIS_YEAR_ROC", "roc", 0, "Gy") {}
+};
+
+class InputMacroThisYearJapanese : public InputMacroYear {
+  public:
+  InputMacroThisYearJapanese()
+      : InputMacroYear("MACRO@THIS_YEAR_JAPANESE", "japanese", 0, "Gy") {}
+};
+
+class InputMacroLastYearPlain : public InputMacroYear {
+  public:
+  InputMacroLastYearPlain()
+      : InputMacroYear("MACRO@LAST_YEAR_PLAIN", "", -1, "y") {}
+};
+
+class InputMacroLastYearPlainWithEra : public InputMacroYear {
+  public:
+  InputMacroLastYearPlainWithEra()
+      : InputMacroYear("MACRO@LAST_YEAR_PLAIN_WITH_ERA", "", -1, "Gy") {}
+};
+
+class InputMacroLastYearRoc : public InputMacroYear {
+  public:
+  InputMacroLastYearRoc()
+      : InputMacroYear("MACRO@LAST_YEAR_ROC", "roc", -1, "Gy") {}
+};
+
+class InputMacroLastYearJapanese : public InputMacroYear {
+  public:
+  InputMacroLastYearJapanese()
+      : InputMacroYear("MACRO@LAST_YEAR_JAPANESE", "japanese", -1, "Gy") {}
+};
+
+class InputMacroNextYearPlain : public InputMacroYear {
+  public:
+  InputMacroNextYearPlain()
+      : InputMacroYear("MACRO@NEXT_YEAR_PLAIN", "", 1, "y") {}
+};
+
+class InputMacroNextYearPlainWithEra : public InputMacroYear {
+  public:
+  InputMacroNextYearPlainWithEra()
+      : InputMacroYear("MACRO@NEXT_YEAR_PLAIN_WITH_ERA", "", 1, "Gy") {}
+};
+
+class InputMacroNextYearRoc : public InputMacroYear {
+  public:
+  InputMacroNextYearRoc()
+      : InputMacroYear("MACRO@NEXT_YEAR_ROC", "roc", 1, "Gy") {}
+};
+
+class InputMacroNextYearJapanese : public InputMacroYear {
+  public:
+  InputMacroNextYearJapanese()
+      : InputMacroYear("MACRO@NEXT_YEAR_JAPANESE", "japanese", 1, "Gy") {}
+};
+
 class InputMacroDateTimeNowShort : public InputMacroDateTime {
   public:
   InputMacroDateTimeNowShort()
@@ -282,6 +375,18 @@ InputMacroController::InputMacroController() {
   AddMacro(macros_, std::make_unique<InputMacroDateTodayMediumRoc>());
   AddMacro(macros_, std::make_unique<InputMacroDateTodayMediumChinese>());
   AddMacro(macros_, std::make_unique<InputMacroDateTodayMediumJapanese>());
+  AddMacro(macros_, std::make_unique<InputMacroThisYearPlain>());
+  AddMacro(macros_, std::make_unique<InputMacroThisYearPlainWithEra>());
+  AddMacro(macros_, std::make_unique<InputMacroThisYearRoc>());
+  AddMacro(macros_, std::make_unique<InputMacroThisYearJapanese>());
+  AddMacro(macros_, std::make_unique<InputMacroLastYearPlain>());
+  AddMacro(macros_, std::make_unique<InputMacroLastYearPlainWithEra>());
+  AddMacro(macros_, std::make_unique<InputMacroLastYearRoc>());
+  AddMacro(macros_, std::make_unique<InputMacroLastYearJapanese>());
+  AddMacro(macros_, std::make_unique<InputMacroNextYearPlain>());
+  AddMacro(macros_, std::make_unique<InputMacroNextYearPlainWithEra>());
+  AddMacro(macros_, std::make_unique<InputMacroNextYearRoc>());
+  AddMacro(macros_, std::make_unique<InputMacroNextYearJapanese>());
   AddMacro(macros_, std::make_unique<InputMacroDateYesterdayShort>());
   AddMacro(macros_, std::make_unique<InputMacroDateYesterdayMedium>());
   AddMacro(macros_, std::make_unique<InputMacroDateYesterdayMediumRoc>());
@@ -314,47 +419,70 @@ std::string InputMacroController::handle(std::string input) {
   return input;
 }
 
-std::string formatDate(std::string calendarName, int DayOffset,
-                       icu::DateFormat::EStyle dateStyle) {
-  UErrorCode status = U_ZERO_ERROR;
-  icu::TimeZone* timezone = icu::TimeZone::createDefault();
+icu::Locale createLocale(std::string calendarName) {
   std::string calendarNameBase =
       calendarName == "japanese" ? "ja_JP" : "zh_Hant_TW";
   if (!calendarName.empty()) {
     calendarNameBase += "@calendar=" + calendarName;
   }
+  return icu::Locale::createCanonical(calendarNameBase.c_str());
+}
 
-  const icu::Locale locale =
-      icu::Locale::createCanonical(calendarNameBase.c_str());
+std::unique_ptr<icu::Calendar> createCalendar(icu::Locale locale) {
+  UErrorCode status = U_ZERO_ERROR;
+  icu::TimeZone* timezone = icu::TimeZone::createDefault();
   std::unique_ptr<icu::Calendar> calendar(icu::Calendar::createInstance(timezone, locale, status));
   calendar->setTime(icu::Calendar::getNow(), status);
-  calendar->add(icu::Calendar::DATE, DayOffset, status);
+  return calendar;
+}
+
+std::string formatWithStyle(std::string calendarName, int yearOffset, int dayOffset,
+                           icu::DateFormat::EStyle dateStyle,
+                           icu::DateFormat::EStyle timeStyle) {
+  UErrorCode status = U_ZERO_ERROR;
+
+  const icu::Locale locale = createLocale(calendarName);
+  std::unique_ptr<icu::Calendar> calendar = createCalendar(locale);
+
+  calendar->add(icu::Calendar::YEAR, yearOffset, status);
+  calendar->add(icu::Calendar::DATE, dayOffset, status);
+
   std::unique_ptr<icu::DateFormat> dateFormatter(icu::DateFormat::createDateTimeInstance(
-      dateStyle, icu::DateFormat::EStyle::kNone, locale));
+      dateStyle, timeStyle, locale));
   icu::UnicodeString formattedDate;
   icu::FieldPosition fieldPosition;
   dateFormatter->format(*calendar, formattedDate, fieldPosition);
+
   std::string output;
   formattedDate.toUTF8String(output);
   return output;
 }
 
-std::string formatTime(icu::DateFormat::EStyle timeStyle) {
+std::string formatWithPattern(std::string calendarName, int yearOffset, int dateOffset, icu::UnicodeString pattern) {
   UErrorCode status = U_ZERO_ERROR;
-  icu::TimeZone* timezone = icu::TimeZone::createDefault();
-  std::string calendarNameBase = "zh_Hant_TW";
-  const icu::Locale locale =
-      icu::Locale::createCanonical(calendarNameBase.c_str());
-  std::unique_ptr<icu::Calendar> calendar(icu::Calendar::createInstance(timezone, locale, status));
-  calendar->setTime(icu::Calendar::getNow(), status);
-  std::unique_ptr<icu::DateFormat> dateFormatter(icu::DateFormat::createDateTimeInstance(
-      icu::DateFormat::EStyle::kNone, timeStyle, locale));
+
+  const icu::Locale locale = createLocale(calendarName);
+  std::unique_ptr<icu::Calendar> calendar = createCalendar(locale);
+
+  calendar->add(icu::Calendar::YEAR, yearOffset, status);
+  calendar->add(icu::Calendar::DATE, dateOffset, status);
+
+  icu::SimpleDateFormat dateFormatter(pattern, locale, status);
   icu::UnicodeString formattedDate;
-  icu::FieldPosition fieldPosition;
-  dateFormatter->format(*calendar, formattedDate, fieldPosition);
+  dateFormatter.format(calendar->getTime(status), formattedDate, status);
+
   std::string output;
   formattedDate.toUTF8String(output);
   return output;
+}
+
+std::string formatDate(std::string calendarName, int dayOffset,
+                       icu::DateFormat::EStyle dateStyle) {
+  return formatWithStyle(calendarName, /*yearOffset*/ 0, dayOffset, dateStyle, /*timeStyle*/ icu::DateFormat::EStyle::kNone);
+}
+
+std::string formatTime(icu::DateFormat::EStyle timeStyle) {
+  return formatWithStyle(/*calendarName*/ "", /*yearOffset*/ 0, /*dayOffset*/ 0, /*dateStyle*/ icu::DateFormat::EStyle::kNone, timeStyle);
 }
 
 std::string formatTimeZone(icu::TimeZone::EDisplayType type) {
