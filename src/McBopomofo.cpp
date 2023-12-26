@@ -37,6 +37,7 @@
 
 #include "Key.h"
 #include "Log.h"
+#include "UTF8Helper.h"
 
 namespace McBopomofo {
 
@@ -746,10 +747,9 @@ fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
       dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
   if (choosingCandidate != nullptr) {
     auto candidates = choosingCandidate->candidates;
-    for (auto candidate : candidates) {
-      std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
-      auto u32 = conv.from_bytes(candidate.value);
-      if (u32.size() > 8) {
+    for (InputStates::ChoosingCandidate::Candidate candidate : candidates) {
+      std::string value = candidate.value;
+      if (McBopomofo::CodePointCount(value) > 8) {
         return fcitx::CandidateLayoutHint::Vertical;
       }
     }
