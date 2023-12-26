@@ -37,6 +37,7 @@
 
 #include "Key.h"
 #include "Log.h"
+#include "UTF8Helper.h"
 
 namespace McBopomofo {
 
@@ -741,6 +742,19 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
 
 fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
   fcitx::CandidateLayoutHint layoutHint = fcitx::CandidateLayoutHint::NotSet;
+
+  auto choosingCandidate =
+      dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
+  if (choosingCandidate != nullptr) {
+    auto candidates = choosingCandidate->candidates;
+    for (InputStates::ChoosingCandidate::Candidate candidate : candidates) {
+      std::string value = candidate.value;
+      if (McBopomofo::CodePointCount(value) > 8) {
+        return fcitx::CandidateLayoutHint::Vertical;
+      }
+    }
+  }
+
   switch (config_.candidateLayout.value()) {
     case McBopomofo::CandidateLayoutHint::Vertical:
       layoutHint = fcitx::CandidateLayoutHint::Vertical;
