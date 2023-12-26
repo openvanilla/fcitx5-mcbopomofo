@@ -747,13 +747,9 @@ fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
   if (choosingCandidate != nullptr) {
     auto candidates = choosingCandidate->candidates;
     for (auto candidate : candidates) {
-      if (candidate.value.length() > 8) {
-        return fcitx::CandidateLayoutHint::Vertical;
-      }
-    }
-    if (candidates.size() > 0) {
-      auto firstCandidate = candidates[0];
-      if (firstCandidate.value.length() > 8) {
+      std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+      auto u32 = conv.from_bytes(candidate.value);
+      if (u32.size() > 8) {
         return fcitx::CandidateLayoutHint::Vertical;
       }
     }
