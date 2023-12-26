@@ -741,6 +741,24 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
 
 fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
   fcitx::CandidateLayoutHint layoutHint = fcitx::CandidateLayoutHint::NotSet;
+
+  auto choosingCandidate =
+      dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
+  if (choosingCandidate != nullptr) {
+    auto candidates = choosingCandidate->candidates;
+    for (auto candidate : candidates) {
+      if (candidate.value.length() > 8) {
+        return fcitx::CandidateLayoutHint::Vertical;
+      }
+    }
+    if (candidates.size() > 0) {
+      auto firstCandidate = candidates[0];
+      if (firstCandidate.value.length() > 8) {
+        return fcitx::CandidateLayoutHint::Vertical;
+      }
+    }
+  }
+
   switch (config_.candidateLayout.value()) {
     case McBopomofo::CandidateLayoutHint::Vertical:
       layoutHint = fcitx::CandidateLayoutHint::Vertical;
