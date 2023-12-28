@@ -84,6 +84,7 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftLetterKeys,
 constexpr char kDefaultOpenFileWith[] = "xdg-open";
 constexpr char kDefaultAddPhraseHookPath[] =
     "/usr/share/fcitx5/data/mcbopomofo-add-phrase-hook.sh";
+constexpr char kDefaultOpenUrlWith[] = "xdg-open";
 
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(KeyHandlerCtrlEnter, N_("disabled"),
                                  N_("output_bpmf_reading"),
@@ -149,6 +150,10 @@ FCITX_CONFIGURATION(
         this, "AddScriptHookEnabled",
         _("Run the hook script after adding a phrase"), false};
 
+    // The app to open URLs.
+    fcitx::Option<std::string> openUrlWith{
+        this, "OpenUrlWith", _("Open URL With"), kDefaultOpenUrlWith};
+
 );
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
@@ -192,7 +197,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void handleInputtingState(fcitx::InputContext* context, InputState* prev,
                             InputStates::Inputting* current);
   void handleCandidatesState(fcitx::InputContext* context, InputState* prev,
-                             InputStates::ChoosingCandidate* current);
+                             InputStates::NotEmpty* current);
   void handleMarkingState(fcitx::InputContext* context, InputState* prev,
                           InputStates::Marking* current);
 

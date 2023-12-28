@@ -69,6 +69,7 @@ struct NotEmpty : InputState {
       : composingBuffer(std::move(buf)),
         cursorIndex(index),
         tooltip(tooltipText) {}
+  ~NotEmpty() override = default;
 
   const std::string composingBuffer;
 
@@ -136,6 +137,23 @@ struct Marking : NotEmpty {
   const std::string tail;
   const std::string reading;
   const bool acceptable;
+};
+
+struct SelectingDictionaryService : NotEmpty {
+  SelectingDictionaryService(std::unique_ptr<NotEmpty> previousState,
+                             std::string selectedPhrase, size_t selectedIndex,
+                             std::vector<std::string> menu)
+      : NotEmpty(previousState->composingBuffer, previousState->cursorIndex,
+                 previousState->tooltip),
+        previousState(std::move(previousState)),
+        selectedPhrase(std::move(selectedPhrase)),
+        selectedCandidateIndex(selectedIndex),
+        menu(std::move(menu)) {}
+
+  std::unique_ptr<NotEmpty> previousState;
+  std::string selectedPhrase;
+  size_t selectedCandidateIndex;
+  std::vector<std::string> menu;
 };
 
 }  // namespace InputStates

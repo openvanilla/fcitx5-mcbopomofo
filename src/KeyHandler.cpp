@@ -96,7 +96,12 @@ KeyHandler::KeyHandler(
       userPhraseAdder_(std::move(userPhraseAdder)),
       localizedStrings_(std::move(localizedStrings)),
       userOverrideModel_(kUserOverrideModelCapacity, kObservedOverrideHalfLife),
-      reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {}
+      reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {
+  FCITX_MCBOPOMOFO_INFO() << "start dictionaryServices_";
+  dictionaryServices_ = std::make_unique<DictionaryServices>();
+  FCITX_MCBOPOMOFO_INFO() << dictionaryServices_;
+  dictionaryServices_->load();
+}
 
 bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                         const StateCallback& stateCallback,
@@ -409,6 +414,13 @@ void KeyHandler::candidateSelected(
 
   pinNode(candidate);
   stateCallback(buildInputtingState());
+}
+
+void KeyHandler::dictionaryServiceSelected(std::string phrase, size_t index,
+                                           InputState* currentState,
+                                           const StateCallback& stateCallback) {
+  dictionaryServices_->lookup(std::move(phrase), index, currentState,
+                              stateCallback);
 }
 
 void KeyHandler::candidatePanelCancelled(const StateCallback& stateCallback) {
@@ -754,7 +766,7 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
   // not-empty) between them.
   //
   // We'll also need to compute the UTF-8 cursor index. The idea here is we
-  // use a "running" index that will eventually catch the cursor index in the
+  // use a "running" index_ that will eventually catch the cursor index_ in the
   // builder. The tricky part is that if the spanning length of the node that
   // the cursor is at does not agree with the actual codepoint count of the
   // node's value, we'll need to move the cursor at the end of the node to
@@ -908,6 +920,19 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
   return std::make_unique<InputStates::Marking>(
       composed, composedStringCursorIndex, tooltip, beginCursorIndex, head,
       marked, tail, readingValue, isValid);
+}
+
+bool KeyHandler::hasDictionaryServices() {
+  return dictionaryServices_->hasServices();
+}
+
+std::unique_ptr<InputStates::SelectingDictionaryService>
+KeyHandler::buildSelectingDictionaryServiceState(
+    std::unique_ptr<InputStates::NotEmpty> nonEmptyState,
+    const std::string& selectedPhrase, size_t selectedIndex) {
+  auto menu = dictionaryServices_->menuForPhrase(selectedPhrase);
+  return std::make_unique<InputStates::SelectingDictionaryService>(
+      std::move(nonEmptyState), selectedPhrase, selectedIndex, menu);
 }
 
 size_t KeyHandler::actualCandidateCursorIndex() {

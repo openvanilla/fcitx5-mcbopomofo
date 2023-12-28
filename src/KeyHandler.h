@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 
+#include "DictionaryService.h"
 #include "Engine/Mandarin/Mandarin.h"
 #include "Engine/McBopomofoLM.h"
 #include "Engine/UserOverrideModel.h"
@@ -75,6 +76,10 @@ class KeyHandler {
       const InputStates::ChoosingCandidate::Candidate& candidate,
       const StateCallback& stateCallback);
 
+  void dictionaryServiceSelected(std::string phrase, size_t index,
+                                 InputState* currentState,
+                                 const StateCallback& stateCallback);
+
   // Candidate panel canceled. Can assume the context is in a candidate state.
   void candidatePanelCancelled(const StateCallback& stateCallback);
 
@@ -85,6 +90,17 @@ class KeyHandler {
       const StateCallback& stateCallback, const ErrorCallback& errorCallback);
 
   void reset();
+
+#pragma region Dictionary Services
+
+  bool hasDictionaryServices();
+
+  std::unique_ptr<InputStates::SelectingDictionaryService>
+  buildSelectingDictionaryServiceState(
+      std::unique_ptr<InputStates::NotEmpty> nonEmptyState,
+      const std::string& selectedPhrase, size_t selectedIndex);
+
+#pragma endregion Dictionary Services
 
 #pragma region Settings
 
@@ -171,6 +187,7 @@ class KeyHandler {
   UserOverrideModel userOverrideModel_;
   Formosa::Mandarin::BopomofoReadingBuffer reading_;
   Formosa::Gramambular2::ReadingGrid::WalkResult latestWalk_;
+  std::shared_ptr<DictionaryServices> dictionaryServices_;
 
 #pragma region Settings
 

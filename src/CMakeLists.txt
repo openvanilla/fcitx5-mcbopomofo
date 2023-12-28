@@ -6,6 +6,8 @@ find_package(Fcitx5Utils REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
 find_package(ICU COMPONENTS uc i18n REQUIRED)
+find_package(cJSON REQUIRED)
+
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.23.0")
     find_package(GTest)
 endif()
@@ -17,7 +19,9 @@ set(MCBOPOMOFO_LIB_SOURCES
  LanguageModelLoader.cpp
  UTF8Helper.cpp
  InputMacro.cpp
- Log.cpp)
+ Log.cpp
+ DictionaryService.cpp
+)
 
 # https://stackoverflow.com/questions/26549137/shared-library-on-linux-and-fpic-error
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
@@ -27,8 +31,8 @@ include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cma
 
 add_library(McBopomofoLib ${MCBOPOMOFO_LIB_SOURCES})
 target_compile_options(McBopomofoLib PRIVATE -Wno-unknown-pragmas)
-target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils ICU::uc ICU::i18n gramambular2_lib McBopomofoLMLib MandarinLib)
-target_include_directories(McBopomofoLib PRIVATE Fcitx5::Utils)
+target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils ICU::uc ICU::i18n cjson gramambular2_lib McBopomofoLMLib MandarinLib)
+target_include_directories(McBopomofoLib PRIVATE Fcitx5::Utils cjson)
 target_compile_definitions(McBopomofoLib PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 
 if (ENABLE_CLANG_TIDY)
@@ -46,8 +50,8 @@ if (USE_LEGACY_FCITX5_API)
     add_compile_definitions(mcbopomofo USE_LEGACY_FCITX5_API=1)
 endif()
 target_compile_options(mcbopomofo PRIVATE -Wno-unknown-pragmas)
-target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core McBopomofoLib fmt::fmt)
-target_include_directories(mcbopomofo PRIVATE Fcitx5::Core fmt::fmt)
+target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core McBopomofoLib fmt::fmt cjson)
+target_include_directories(mcbopomofo PRIVATE Fcitx5::Core fmt::fmt cjson)
 set_target_properties(mcbopomofo PROPERTIES PREFIX "")
 target_compile_definitions(mcbopomofo PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 install(TARGETS mcbopomofo DESTINATION "${FCITX_INSTALL_LIBDIR}/fcitx5")
@@ -97,8 +101,8 @@ if (ENABLE_TEST)
         add_executable(McBopomofoTest
                 KeyHandlerTest.cpp UTF8HelperTest.cpp)
         target_compile_options(McBopomofoTest PRIVATE -Wno-unknown-pragmas)
-        target_link_libraries(McBopomofoTest PRIVATE Fcitx5::Core GTest::gtest_main GTest::gmock_main McBopomofoLib)
-        target_include_directories(McBopomofoTest PRIVATE Fcitx5::Core)
+        target_link_libraries(McBopomofoTest PRIVATE Fcitx5::Core GTest::gtest_main GTest::gmock_main McBopomofoLib fmt::fmt cjson)
+        target_include_directories(McBopomofoTest PRIVATE Fcitx5::Core fmt::fmt cjson)
 
         configure_file(../data/data.txt mcbopomofo-test-data.txt)
 
