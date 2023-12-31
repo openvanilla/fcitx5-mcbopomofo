@@ -95,8 +95,8 @@ class KeyHandler {
 
   bool hasDictionaryServices();
 
-  std::unique_ptr<InputStates::SelectingDictionaryService>
-  buildSelectingDictionaryServiceState(
+  std::unique_ptr<InputStates::SelectingDictionary>
+  buildSelectingDictionaryState(
       std::unique_ptr<InputStates::NotEmpty> nonEmptyState,
       const std::string& selectedPhrase, size_t selectedIndex);
 

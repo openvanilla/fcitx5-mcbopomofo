@@ -132,9 +132,9 @@ void McBopomofo::DictionaryServices::load() {
     }
   }
 
-  for (const auto& item : services_) {
-    std::cout << item->name() << std::endl;
-  }
+//  for (const auto& item : services_) {
+//    std::cout << item->name() << std::endl;
+//  }
 }
 
 McBopomofo::DictionaryServices::~DictionaryServices() = default;

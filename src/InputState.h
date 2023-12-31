@@ -139,8 +139,8 @@ struct Marking : NotEmpty {
   const bool acceptable;
 };
 
-struct SelectingDictionaryService : NotEmpty {
-  SelectingDictionaryService(std::unique_ptr<NotEmpty> previousState,
+struct SelectingDictionary : NotEmpty {
+  SelectingDictionary(std::unique_ptr<NotEmpty> previousState,
                              std::string selectedPhrase, size_t selectedIndex,
                              std::vector<std::string> menu)
       : NotEmpty(previousState->composingBuffer, previousState->cursorIndex,

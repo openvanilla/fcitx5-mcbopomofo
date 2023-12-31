@@ -320,6 +320,25 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     return true;
   }
 
+  // Question key
+  if (simpleAscii == '?') {
+    auto* marking = dynamic_cast<InputStates::Marking*>(state);
+    if (marking != nullptr) {
+      // Enter the state to select a dictionary service.
+      std::string markedText = marking->markedText;
+      std::unique_ptr<InputStates::Marking> copy =
+          std::make_unique<InputStates::Marking>(
+              marking->composingBuffer, marking->cursorIndex, marking->tooltip,
+              marking->markStartGridCursorIndex, marking->head,
+              marking->markedText, marking->tail, marking->reading,
+              marking->acceptable);
+      auto selecting =
+          buildSelectingDictionaryState(std::move(copy), markedText, 0);
+      stateCallback(std::move(selecting));
+      return true;
+    }
+  }
+
   // Punctuation key: backtick or grave accent.
   if (simpleAscii == kPunctuationListKey &&
       lm_->hasUnigrams(kPunctuationListUnigramKey)) {
@@ -342,6 +361,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   if (key.ascii != 0) {
     std::string chrStr(1, key.ascii);
     std::string unigram;
+
     if (key.ctrlPressed) {
       unigram = std::string(kCtrlPunctuationKeyPrefix) + chrStr;
       return handlePunctuation(unigram, stateCallback, errorCallback);
@@ -391,6 +411,13 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
   // No key is handled. Refresh and consume the key.
   if (maybeNotEmptyState != nullptr) {
+    // It is possible that FCITX just passes a single shift key event here.
+    // When it is in the marking state, we do not want to go back to the
+    // inputting state anyway.
+    auto* marking = dynamic_cast<InputStates::Marking*>(state);
+    if (marking != nullptr) {
+      return true;
+    }
     errorCallback();
     stateCallback(buildInputtingState());
     return true;
@@ -924,12 +951,13 @@ bool KeyHandler::hasDictionaryServices() {
   return dictionaryServices_->hasServices();
 }
 
-std::unique_ptr<InputStates::SelectingDictionaryService>
-KeyHandler::buildSelectingDictionaryServiceState(
+std::unique_ptr<InputStates::SelectingDictionary>
+KeyHandler::buildSelectingDictionaryState(
     std::unique_ptr<InputStates::NotEmpty> nonEmptyState,
     const std::string& selectedPhrase, size_t selectedIndex) {
-  auto menu = dictionaryServices_->menuForPhrase(selectedPhrase);
-  return std::make_unique<InputStates::SelectingDictionaryService>(
+  std::vector<std::string> menu =
+      dictionaryServices_->menuForPhrase(selectedPhrase);
+  return std::make_unique<InputStates::SelectingDictionary>(
       std::move(nonEmptyState), selectedPhrase, selectedIndex, menu);
 }
 
