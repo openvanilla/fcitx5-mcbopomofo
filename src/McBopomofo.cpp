@@ -494,14 +494,16 @@ void McBopomofoEngine::handleCandidateKeyEvent(
       // Enter selecting dictionary service state.
       if (keyHandler_->hasDictionaryServices()) {
 #ifdef USE_LEGACY_FCITX5_API
-        int selectedIndex =
-            candidateList->currentPage() * candidateList->pageSize() +
-            candidateList->cursorIndex();
+        int page = candidateList->currentPage();
+        int pageSize = candidateList->size();
+        int selectedIndex = page * pageSize + candidateList->cursorIndex();
+        std::string phrase =
+            candidateList->candidate(selectedIndex)->text().toString();
 #else
         int selectedIndex = candidateList->globalCursorIndex();
-#endif
         std::string phrase =
             candidateList->candidate(selectedIndex).text().toString();
+#endif
         std::unique_ptr<InputStates::ChoosingCandidate> copy =
             std::make_unique<InputStates::ChoosingCandidate>(
                 choosingCandidate->composingBuffer,

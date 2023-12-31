@@ -8,6 +8,9 @@ find_package(Fcitx5Core REQUIRED)
 find_package(Fcitx5Utils REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
+
+# McBopomofo depends on cJSON. However, not every Linux distro has a newer version contains
+# cmake config files, and we just skip the check.
 #find_package(cJSON REQUIRED)
 
 include(FeatureSummary)
