@@ -7,7 +7,7 @@ xgettext \
 	-k_ \
 	-kN_ \
 	-o po/fcitx5-mcbopomofo.pot \
-	src/McBopomofo.cpp src/McBopomofo.h
+	src/McBopomofo.cpp src/McBopomofo.h src/DictionaryService.cpp
 
 xgettext \
 	--package-name=fcitx5-mcbopomofo \

@@ -97,9 +97,7 @@ KeyHandler::KeyHandler(
       localizedStrings_(std::move(localizedStrings)),
       userOverrideModel_(kUserOverrideModelCapacity, kObservedOverrideHalfLife),
       reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {
-  FCITX_MCBOPOMOFO_INFO() << "start dictionaryServices_";
   dictionaryServices_ = std::make_unique<DictionaryServices>();
-  FCITX_MCBOPOMOFO_INFO() << dictionaryServices_;
   dictionaryServices_->load();
 }
 

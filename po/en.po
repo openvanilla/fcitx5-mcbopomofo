@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-30 10:34+0800\n"
+"POT-Creation-Date: 2023-12-31 14:57+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,80 +17,80 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/McBopomofo.cpp:129
+#: src/McBopomofo.cpp:157
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
-#: src/McBopomofo.cpp:134
+#: src/McBopomofo.cpp:162
 msgid "{0} syllables required"
 msgstr ""
 
-#: src/McBopomofo.cpp:138
+#: src/McBopomofo.cpp:166
 msgid "{0} syllables maximum"
 msgstr ""
 
-#: src/McBopomofo.cpp:142
+#: src/McBopomofo.cpp:170
 msgid "phrase already exists"
 msgstr ""
 
-#: src/McBopomofo.cpp:146
+#: src/McBopomofo.cpp:174
 msgid "press Enter to add the phrase"
 msgstr ""
 
-#: src/McBopomofo.cpp:152
+#: src/McBopomofo.cpp:180
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
-#: src/McBopomofo.cpp:164
+#: src/McBopomofo.cpp:192
 msgid "# Custom Phrases or Characters."
 msgstr ""
 
-#: src/McBopomofo.cpp:166
+#: src/McBopomofo.cpp:194
 msgid ""
 "# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動加詞 for "
 "usage."
 msgstr ""
 
-#: src/McBopomofo.cpp:168
+#: src/McBopomofo.cpp:196
 msgid ""
 "# Add your phrases and their respective Bopomofo reading below. Use hyphen "
 "(\"-\")"
 msgstr ""
 
-#: src/McBopomofo.cpp:169
+#: src/McBopomofo.cpp:197
 msgid "# to connect the Bopomofo syllables."
 msgstr ""
 
-#: src/McBopomofo.cpp:173 src/McBopomofo.cpp:192
+#: src/McBopomofo.cpp:201 src/McBopomofo.cpp:220
 msgid "# Any line that starts with \"#\" is treated as comment."
 msgstr ""
 
-#: src/McBopomofo.cpp:182
+#: src/McBopomofo.cpp:210
 msgid "# Custom Excluded Phrases or Characters."
 msgstr ""
 
-#: src/McBopomofo.cpp:184
+#: src/McBopomofo.cpp:212
 msgid ""
 "# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動刪詞 for "
 "usage."
 msgstr ""
 
-#: src/McBopomofo.cpp:186
+#: src/McBopomofo.cpp:214
 msgid ""
 "# For example, the line below will prevent the phrase \"家祠\" from showing "
 "up anywhere:"
 msgstr ""
 
-#: src/McBopomofo.cpp:190
+#: src/McBopomofo.cpp:218
 msgid ""
 "# Note that you need to use a hyphen (\"-\") between Bopomofo syllables."
 msgstr ""
 
-#: src/McBopomofo.cpp:231
+#: src/McBopomofo.cpp:259
 msgid "Edit User Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:241
+#: src/McBopomofo.cpp:269
 msgid "Edit Excluded Phrases"
 msgstr ""
 
@@ -172,15 +172,15 @@ msgstr "Input HTML Ruby Text"
 
 #: src/McBopomofo.h:98
 msgid "Bopomofo Keyboard Layout"
-msgstr ""
+msgstr "Bopomofo Keyboard Layout"
 
 #: src/McBopomofo.h:104
 msgid "Candidate List Layout"
-msgstr ""
+msgstr "Candidate List Layout"
 
 #: src/McBopomofo.h:109
 msgid "Selection Keys"
-msgstr ""
+msgstr "Selection Keys"
 
 #: src/McBopomofo.h:114
 msgid "Show Candidate Phrase"
@@ -188,30 +188,34 @@ msgstr "Show Candidates"
 
 #: src/McBopomofo.h:119
 msgid "Move cursor after selection"
-msgstr ""
+msgstr "Move cursor after selection"
 
 #: src/McBopomofo.h:125
 msgid "ESC key clears entire composing buffer"
-msgstr ""
+msgstr "ESC key clears entire composing buffer"
 
 #: src/McBopomofo.h:129
 msgid "Shift + Letter Keys"
-msgstr ""
+msgstr "Shift + Letter Keys"
 
 #: src/McBopomofo.h:135
 msgid "Control + Enter Key"
-msgstr ""
+msgstr "Control + Enter Key"
 
 #: src/McBopomofo.h:140
 msgid "Open User Phrase Files With"
-msgstr ""
+msgstr "Open User Phrase Files With"
 
 #: src/McBopomofo.h:145
 msgid "Add Phrase Hook Path"
-msgstr ""
+msgstr "Add Phrase Hook Path"
 
 #: src/McBopomofo.h:150
 msgid "Run the hook script after adding a phrase"
+msgstr "Run the hook script after adding a phrase"
+
+#: src/DictionaryService.cpp:51
+msgid "Look up \"{0}\" in {1}"
 msgstr ""
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
@@ -225,13 +229,16 @@ msgstr "Plain Bopomofo"
 
 #: src/mcbopomofo-addon.conf.in.in:4
 msgid "McBopomofo Input Method For Fcitx"
-msgstr ""
+msgstr "McBopomofo Input Method For Fcitx"
 
 #: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:7
 #, fuzzy
 msgid "McBopomofo for Fcitx 5"
-msgstr "Plain Bopomofo"
+msgstr "McBopomofo for Fcitx 5"
 
 #: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:8
 msgid "A Bopomofo input method that picks phrases intelligently"
-msgstr ""
+msgstr "A Bopomofo input method that picks phrases intelligently"
+
+#~ msgid "Open URL With"
+#~ msgstr "Open URL With"

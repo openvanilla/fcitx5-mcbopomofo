@@ -13,7 +13,7 @@
 
 #include "Log.h"
 
-constexpr char kDataPath[] = "data/dictionary_service.json";
+constexpr char kDataPath[] = "data/mcbopomofo-dictionary-service.json";
 
 std::string urlEncode(const std::string& str) {
   std::ostringstream encodedStream;
@@ -38,8 +38,6 @@ class HttpBasedDictionaryService : public McBopomofo::DictionaryService {
   ~HttpBasedDictionaryService() override = default;
   std::string name() const override { return name_; };
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
   void lookup(std::string phrase, McBopomofo::InputState* /*unused*/,
               size_t /*unused*/,
               const McBopomofo::StateCallback& /*unused*/) override {
@@ -48,7 +46,6 @@ class HttpBasedDictionaryService : public McBopomofo::DictionaryService {
     url.replace(url.find(encoded), url.length(), urlEncode(phrase));
     fcitx::startProcess({"xdg-open", url});
   }
-#pragma clang diagnostic pop
 
   std::string textForMenu(std::string selectedString) const override {
     return fmt::format(_("Look up \"{0}\" in {1}"), selectedString, name_);
@@ -86,19 +83,16 @@ std::vector<std::string> McBopomofo::DictionaryServices::menuForPhrase(
 }
 
 void McBopomofo::DictionaryServices::load() {
-  FCITX_MCBOPOMOFO_INFO() << "load is called";
-
   // Load json and add to services_
   std::string dictionaryServicesPath = fcitx::StandardPath::global().locate(
       fcitx::StandardPath::Type::PkgData, kDataPath);
   FILE* file = fopen(dictionaryServicesPath.c_str(), "r");
   if (!file) {
-    FCITX_MCBOPOMOFO_INFO() << "no file..." << dictionaryServicesPath;
+    FCITX_MCBOPOMOFO_INFO()
+        << "No dictionary service file" << dictionaryServicesPath;
     fclose(file);
     return;
   }
-  FCITX_MCBOPOMOFO_INFO() << "loaded";
-
   fseek(file, 0, SEEK_END);
   long file_size = ftell(file);
   fseek(file, 0, SEEK_SET);
@@ -116,7 +110,6 @@ void McBopomofo::DictionaryServices::load() {
   if (!servicesArray || !cJSON_IsArray(servicesArray)) {
     return;
   }
-  std::cout << servicesArray << std::endl;
 
   int arraySize = cJSON_GetArraySize(servicesArray);
   for (int i = 0; i < arraySize; ++i) {
@@ -139,9 +132,8 @@ void McBopomofo::DictionaryServices::load() {
     }
   }
 
-  auto menu = menuForPhrase("Test");
-  for (const auto& item : menu) {
-    std::cout << item << std::endl;
+  for (const auto& item : services_) {
+    std::cout << item->name() << std::endl;
   }
 }
 
