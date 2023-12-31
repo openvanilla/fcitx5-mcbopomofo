@@ -8,7 +8,7 @@ find_package(Fcitx5Core REQUIRED)
 find_package(Fcitx5Utils REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
-find_package(cJSON REQUIRED)
+#find_package(cJSON REQUIRED)
 
 include(FeatureSummary)
 include(GNUInstallDirs)

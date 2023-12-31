@@ -6,7 +6,8 @@ find_package(Fcitx5Utils REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
 find_package(ICU COMPONENTS uc i18n REQUIRED)
-find_package(cJSON REQUIRED)
+
+#find_package(cJSON REQUIRED)
 
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.23.0")
     find_package(GTest)
