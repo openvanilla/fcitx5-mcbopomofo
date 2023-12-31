@@ -102,6 +102,11 @@ struct ChoosingCandidate : NotEmpty {
     const std::string reading;
     const std::string value;
   };
+
+  std::unique_ptr<ChoosingCandidate> copy() {
+    return std::make_unique<InputStates::ChoosingCandidate>(
+        composingBuffer, cursorIndex, candidates);
+  }
 };
 
 inline bool operator==(const ChoosingCandidate::Candidate& a,
@@ -137,12 +142,18 @@ struct Marking : NotEmpty {
   const std::string tail;
   const std::string reading;
   const bool acceptable;
+
+  std::unique_ptr<InputStates::Marking> copy() {
+    return std::make_unique<InputStates::Marking>(
+        composingBuffer, cursorIndex, tooltip, markStartGridCursorIndex, head,
+        markedText, tail, reading, acceptable);
+  }
 };
 
 struct SelectingDictionary : NotEmpty {
   SelectingDictionary(std::unique_ptr<NotEmpty> previousState,
-                             std::string selectedPhrase, size_t selectedIndex,
-                             std::vector<std::string> menu)
+                      std::string selectedPhrase, size_t selectedIndex,
+                      std::vector<std::string> menu)
       : NotEmpty(previousState->composingBuffer, previousState->cursorIndex,
                  previousState->tooltip),
         previousState(std::move(previousState)),
@@ -154,6 +165,35 @@ struct SelectingDictionary : NotEmpty {
   std::string selectedPhrase;
   size_t selectedCandidateIndex;
   std::vector<std::string> menu;
+
+  std::unique_ptr<SelectingDictionary> copy() {
+    ChoosingCandidate* choosingCandidate =
+        dynamic_cast<ChoosingCandidate*>(previousState.get());
+    Marking* marking = dynamic_cast<Marking*>(previousState.get());
+    std::unique_ptr<NotEmpty> copy;
+
+    if (choosingCandidate != nullptr) {
+      copy = choosingCandidate->copy();
+    } else if (marking != nullptr) {
+      copy = marking->copy();
+    }
+
+    return std::make_unique<SelectingDictionary>(
+        std::move(copy), selectedPhrase, selectedCandidateIndex, menu);
+  }
+};
+
+struct ShowingCharInfo : NotEmpty {
+  ShowingCharInfo(std::unique_ptr<SelectingDictionary> previousState,
+                  std::string selectedPhrase)
+      : NotEmpty(previousState->previousState->composingBuffer,
+                 previousState->previousState->cursorIndex,
+                 previousState->previousState->tooltip),
+        previousState(std::move(previousState)),
+        selectedPhrase(std::move(selectedPhrase)) {}
+
+  std::unique_ptr<SelectingDictionary> previousState;
+  std::string selectedPhrase;
 };
 
 }  // namespace InputStates

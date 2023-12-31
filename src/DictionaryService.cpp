@@ -31,6 +31,31 @@ std::string urlEncode(const std::string& str) {
   return encodedStream.str();
 }
 
+class CharacterInfoService : public McBopomofo::DictionaryService {
+ public:
+  std::string name() const override {
+    return fmt::format(_("Character Information"));
+  }
+
+  void lookup(std::string phrase, McBopomofo::InputState* state,
+              size_t /*Unused*/,
+              const McBopomofo::StateCallback& stateCallback) override {
+    auto selecting =
+        dynamic_cast<McBopomofo::InputStates::SelectingDictionary*>(state);
+    if (selecting != nullptr) {
+      auto copy = selecting->copy();
+      auto newState =
+          std::make_unique<McBopomofo::InputStates::ShowingCharInfo>(
+              std::move(copy), phrase);
+      stateCallback(std::move(newState));
+    }
+  }
+
+  std::string textForMenu(std::string /*Unused*/) const override {
+    return fmt::format(_("Character Information"));
+  }
+};
+
 class HttpBasedDictionaryService : public McBopomofo::DictionaryService {
  public:
   HttpBasedDictionaryService(std::string name, std::string urlTemplate)
@@ -83,6 +108,8 @@ std::vector<std::string> McBopomofo::DictionaryServices::menuForPhrase(
 }
 
 void McBopomofo::DictionaryServices::load() {
+  services_.emplace_back(std::make_unique<CharacterInfoService>());
+
   // Load json and add to services_
   std::string dictionaryServicesPath = fcitx::StandardPath::global().locate(
       fcitx::StandardPath::Type::PkgData, kDataPath);
@@ -90,7 +117,7 @@ void McBopomofo::DictionaryServices::load() {
   if (!file) {
     FCITX_MCBOPOMOFO_INFO()
         << "No dictionary service file" << dictionaryServicesPath;
-//    fclose(file);
+    //    fclose(file);
     return;
   }
   fseek(file, 0, SEEK_END);
@@ -131,10 +158,6 @@ void McBopomofo::DictionaryServices::load() {
       services_.push_back(std::move(service));
     }
   }
-
-//  for (const auto& item : services_) {
-//    std::cout << item->name() << std::endl;
-//  }
 }
 
 McBopomofo::DictionaryServices::~DictionaryServices() = default;

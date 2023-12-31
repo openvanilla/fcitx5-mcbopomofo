@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-31 14:57+0800\n"
+"POT-Creation-Date: 2023-12-31 21:14+0800\n"
 "PO-Revision-Date: 2022-12-28 21:39+0800\n"
 "Last-Translator: Chaoting Liu <brli@chakralinux.org>\n"
 "Language-Team: none\n"
@@ -18,35 +18,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.2.2\n"
 
-#: src/McBopomofo.cpp:157
+#: src/McBopomofo.cpp:164
 msgid "Cursor is between syllables {0} and {1}"
 msgstr "游標在「{0}」與「{1}」之間"
 
-#: src/McBopomofo.cpp:162
+#: src/McBopomofo.cpp:169
 msgid "{0} syllables required"
 msgstr "至少需要選取{0}個字"
 
-#: src/McBopomofo.cpp:166
+#: src/McBopomofo.cpp:173
 msgid "{0} syllables maximum"
 msgstr "最多只能選取{0}個字"
 
-#: src/McBopomofo.cpp:170
+#: src/McBopomofo.cpp:177
 msgid "phrase already exists"
 msgstr "詞庫已經有這個詞"
 
-#: src/McBopomofo.cpp:174
+#: src/McBopomofo.cpp:181
 msgid "press Enter to add the phrase"
 msgstr "請按 Enter 加入自訂詞庫"
 
-#: src/McBopomofo.cpp:180
+#: src/McBopomofo.cpp:187
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr "選取了「{0}」，注音「{1}」：{2}"
 
-#: src/McBopomofo.cpp:192
+#: src/McBopomofo.cpp:199
 msgid "# Custom Phrases or Characters."
 msgstr "# 手動加詞資料檔"
 
-#: src/McBopomofo.cpp:194
+#: src/McBopomofo.cpp:201
 msgid ""
 "# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動加詞 for "
 "usage."
@@ -54,26 +54,26 @@ msgstr ""
 "# 使用方式請參考 https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動"
 "加詞"
 
-#: src/McBopomofo.cpp:196
+#: src/McBopomofo.cpp:203
 msgid ""
 "# Add your phrases and their respective Bopomofo reading below. Use hyphen "
 "(\"-\")"
 msgstr ""
 "# 請在下方加入用戶自訂字詞。每個詞後面要有字詞的讀音。注音音節之間要用減"
 
-#: src/McBopomofo.cpp:197
+#: src/McBopomofo.cpp:204
 msgid "# to connect the Bopomofo syllables."
 msgstr "# 號 (\"-\") 分隔。例如，以下範例加入「小麥注音」一詞："
 
-#: src/McBopomofo.cpp:201 src/McBopomofo.cpp:220
+#: src/McBopomofo.cpp:208 src/McBopomofo.cpp:227
 msgid "# Any line that starts with \"#\" is treated as comment."
 msgstr "# 如果任何一行以 \"#\" 開頭，該行將被當作註解忽略。"
 
-#: src/McBopomofo.cpp:210
+#: src/McBopomofo.cpp:217
 msgid "# Custom Excluded Phrases or Characters."
 msgstr "# 手動刪詞資料檔"
 
-#: src/McBopomofo.cpp:212
+#: src/McBopomofo.cpp:219
 msgid ""
 "# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動刪詞 for "
 "usage."
@@ -81,7 +81,7 @@ msgstr ""
 "# 使用方式請參考 https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動"
 "刪詞"
 
-#: src/McBopomofo.cpp:214
+#: src/McBopomofo.cpp:221
 msgid ""
 "# For example, the line below will prevent the phrase \"家祠\" from showing "
 "up anywhere:"
@@ -89,18 +89,26 @@ msgstr ""
 "# 如果將下面這行範例加入資料檔中，輸入 \"ㄐㄧㄚ ㄘˊ\" 時不會再看到「家祠」一"
 "詞："
 
-#: src/McBopomofo.cpp:218
+#: src/McBopomofo.cpp:225
 msgid ""
 "# Note that you need to use a hyphen (\"-\") between Bopomofo syllables."
 msgstr "# 請注意，注音音節之間要用減號 (\"-\") 分隔。"
 
-#: src/McBopomofo.cpp:259
+#: src/McBopomofo.cpp:266
 msgid "Edit User Phrases"
 msgstr "編輯使用者詞彙"
 
-#: src/McBopomofo.cpp:269
+#: src/McBopomofo.cpp:276
 msgid "Edit Excluded Phrases"
 msgstr "編輯排除的詞彙"
+
+#: src/McBopomofo.cpp:876
+msgid "UTF8 String Length: {0}"
+msgstr "UTF8 字串長度 {0}"
+
+#: src/McBopomofo.cpp:879
+msgid "Code Point Count: {0}"
+msgstr "總字數 {0}"
 
 #: src/McBopomofo.h:59
 msgid "standard"
@@ -222,7 +230,11 @@ msgstr "加詞腳本路徑"
 msgid "Run the hook script after adding a phrase"
 msgstr "在加入新詞之後執行加詞腳本"
 
-#: src/DictionaryService.cpp:51
+#: src/DictionaryService.cpp:37 src/DictionaryService.cpp:55
+msgid "Character Information"
+msgstr "字元資訊"
+
+#: src/DictionaryService.cpp:76
 msgid "Look up \"{0}\" in {1}"
 msgstr "在{1}尋找「{0}」"
 
