@@ -90,7 +90,7 @@ void McBopomofo::DictionaryServices::load() {
   if (!file) {
     FCITX_MCBOPOMOFO_INFO()
         << "No dictionary service file" << dictionaryServicesPath;
-    fclose(file);
+//    fclose(file);
     return;
   }
   fseek(file, 0, SEEK_END);
