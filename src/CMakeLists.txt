@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.6)
 project(mcbopomofo VERSION 2.5.2)
 
+find_package(PkgConfig REQUIRED)
 find_package(Fcitx5Core REQUIRED)
 find_package(Fcitx5Utils REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
 find_package(ICU COMPONENTS uc i18n REQUIRED)
 
-# McBopomofo depends on cJSON. However, not every Linux distro has a newer version contains
-# cmake config files, and we just skip the check.
-#find_package(cJSON REQUIRED)
+pkg_check_modules(JSONC REQUIRED IMPORTED_TARGET "json-c")
+include_directories(${JSONC_INCLUDE_DIRS})
+link_directories(${JSONC_LIBRARY_DIRS})
 
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.23.0")
     find_package(GTest)
@@ -34,8 +35,8 @@ include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cma
 
 add_library(McBopomofoLib ${MCBOPOMOFO_LIB_SOURCES})
 target_compile_options(McBopomofoLib PRIVATE -Wno-unknown-pragmas)
-target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils ICU::uc ICU::i18n cjson gramambular2_lib McBopomofoLMLib MandarinLib)
-target_include_directories(McBopomofoLib PRIVATE Fcitx5::Utils cjson)
+target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils ICU::uc ICU::i18n ${JSONC_LIBRARIES} gramambular2_lib McBopomofoLMLib MandarinLib)
+target_include_directories(McBopomofoLib PRIVATE Fcitx5::Utils)
 target_compile_definitions(McBopomofoLib PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 
 if (ENABLE_CLANG_TIDY)

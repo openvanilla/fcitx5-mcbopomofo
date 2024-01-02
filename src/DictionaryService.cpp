@@ -1,10 +1,10 @@
 #include "DictionaryService.h"
 
-#include <cjson/cJSON.h>
 #include <fcitx-utils/i18n.h>
 #include <fcitx-utils/misc.h>
 #include <fcitx-utils/standardpath.h>
 #include <fmt/format.h>
+#include <json-c/json.h>
 
 #include <iomanip>
 #include <ostream>
@@ -117,7 +117,6 @@ void McBopomofo::DictionaryServices::load() {
   if (!file) {
     FCITX_MCBOPOMOFO_INFO()
         << "No dictionary service file" << dictionaryServicesPath;
-    //    fclose(file);
     return;
   }
   fseek(file, 0, SEEK_END);
@@ -127,37 +126,29 @@ void McBopomofo::DictionaryServices::load() {
   fread(json_data.get(), 1, file_size, file);
   fclose(file);
   json_data[file_size] = '\0';
-  std::unique_ptr<cJSON, decltype(&cJSON_Delete)> root(
-      cJSON_Parse(json_data.get()), &cJSON_Delete);
-  if (!root) {
+  struct json_object* json_obj = json_tokener_parse(json_data.get());
+  if (json_obj == nullptr) {
     return;
   }
-
-  cJSON* servicesArray = cJSON_GetObjectItem(root.get(), "services");
-  if (!servicesArray || !cJSON_IsArray(servicesArray)) {
-    return;
-  }
-
-  int arraySize = cJSON_GetArraySize(servicesArray);
-  for (int i = 0; i < arraySize; ++i) {
-    cJSON* serviceObject = cJSON_GetArrayItem(servicesArray, i);
-    if (!serviceObject || !cJSON_IsObject(serviceObject)) {
-      continue;
-    }
-
-    cJSON* nameObject = cJSON_GetObjectItem(serviceObject, "name");
-    cJSON* urlTemplateObject =
-        cJSON_GetObjectItem(serviceObject, "url_template");
-
-    if (nameObject && urlTemplateObject && cJSON_IsString(nameObject) &&
-        cJSON_IsString(urlTemplateObject)) {
-      std::unique_ptr<DictionaryService> service =
-          std::make_unique<HttpBasedDictionaryService>(
-              std::string(cJSON_GetStringValue(nameObject)),
-              std::string(cJSON_GetStringValue(urlTemplateObject)));
-      services_.push_back(std::move(service));
+  struct json_object* servicesArray;
+  if (json_object_object_get_ex(json_obj, "services", &servicesArray)) {
+    array_list* list = json_object_get_array(servicesArray);
+    for (size_t i = 0; i < array_list_length(list); i++) {
+      auto* element = (struct json_object*)array_list_get_idx(list, i);
+      struct json_object* name;
+      struct json_object* url_template;
+      if (json_object_object_get_ex(element, "name", &name) &&
+          json_object_object_get_ex(element, "url_template", &url_template)) {
+        std::string name_str = std::string(json_object_get_string(name));
+        std::string url_template_str =
+            std::string(json_object_get_string(url_template));
+        auto service = std::make_unique<HttpBasedDictionaryService>(
+            name_str, url_template_str);
+        services_.push_back(std::move(service));
+      }
     }
   }
+  json_object_put(json_obj);
 }
 
 McBopomofo::DictionaryServices::~DictionaryServices() = default;

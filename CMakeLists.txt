@@ -4,14 +4,13 @@ project(fcitx5-mcbopomofo VERSION 2.5.2)
 find_package(ECM REQUIRED 1.0.0)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
+find_package(PkgConfig REQUIRED)
 find_package(Fcitx5Core REQUIRED)
 find_package(Fcitx5Utils REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
 
-# McBopomofo depends on cJSON. However, not every Linux distro has a newer version contains
-# cmake config files, and we just skip the check.
-#find_package(cJSON REQUIRED)
+pkg_check_modules(JSONC REQUIRED IMPORTED_TARGET "json-c")
 
 include(FeatureSummary)
 include(GNUInstallDirs)
