@@ -13,6 +13,7 @@ jobs:
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
+          apt install -y pkg-config
           apt install -y clang
           apt install -y cmake extra-cmake-modules gettext libfmt-dev
           apt install -y fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev
@@ -43,6 +44,7 @@ jobs:
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
+          apt install -y pkg-config
           apt install -y clang
           apt install -y cmake extra-cmake-modules gettext libfmt-dev
           apt install -y fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev
