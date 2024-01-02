@@ -124,6 +124,39 @@ class McBopomofoCandidateWord : public fcitx::CandidateWord {
   std::function<void(const std::string&)> callback_;
 };
 
+class McBopomofoDictionaryServiceWord : public fcitx::CandidateWord {
+ public:
+  McBopomofoDictionaryServiceWord(
+      fcitx::Text displayText, size_t index,
+      InputStates::SelectingDictionary* currentState,
+      std::shared_ptr<KeyHandler> keyHandler,
+      KeyHandler::StateCallback callback)
+      : fcitx::CandidateWord(std::move(displayText)),
+        index_(index),
+        currentState_(currentState),
+        keyHandler_(std::move(keyHandler)),
+        stateCallback_(std::move(callback)) {}
+
+  void select(fcitx::InputContext* /*unused*/) const override {
+    keyHandler_->dictionaryServiceSelected(
+        currentState_->selectedPhrase, index_, currentState_, stateCallback_);
+  }
+
+ private:
+  size_t index_;
+  InputStates::SelectingDictionary* currentState_;
+  std::shared_ptr<KeyHandler> keyHandler_;
+  KeyHandler::StateCallback stateCallback_;
+  std::function<void(const std::string&)> callback_;
+};
+
+class McBopomofoTextOnlyCandidateWord : public fcitx::CandidateWord {
+ public:
+  McBopomofoTextOnlyCandidateWord(fcitx::Text displayText)
+      : fcitx::CandidateWord(std::move(displayText)) {}
+  void select(fcitx::InputContext* /*unused*/) const override {}
+};
+
 class KeyHandlerLocalizedString : public KeyHandler::LocalizedStrings {
  public:
   std::string cursorIsBetweenSyllables(
@@ -378,7 +411,10 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
     return;
   }
 
-  if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr) {
+  if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr ||
+      dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
+          nullptr ||
+      dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr) {
     // Absorb all keys when the candidate panel is on.
     keyEvent.filterAndAccept();
 
@@ -395,7 +431,6 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       enterNewState(context, std::make_unique<InputStates::Empty>());
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       context->updatePreedit();
-
       return;
     }
 
@@ -408,7 +443,10 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
           // TODO(unassigned): beep?
         });
     if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) !=
-        nullptr) {
+            nullptr ||
+        dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
+            nullptr ||
+        dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr) {
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       context->updatePreedit();
     }
@@ -447,6 +485,48 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     return;
   }
 
+  bool keyIsCancel = false;
+
+  // When pressing "?" in the candidate list, tries to look up the candidate in
+  // dictionaries.
+  if (key.check(FcitxKey_question)) {
+    auto choosingCandidate =
+        dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
+    auto selectingDictionary =
+        dynamic_cast<InputStates::SelectingDictionary*>(state_.get());
+    auto showingCharInfo =
+        dynamic_cast<InputStates::ShowingCharInfo*>(state_.get());
+
+    if (choosingCandidate != nullptr) {
+      // Enter selecting dictionary service state.
+      if (keyHandler_->hasDictionaryServices()) {
+#ifdef USE_LEGACY_FCITX5_API
+        int page = candidateList->currentPage();
+        int pageSize = candidateList->size();
+        int selectedIndex = page * pageSize + candidateList->cursorIndex();
+        std::string phrase =
+            candidateList->candidate(selectedIndex)->text().toString();
+#else
+        int selectedIndex = candidateList->globalCursorIndex();
+        std::string phrase =
+            candidateList->candidate(selectedIndex).text().toString();
+#endif
+        std::unique_ptr<InputStates::ChoosingCandidate> copy =
+            choosingCandidate->copy();
+        auto state = keyHandler_->buildSelectingDictionaryState(
+            std::move(copy), phrase, selectedIndex);
+        enterNewState(context, std::move(state));
+        return;
+      }
+    } else if (selectingDictionary != nullptr) {
+      // Leave selecting dictionary service state.
+      keyIsCancel = true;
+    } else if (showingCharInfo != nullptr) {
+      // Leave selecting dictionary service state.
+      keyIsCancel = true;
+    }
+  }
+
   if (key.check(FcitxKey_Return)) {
     idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
@@ -459,7 +539,42 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     return;
   }
 
-  if (key.check(FcitxKey_Escape) || key.check(FcitxKey_BackSpace)) {
+  if (keyIsCancel || key.check(FcitxKey_Escape) ||
+      key.check(FcitxKey_BackSpace)) {
+    auto* showingCharInfo =
+        dynamic_cast<InputStates::ShowingCharInfo*>(state_.get());
+    if (showingCharInfo != nullptr) {
+      auto previous = showingCharInfo->previousState.get();
+      stateCallback(previous->copy());
+      return;
+    }
+
+    auto* selecting =
+        dynamic_cast<InputStates::SelectingDictionary*>(state_.get());
+    if (selecting != nullptr) {
+      auto previous = selecting->previousState.get();
+      auto* choosing = dynamic_cast<InputStates::ChoosingCandidate*>(previous);
+      if (choosing != nullptr) {
+        stateCallback(choosing->copy());
+
+#ifdef USE_LEGACY_FCITX5_API
+        auto maybeCandidateList = dynamic_cast<fcitx::CommonCandidateList*>(
+            context->inputPanel().candidateList());
+#else
+        auto* maybeCandidateList = dynamic_cast<fcitx::CommonCandidateList*>(
+            context->inputPanel().candidateList().get());
+#endif
+        size_t index = selecting->selectedCandidateIndex;
+        maybeCandidateList->setGlobalCursorIndex((int)index);
+        return;
+      }
+      auto* marking = dynamic_cast<InputStates::Marking*>(previous);
+      if (marking != nullptr) {
+        stateCallback(marking->copy());
+      }
+      return;
+    }
+
     keyHandler_->candidatePanelCancelled(
         [this, context](std::unique_ptr<InputState> next) {
           enterNewState(context, std::move(next));
@@ -578,6 +693,7 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
 
   if (auto* empty = dynamic_cast<InputStates::Empty*>(currentPtr)) {
     handleEmptyState(context, prevPtr, empty);
+
   } else if (auto* emptyIgnoringPrevious =
                  dynamic_cast<InputStates::EmptyIgnoringPrevious*>(
                      currentPtr)) {
@@ -595,6 +711,12 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
   } else if (auto* candidates =
                  dynamic_cast<InputStates::ChoosingCandidate*>(currentPtr)) {
     handleCandidatesState(context, prevPtr, candidates);
+  } else if (auto* selecting =
+                 dynamic_cast<InputStates::SelectingDictionary*>(currentPtr)) {
+    handleCandidatesState(context, prevPtr, selecting);
+  } else if (auto* showingCharInfo =
+                 dynamic_cast<InputStates::ShowingCharInfo*>(currentPtr)) {
+    handleCandidatesState(context, prevPtr, showingCharInfo);
   } else if (auto* marking = dynamic_cast<InputStates::Marking*>(currentPtr)) {
     handleMarkingState(context, prevPtr, marking);
   }
@@ -638,9 +760,9 @@ void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
   updatePreedit(context, current);
 }
 
-void McBopomofoEngine::handleCandidatesState(
-    fcitx::InputContext* context, InputState* /*unused*/,
-    InputStates::ChoosingCandidate* current) {
+void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
+                                             InputState* /*unused*/,
+                                             InputStates::NotEmpty* current) {
   std::unique_ptr<fcitx::CommonCandidateList> candidateList =
       std::make_unique<fcitx::CommonCandidateList>();
 
@@ -685,45 +807,93 @@ void McBopomofoEngine::handleCandidatesState(
   fcitx::CandidateLayoutHint layoutHint = getCandidateLayoutHint();
   candidateList->setLayoutHint(layoutHint);
 
-  // Construct the candidate list with special care for candidates that have
-  // the same values. The display text of such a candidate will be in the form
-  // of "value (reading)" to help user disambiguate those candidates.
-
-  std::unordered_map<std::string, size_t> valueCountMap;
-
   KeyHandler::StateCallback callback =
       [this, context](std::unique_ptr<InputState> next) {
         enterNewState(context, std::move(next));
       };
 
-  for (const auto& c : current->candidates) {
-    ++valueCountMap[c.value];
-  }
+  auto choosing = dynamic_cast<InputStates::ChoosingCandidate*>(current);
+  auto selectingDictionary =
+      dynamic_cast<InputStates::SelectingDictionary*>(current);
+  auto showingCharInfo = dynamic_cast<InputStates::ShowingCharInfo*>(current);
 
-  for (const auto& c : current->candidates) {
-    std::string displayText = c.value;
+  if (choosing != nullptr) {
+    // Construct the candidate list with special care for candidates that have
+    // the same values. The display text of such a candidate will be in the form
+    // of "value (reading)" to help user disambiguate those candidates.
 
-    if (valueCountMap[displayText] > 1) {
-      displayText += " (";
-      std::string reading = c.reading;
-      std::replace(reading.begin(), reading.end(),
-                   KeyHandler::kJoinSeparator[0], ' ');
-      displayText += reading;
-      displayText += ")";
+    std::unordered_map<std::string, size_t> valueCountMap;
+
+    for (const auto& c : choosing->candidates) {
+      ++valueCountMap[c.value];
     }
 
+    for (const auto& c : choosing->candidates) {
+      std::string displayText = c.value;
+
+      if (valueCountMap[displayText] > 1) {
+        displayText += " (";
+        std::string reading = c.reading;
+        std::replace(reading.begin(), reading.end(),
+                     KeyHandler::kJoinSeparator[0], ' ');
+        displayText += reading;
+        displayText += ")";
+      }
+
 #ifdef USE_LEGACY_FCITX5_API
-    fcitx::CandidateWord* candidate = new McBopomofoCandidateWord(
-        fcitx::Text(displayText), c, keyHandler_, callback);
-    // ownership of candidate is transferred to candidateList.
-    candidateList->append(candidate);
+      fcitx::CandidateWord* candidate = new McBopomofoCandidateWord(
+          fcitx::Text(displayText), c, keyHandler_, callback);
+      // ownership of candidate is transferred to candidateList.
+      candidateList->append(candidate);
 #else
-    std::unique_ptr<fcitx::CandidateWord> candidate =
-        std::make_unique<McBopomofoCandidateWord>(fcitx::Text(displayText), c,
-                                                  keyHandler_, callback);
-    candidateList->append(std::move(candidate));
+      std::unique_ptr<fcitx::CandidateWord> candidate =
+          std::make_unique<McBopomofoCandidateWord>(fcitx::Text(displayText), c,
+                                                    keyHandler_, callback);
+      candidateList->append(std::move(candidate));
 #endif
+    }
+  } else if (selectingDictionary != nullptr) {
+    size_t index = 0;
+    for (const auto& menuItem : selectingDictionary->menu) {
+      std::string displayText = menuItem;
+
+#ifdef USE_LEGACY_FCITX5_API
+      fcitx::CandidateWord* candidate = new McBopomofoDictionaryServiceWord(
+          fcitx::Text(displayText), index, selectingDictionary, keyHandler_,
+          callback);
+      candidateList->append(candidate);
+#else
+      std::unique_ptr<fcitx::CandidateWord> candidate =
+          std::make_unique<McBopomofoDictionaryServiceWord>(
+              fcitx::Text(displayText), index, selectingDictionary, keyHandler_,
+              callback);
+      candidateList->append(std::move(candidate));
+#endif
+      index++;
+    }
+  } else if (showingCharInfo != nullptr) {
+    std::vector<std::string> menu;
+    menu.emplace_back(fmt::format(_("UTF8 String Length: {0}"),
+                                  showingCharInfo->selectedPhrase.length()));
+    size_t count = CodePointCount(showingCharInfo->selectedPhrase);
+    menu.emplace_back(fmt::format(_("Code Point Count: {0}"), count));
+
+    for (const auto& menuItem : menu) {
+      std::string displayText = menuItem;
+
+#ifdef USE_LEGACY_FCITX5_API
+      fcitx::CandidateWord* candidate =
+          new McBopomofoTextOnlyCandidateWord(fcitx::Text(displayText));
+      candidateList->append(candidate);
+#else
+      std::unique_ptr<fcitx::CandidateWord> candidate =
+          std::make_unique<McBopomofoTextOnlyCandidateWord>(
+              fcitx::Text(displayText));
+      candidateList->append(std::move(candidate));
+#endif
+    }
   }
+
   candidateList->toCursorMovable()->nextCandidate();
   context->inputPanel().reset();
   context->inputPanel().setCandidateList(std::move(candidateList));
@@ -742,6 +912,14 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
 
 fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
   fcitx::CandidateLayoutHint layoutHint = fcitx::CandidateLayoutHint::NotSet;
+
+  if (dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
+      nullptr) {
+    return fcitx::CandidateLayoutHint::Vertical;
+  }
+  if (dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr) {
+    return fcitx::CandidateLayoutHint::Vertical;
+  }
 
   auto choosingCandidate =
       dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());

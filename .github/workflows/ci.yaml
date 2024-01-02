@@ -13,9 +13,11 @@ jobs:
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
+          apt install -y pkg-config
           apt install -y clang
           apt install -y cmake extra-cmake-modules gettext libfmt-dev
           apt install -y fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev
+          apt install -y libjson-c-dev
       - name: Build
         run: |
           mkdir -p build
@@ -42,10 +44,11 @@ jobs:
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
+          apt install -y pkg-config
           apt install -y clang
           apt install -y cmake extra-cmake-modules gettext libfmt-dev
           apt install -y fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev
-          apt install -y libicu-dev
+          apt install -y libicu-dev libjson-c-dev
       - name: Build
         run: |
           mkdir -p build

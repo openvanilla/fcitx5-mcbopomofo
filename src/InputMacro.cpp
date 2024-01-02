@@ -24,8 +24,8 @@ class InputMacroDate : public InputMacro {
  public:
   InputMacroDate(std::string macroName, std::string calendar, int offset,
                  icu::DateFormat::EStyle style)
-      : name_(macroName),
-        calendarName_(calendar),
+      : name_(std::move(macroName)),
+        calendarName_(std::move(calendar)),
         dayOffset_(offset),
         dateStyle_(style) {}
   std::string name() const override { return name_; }
@@ -43,10 +43,10 @@ class InputMacroDate : public InputMacro {
 class InputMacroYear : public InputMacro {
  public:
   InputMacroYear(std::string macroName, std::string calendar, int offset, icu::UnicodeString pattern)
-      : name_(macroName),
-        calendarName_(calendar),
+      : name_(std::move(macroName)),
+        calendarName_(std::move(calendar)),
         yearOffset_(offset),
-        pattern_(pattern) {}
+        pattern_(std::move(pattern)) {}
   std::string name() const override { return name_; }
   std::string replacement() const override {
     return formatWithPattern(calendarName_, yearOffset_, /*dateOffset*/ 0, pattern_) + "年";
@@ -63,10 +63,10 @@ class InputMacroYear : public InputMacro {
 class InputMacroDayOfTheWeek : public InputMacro {
  public:
   InputMacroDayOfTheWeek(std::string macroName, std::string calendar, int offset, icu::UnicodeString pattern)
-      : name_(macroName),
-        calendarName_(calendar),
+      : name_(std::move(macroName)),
+        calendarName_(std::move(calendar)),
         dayOffset_(offset),
-        pattern_(pattern) {}
+        pattern_(std::move(pattern)) {}
   std::string name() const override { return name_; }
   std::string replacement() const override {
     return formatWithPattern(calendarName_, /*yearOffset*/ 0, dayOffset_, pattern_);
@@ -600,7 +600,7 @@ std::string formatWithPattern(std::string calendarName, int yearOffset, int date
 
 std::string formatDate(std::string calendarName, int dayOffset,
                        icu::DateFormat::EStyle dateStyle) {
-  return formatWithStyle(calendarName, /*yearOffset*/ 0, dayOffset, dateStyle, /*timeStyle*/ icu::DateFormat::EStyle::kNone);
+  return formatWithStyle(std::move(calendarName), /*yearOffset*/ 0, dayOffset, dateStyle, /*timeStyle*/ icu::DateFormat::EStyle::kNone);
 }
 
 std::string formatTime(icu::DateFormat::EStyle timeStyle) {

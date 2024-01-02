@@ -96,7 +96,10 @@ KeyHandler::KeyHandler(
       userPhraseAdder_(std::move(userPhraseAdder)),
       localizedStrings_(std::move(localizedStrings)),
       userOverrideModel_(kUserOverrideModelCapacity, kObservedOverrideHalfLife),
-      reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {}
+      reading_(Formosa::Mandarin::BopomofoKeyboardLayout::StandardLayout()) {
+  dictionaryServices_ = std::make_unique<DictionaryServices>();
+  dictionaryServices_->load();
+}
 
 bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                         const StateCallback& stateCallback,
@@ -317,6 +320,20 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     return true;
   }
 
+  // Question key
+  if (simpleAscii == '?') {
+    auto* marking = dynamic_cast<InputStates::Marking*>(state);
+    if (marking != nullptr) {
+      // Enter the state to select a dictionary service.
+      std::string markedText = marking->markedText;
+      std::unique_ptr<InputStates::Marking> copy = marking->copy();
+      auto selecting =
+          buildSelectingDictionaryState(std::move(copy), markedText, 0);
+      stateCallback(std::move(selecting));
+      return true;
+    }
+  }
+
   // Punctuation key: backtick or grave accent.
   if (simpleAscii == kPunctuationListKey &&
       lm_->hasUnigrams(kPunctuationListUnigramKey)) {
@@ -339,6 +356,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   if (key.ascii != 0) {
     std::string chrStr(1, key.ascii);
     std::string unigram;
+
     if (key.ctrlPressed) {
       unigram = std::string(kCtrlPunctuationKeyPrefix) + chrStr;
       return handlePunctuation(unigram, stateCallback, errorCallback);
@@ -388,6 +406,13 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
   // No key is handled. Refresh and consume the key.
   if (maybeNotEmptyState != nullptr) {
+    // It is possible that FCITX just passes a single shift key event here.
+    // When it is in the marking state, we do not want to go back to the
+    // inputting state anyway.
+    auto* marking = dynamic_cast<InputStates::Marking*>(state);
+    if (marking != nullptr) {
+      return true;
+    }
     errorCallback();
     stateCallback(buildInputtingState());
     return true;
@@ -409,6 +434,13 @@ void KeyHandler::candidateSelected(
 
   pinNode(candidate);
   stateCallback(buildInputtingState());
+}
+
+void KeyHandler::dictionaryServiceSelected(std::string phrase, size_t index,
+                                           InputState* currentState,
+                                           const StateCallback& stateCallback) {
+  dictionaryServices_->lookup(std::move(phrase), index, currentState,
+                              stateCallback);
 }
 
 void KeyHandler::candidatePanelCancelled(const StateCallback& stateCallback) {
@@ -754,7 +786,7 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
   // not-empty) between them.
   //
   // We'll also need to compute the UTF-8 cursor index. The idea here is we
-  // use a "running" index that will eventually catch the cursor index in the
+  // use a "running" index_ that will eventually catch the cursor index_ in the
   // builder. The tricky part is that if the spanning length of the node that
   // the cursor is at does not agree with the actual codepoint count of the
   // node's value, we'll need to move the cursor at the end of the node to
@@ -908,6 +940,20 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
   return std::make_unique<InputStates::Marking>(
       composed, composedStringCursorIndex, tooltip, beginCursorIndex, head,
       marked, tail, readingValue, isValid);
+}
+
+bool KeyHandler::hasDictionaryServices() {
+  return dictionaryServices_->hasServices();
+}
+
+std::unique_ptr<InputStates::SelectingDictionary>
+KeyHandler::buildSelectingDictionaryState(
+    std::unique_ptr<InputStates::NotEmpty> nonEmptyState,
+    const std::string& selectedPhrase, size_t selectedIndex) {
+  std::vector<std::string> menu =
+      dictionaryServices_->menuForPhrase(selectedPhrase);
+  return std::make_unique<InputStates::SelectingDictionary>(
+      std::move(nonEmptyState), selectedPhrase, selectedIndex, menu);
 }
 
 size_t KeyHandler::actualCandidateCursorIndex() {

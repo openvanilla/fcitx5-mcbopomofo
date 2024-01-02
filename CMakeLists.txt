@@ -4,10 +4,13 @@ project(fcitx5-mcbopomofo VERSION 2.5.2)
 find_package(ECM REQUIRED 1.0.0)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
+find_package(PkgConfig REQUIRED)
 find_package(Fcitx5Core REQUIRED)
 find_package(Fcitx5Utils REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
+
+pkg_check_modules(JSONC REQUIRED IMPORTED_TARGET "json-c")
 
 include(FeatureSummary)
 include(GNUInstallDirs)
@@ -58,9 +61,11 @@ message(STATUS "CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR}")
 configure_file(data/data.txt mcbopomofo-data.txt)
 configure_file(data/data-plain-bpmf.txt mcbopomofo-data-plain-bpmf.txt)
 configure_file(data/add-phrase-hook.sh mcbopomofo-add-phrase-hook.sh)
+configure_file(data/dictionary_service.json mcbopomofo-dictionary-service.json)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-data.txt" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-data-plain-bpmf.txt" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-add-phrase-hook.sh" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-dictionary-service.json" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
 
 fcitx5_translate_desktop_file(org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in
                               org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml XML
