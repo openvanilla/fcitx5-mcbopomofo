@@ -433,8 +433,9 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       return;
     }
 
-    handleCandidateKeyEvent(
-        context, key, maybeCandidateList,
+    fcitx::Key origKey = keyEvent.rawKey();
+    bool handled = handleCandidateKeyEvent(
+        context, key, origKey, maybeCandidateList,
         [this, context](std::unique_ptr<InputState> next) {
           enterNewState(context, std::move(next));
         },
@@ -451,7 +452,9 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       context->updatePreedit();
     }
-    return;
+    if (handled) {
+      return;
+    }
   }
 
   bool accepted = keyHandler_->handle(
@@ -469,28 +472,47 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
   }
 }
 
-void McBopomofoEngine::handleCandidateKeyEvent(
-    fcitx::InputContext* context, fcitx::Key key,
+bool McBopomofoEngine::handleCandidateKeyEvent(
+    fcitx::InputContext* context, fcitx::Key key, fcitx::Key origKey,
     fcitx::CommonCandidateList* candidateList,
     const McBopomofo::KeyHandler::StateCallback& stateCallback,
     const McBopomofo::KeyHandler::ErrorCallback& errorCallback) {
-  int idx = key.keyListIndex(selectionKeys_);
-  if (idx >= 0) {
-    if (idx < candidateList->size()) {
+  if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
+      nullptr) {
+    int code = origKey.code();
+    if ((origKey.states() & fcitx::KeyState::Shift) && code >= 10 &&
+        code <= 19) {
+      int idx = code - 10;
+      if (idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
-      candidateList->candidate(idx)->select(context);
+        candidateList->candidate(idx)->select(context);
 #else
-      candidateList->candidate(idx).select(context);
+        candidateList->candidate(idx).select(context);
 #endif
+      }
+      return true;
     }
-    return;
+
+  } else {
+    int idx = key.keyListIndex(selectionKeys_);
+    if (idx >= 0) {
+      if (idx < candidateList->size()) {
+#ifdef USE_LEGACY_FCITX5_API
+        candidateList->candidate(idx)->select(context);
+#else
+        candidateList->candidate(idx).select(context);
+#endif
+      }
+      return true;
+    }
   }
 
   bool keyIsCancel = false;
 
   // When pressing "?" in the candidate list, tries to look up the candidate in
   // dictionaries.
-  if (key.check(FcitxKey_question)) {
+  if (keyHandler_->inputMode() == McBopomofo::InputMode::PlainBopomofo &&
+      key.check(FcitxKey_question)) {
     auto choosingCandidate =
         dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
     auto selectingDictionary =
@@ -517,7 +539,7 @@ void McBopomofoEngine::handleCandidateKeyEvent(
         auto state = keyHandler_->buildSelectingDictionaryState(
             std::move(copy), phrase, selectedIndex);
         enterNewState(context, std::move(state));
-        return;
+        return true;
       }
     } else if (selectingDictionary != nullptr) {
       // Leave selecting dictionary service state.
@@ -529,7 +551,7 @@ void McBopomofoEngine::handleCandidateKeyEvent(
   }
 
   if (key.check(FcitxKey_Return)) {
-    idx = candidateList->cursorIndex();
+    int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
       candidateList->candidate(idx)->select(context);
@@ -537,7 +559,7 @@ void McBopomofoEngine::handleCandidateKeyEvent(
       candidateList->candidate(idx).select(context);
 #endif
     }
-    return;
+    return true;
   }
 
   if (keyIsCancel || key.check(FcitxKey_Escape) ||
@@ -547,7 +569,7 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     if (showingCharInfo != nullptr) {
       auto previous = showingCharInfo->previousState.get();
       stateCallback(previous->copy());
-      return;
+      return true;
     }
 
     auto* selecting =
@@ -567,20 +589,20 @@ void McBopomofoEngine::handleCandidateKeyEvent(
 #endif
         size_t index = selecting->selectedCandidateIndex;
         maybeCandidateList->setGlobalCursorIndex((int)index);
-        return;
+        return true;
       }
       auto* marking = dynamic_cast<InputStates::Marking*>(previous);
       if (marking != nullptr) {
         stateCallback(marking->copy());
       }
-      return;
+      return true;
     }
 
     keyHandler_->candidatePanelCancelled(
         [this, context](std::unique_ptr<InputState> next) {
           enterNewState(context, std::move(next));
         });
-    return;
+    return true;
   }
 
   fcitx::CandidateLayoutHint layoutHint = getCandidateLayoutHint();
@@ -596,7 +618,7 @@ void McBopomofoEngine::handleCandidateKeyEvent(
       candidateList->toCursorMovable()->nextCandidate();
     }
     context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-    return;
+    return true;
   }
 
   bool isVertical = (layoutHint == fcitx::CandidateLayoutHint::Vertical);
@@ -605,12 +627,12 @@ void McBopomofoEngine::handleCandidateKeyEvent(
     if (key.check(fcitx::Key(FcitxKey_Down))) {
       candidateList->toCursorMovable()->nextCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-      return;
+      return true;
     }
     if (key.check(fcitx::Key(FcitxKey_Up))) {
       candidateList->toCursorMovable()->prevCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-      return;
+      return true;
     }
     if ((key.check(fcitx::Key(FcitxKey_Right)) ||
          key.check(fcitx::Key(FcitxKey_Page_Down)) ||
@@ -619,7 +641,7 @@ void McBopomofoEngine::handleCandidateKeyEvent(
       candidateList->next();
       candidateList->toCursorMovable()->nextCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-      return;
+      return true;
     }
     if ((key.check(fcitx::Key(FcitxKey_Left)) ||
          key.check(fcitx::Key(FcitxKey_Page_Up)) ||
@@ -628,18 +650,18 @@ void McBopomofoEngine::handleCandidateKeyEvent(
       candidateList->prev();
       candidateList->toCursorMovable()->nextCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-      return;
+      return true;
     }
   } else {
     if (key.check(fcitx::Key(FcitxKey_Right))) {
       candidateList->toCursorMovable()->nextCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-      return;
+      return true;
     }
     if (key.check(fcitx::Key(FcitxKey_Left))) {
       candidateList->toCursorMovable()->prevCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-      return;
+      return true;
     }
     if ((key.check(fcitx::Key(FcitxKey_Down)) ||
          key.check(fcitx::Key(FcitxKey_Page_Down)) ||
@@ -648,7 +670,7 @@ void McBopomofoEngine::handleCandidateKeyEvent(
       candidateList->next();
       candidateList->toCursorMovable()->nextCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-      return;
+      return true;
     }
     if ((key.check(fcitx::Key(FcitxKey_Up)) ||
          key.check(fcitx::Key(FcitxKey_Page_Up)) ||
@@ -657,30 +679,44 @@ void McBopomofoEngine::handleCandidateKeyEvent(
       candidateList->prev();
       candidateList->toCursorMovable()->nextCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-      return;
+      return true;
     }
   }
 
-  bool result = keyHandler_->handleCandidateKeyForTraditionalBopomofoIfRequired(
-      MapFcitxKey(key),
-      [candidateList, context] {
-        auto idx = candidateList->cursorIndex();
-        if (idx < candidateList->size()) {
-#ifdef USE_LEGACY_FCITX5_API
-          candidateList->candidate(idx)->select(context);
-#else
-          candidateList->candidate(idx).select(context);
-#endif
-        }
-      },
-      stateCallback, errorCallback);
+  if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
+      nullptr) {
+    if (!origKey.isModifier()) {
+      std::unique_ptr<InputStates::Empty> empty =
+          std::make_unique<InputStates::Empty>();
+      stateCallback(std::move(empty));
+      return false;
+    }
+  }
 
-  if (result) {
-    return;
+  if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr) {
+    bool result =
+        keyHandler_->handleCandidateKeyForTraditionalBopomofoIfRequired(
+            MapFcitxKey(key),
+            [candidateList, context] {
+              auto idx = candidateList->cursorIndex();
+              if (idx < candidateList->size()) {
+#ifdef USE_LEGACY_FCITX5_API
+                candidateList->candidate(idx)->select(context);
+#else
+                candidateList->candidate(idx).select(context);
+#endif
+              }
+            },
+            stateCallback, errorCallback);
+
+    if (result) {
+      return true;
+    }
   }
 
   // TODO(unassigned): All else... beep?
   errorCallback();
+  return true;
 }
 
 void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
