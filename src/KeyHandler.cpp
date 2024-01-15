@@ -169,6 +169,14 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         std::string value = choosingCandidate->candidates[0].value;
         auto committingState = std::make_unique<InputStates::Committing>(value);
         stateCallback(std::move(committingState));
+
+        if (associatedPhrasesEnabled_) {
+          std::unique_ptr<InputStates::AssociatedPhrasesPlain> newState =
+              buildAssociatedPhrasesPlainState(value);
+          if (newState != nullptr) {
+            stateCallback(std::move(newState));
+          }
+        }
       } else {
         stateCallback(std::move(choosingCandidate));
       }
@@ -429,6 +437,14 @@ void KeyHandler::candidateSelected(
     std::unique_ptr<InputStates::Committing> committingState =
         std::make_unique<InputStates::Committing>(candidate.value);
     stateCallback(std::move(committingState));
+
+    if (associatedPhrasesEnabled_) {
+      std::unique_ptr<InputStates::AssociatedPhrasesPlain> newState =
+          buildAssociatedPhrasesPlainState(candidate.value);
+      if (newState != nullptr) {
+        stateCallback(std::move(newState));
+      }
+    }
     return;
   }
 
@@ -529,6 +545,10 @@ void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
 
 void KeyHandler::setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior) {
   ctrlEnterKey_ = behavior;
+}
+
+void KeyHandler::setAssociatedPhrasesEnabled(bool enabled) {
+  associatedPhrasesEnabled_ = enabled;
 }
 
 void KeyHandler::setOnAddNewPhrase(
@@ -940,6 +960,23 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
   return std::make_unique<InputStates::Marking>(
       composed, composedStringCursorIndex, tooltip, beginCursorIndex, head,
       marked, tail, readingValue, isValid);
+}
+
+std::unique_ptr<InputStates::AssociatedPhrasesPlain>
+KeyHandler::buildAssociatedPhrasesPlainState(std::string key) {
+  McBopomofoLM* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
+  if (lm != nullptr) {
+    if (lm->hasAssociatedPhrasesForKey(key)) {
+      std::vector<std::string> phrases = lm->associatedPhrasesForKey(key);
+      std::vector<InputStates::ChoosingCandidate::Candidate> cs;
+      for (auto phrase : phrases) {
+        cs.emplace_back(
+            InputStates::ChoosingCandidate::Candidate(phrase, phrase));
+      }
+      return std::make_unique<InputStates::AssociatedPhrasesPlain>(cs);
+    }
+  }
+  return nullptr;
 }
 
 bool KeyHandler::hasDictionaryServices() {

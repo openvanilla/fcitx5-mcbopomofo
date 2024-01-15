@@ -355,18 +355,15 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
 
   keyHandler_->setSelectPhraseAfterCursorAsCandidate(
       config_.selectPhrase.value() == SelectPhrase::AfterCursor);
-
   keyHandler_->setMoveCursorAfterSelection(
       config_.moveCursorAfterSelection.value());
-
   keyHandler_->setEscKeyClearsEntireComposingBuffer(
       config_.escKeyClearsEntireComposingBuffer.value());
-
   keyHandler_->setPutLowercaseLettersToComposingBuffer(
       config_.shiftLetterKeys.value() == ShiftLetterKeys::PutLowercaseToBuffer);
-
   keyHandler_->setCtrlEnterKeyBehavior(config_.ctrlEnterKeys.value());
-
+  keyHandler_->setAssociatedPhrasesEnabled(
+      config_.associatedPhrasesEnabled.value());
   languageModelLoader_->reloadUserModelsIfNeeded();
 }
 
@@ -414,7 +411,9 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
   if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr ||
       dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
           nullptr ||
-      dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr) {
+      dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr ||
+      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
+          nullptr) {
     // Absorb all keys when the candidate panel is on.
     keyEvent.filterAndAccept();
 
@@ -446,7 +445,9 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
             nullptr ||
         dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
             nullptr ||
-        dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr) {
+        dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr ||
+        dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
+            nullptr) {
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       context->updatePreedit();
     }
@@ -719,6 +720,10 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
     handleCandidatesState(context, prevPtr, showingCharInfo);
   } else if (auto* marking = dynamic_cast<InputStates::Marking*>(currentPtr)) {
     handleMarkingState(context, prevPtr, marking);
+  } else if (auto* associatePhrasePlain =
+                 dynamic_cast<InputStates::AssociatedPhrasesPlain*>(
+                     currentPtr)) {
+    handleCandidatesState(context, prevPtr, associatePhrasePlain);
   }
 }
 
@@ -762,14 +767,25 @@ void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
 
 void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
                                              InputState* /*unused*/,
-                                             InputStates::NotEmpty* current) {
+                                             InputState* current) {
   std::unique_ptr<fcitx::CommonCandidateList> candidateList =
       std::make_unique<fcitx::CommonCandidateList>();
 
   auto keysConfig = config_.selectionKeys.value();
   selectionKeys_.clear();
 
-  if (keysConfig == SelectionKeys::Key_asdfghjkl) {
+  if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
+      nullptr) {
+    selectionKeys_.emplace_back(FcitxKey_1);
+    selectionKeys_.emplace_back(FcitxKey_2);
+    selectionKeys_.emplace_back(FcitxKey_3);
+    selectionKeys_.emplace_back(FcitxKey_4);
+    selectionKeys_.emplace_back(FcitxKey_5);
+    selectionKeys_.emplace_back(FcitxKey_6);
+    selectionKeys_.emplace_back(FcitxKey_7);
+    selectionKeys_.emplace_back(FcitxKey_8);
+    selectionKeys_.emplace_back(FcitxKey_9);
+  } else if (keysConfig == SelectionKeys::Key_asdfghjkl) {
     selectionKeys_.emplace_back(FcitxKey_a);
     selectionKeys_.emplace_back(FcitxKey_s);
     selectionKeys_.emplace_back(FcitxKey_d);
@@ -816,6 +832,8 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   auto selectingDictionary =
       dynamic_cast<InputStates::SelectingDictionary*>(current);
   auto showingCharInfo = dynamic_cast<InputStates::ShowingCharInfo*>(current);
+  auto associatedPhrasesPlain =
+      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(current);
 
   if (choosing != nullptr) {
     // Construct the candidate list with special care for candidates that have
@@ -892,6 +910,22 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       candidateList->append(std::move(candidate));
 #endif
     }
+  } else if (associatedPhrasesPlain != nullptr) {
+    std::vector<InputStates::ChoosingCandidate::Candidate> candidates =
+        associatedPhrasesPlain->candidates;
+    for (const auto& c : candidates) {
+#ifdef USE_LEGACY_FCITX5_API
+      fcitx::CandidateWord* candidate = new McBopomofoCandidateWord(
+          fcitx::Text(c.value), c, keyHandler_, callback);
+      // ownership of candidate is transferred to candidateList.
+      candidateList->append(candidate);
+#else
+      std::unique_ptr<fcitx::CandidateWord> candidate =
+          std::make_unique<McBopomofoCandidateWord>(fcitx::Text(c.value), c,
+                                                    keyHandler_, callback);
+      candidateList->append(std::move(candidate));
+#endif
+    }
   }
 
   candidateList->toCursorMovable()->nextCandidate();
@@ -899,7 +933,11 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   context->inputPanel().setCandidateList(std::move(candidateList));
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
 
-  updatePreedit(context, current);
+  InputStates::NotEmpty* notEmpty =
+      dynamic_cast<InputStates::NotEmpty*>(current);
+  if (notEmpty != nullptr) {
+    updatePreedit(context, notEmpty);
+  }
 }
 
 void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,

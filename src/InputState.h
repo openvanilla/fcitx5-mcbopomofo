@@ -196,6 +196,32 @@ struct ShowingCharInfo : NotEmpty {
   std::string selectedPhrase;
 };
 
+struct AssociatedPhrases : NotEmpty {
+  AssociatedPhrases(std::unique_ptr<NotEmpty> previousState,
+                    std::string selectedPhrase, std::string selectedReading,
+                    size_t selectedIndex,
+                    std::vector<ChoosingCandidate::Candidate> cs)
+      : NotEmpty(previousState->composingBuffer, previousState->cursorIndex,
+                 previousState->tooltip),
+        previousState(std::move(previousState)),
+        selectedPhrase(std::move(selectedPhrase)),
+        selectedReading(std::move(selectedReading)),
+        selectedIndex(selectedIndex),
+        candidates(std::move(cs)) {}
+
+  std::unique_ptr<NotEmpty> previousState;
+  std::string selectedPhrase;
+  std::string selectedReading;
+  size_t selectedIndex;
+  const std::vector<ChoosingCandidate::Candidate> candidates;
+};
+
+struct AssociatedPhrasesPlain : InputState {
+  AssociatedPhrasesPlain(std::vector<ChoosingCandidate::Candidate> cs)
+      : candidates(std::move(cs)) {}
+  const std::vector<ChoosingCandidate::Candidate> candidates;
+};
+
 }  // namespace InputStates
 
 }  // namespace McBopomofo

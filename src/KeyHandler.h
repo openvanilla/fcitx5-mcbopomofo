@@ -122,10 +122,14 @@ class KeyHandler {
   // Sets if we should put lowercased letters into the composing buffer.
   void setPutLowercaseLettersToComposingBuffer(bool flag);
 
-  /// Sets if the ESC key clears entire composing buffer.
+  // Sets if the ESC key clears entire composing buffer.
   void setEscKeyClearsEntireComposingBuffer(bool flag);
 
+  // Sets the behaviour of the Ctrl + Enter key
   void setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior);
+
+  // Sets if associated phrases is enabled or not.
+  void setAssociatedPhrasesEnabled(bool enabled);
 
   void setOnAddNewPhrase(
       std::function<void(const std::string&)> onAddNewPhrase);
@@ -170,6 +174,9 @@ class KeyHandler {
   std::unique_ptr<InputStates::Marking> buildMarkingState(
       size_t beginCursorIndex);
 
+  std::unique_ptr<InputStates::AssociatedPhrasesPlain>
+  buildAssociatedPhrasesPlainState(std::string key);
+
   // Compute the actual candidate cursor index.
   size_t actualCandidateCursorIndex();
 
@@ -196,6 +203,7 @@ class KeyHandler {
   bool moveCursorAfterSelection_ = false;
   bool putLowercaseLettersToComposingBuffer_ = false;
   bool escKeyClearsEntireComposingBuffer_ = false;
+  bool associatedPhrasesEnabled_ = false;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
   std::function<void(const std::string&)> onAddNewPhrase_;
 

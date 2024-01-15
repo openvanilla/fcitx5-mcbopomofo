@@ -147,7 +147,11 @@ FCITX_CONFIGURATION(
 
     fcitx::Option<bool> addScriptHookEnabled{
         this, "AddScriptHookEnabled",
-        _("Run the hook script after adding a phrase"), false};);
+        _("Run the hook script after adding a phrase"), false};
+
+    fcitx::Option<bool> associatedPhrasesEnabled{
+        this, "AssociatedPhrasesEnabled", _("Enable Associated Phrases"),
+        false};);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
@@ -190,7 +194,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void handleInputtingState(fcitx::InputContext* context, InputState* prev,
                             InputStates::Inputting* current);
   void handleCandidatesState(fcitx::InputContext* context, InputState* prev,
-                             InputStates::NotEmpty* current);
+                             InputState* current);
   void handleMarkingState(fcitx::InputContext* context, InputState* prev,
                           InputStates::Marking* current);
 

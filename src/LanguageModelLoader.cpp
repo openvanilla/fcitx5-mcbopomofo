@@ -38,6 +38,8 @@ constexpr char kDataPath[] = "data/mcbopomofo-data.txt";
 constexpr char kDataPathPlainBPMF[] = "data/mcbopomofo-data-plain-bpmf.txt";
 constexpr char kUserPhraseFilename[] = "data.txt";  // same as macOS version
 constexpr char kExcludedPhraseFilename[] = "exclude-phrases.txt";  // ditto
+constexpr char kAssociatedPhrasesPath[] =
+    "data/mcbopomofo-associated-phrases.txt";
 
 LanguageModelLoader::LanguageModelLoader(
     std::unique_ptr<LocalizedStrings> localizedStrings)
@@ -113,6 +115,11 @@ void LanguageModelLoader::loadModelForMode(McBopomofo::InputMode mode) {
     FCITX_MCBOPOMOFO_INFO() << "Failed to open built-in LM";
     return;
   }
+
+  // load associated phrases.
+  std::string associatedPhrasesPath = fcitx::StandardPath::global().locate(
+      fcitx::StandardPath::Type::PkgData, kAssociatedPhrasesPath);
+  lm_->loadAssociatedPhrases(associatedPhrasesPath.c_str());
 }
 
 void LanguageModelLoader::addUserPhrase(const std::string_view& reading,
