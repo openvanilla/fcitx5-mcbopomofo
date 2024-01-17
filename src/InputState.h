@@ -206,13 +206,13 @@ struct AssociatedPhrases : NotEmpty {
         previousState(std::move(previousState)),
         selectedPhrase(std::move(selectedPhrase)),
         selectedReading(std::move(selectedReading)),
-        selectedIndex(selectedIndex),
+        selectedCandidateIndex(selectedIndex),
         candidates(std::move(cs)) {}
 
   std::unique_ptr<NotEmpty> previousState;
   std::string selectedPhrase;
   std::string selectedReading;
-  size_t selectedIndex;
+  size_t selectedCandidateIndex;
   const std::vector<ChoosingCandidate::Candidate> candidates;
 };
 

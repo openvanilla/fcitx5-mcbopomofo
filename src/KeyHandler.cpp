@@ -970,19 +970,49 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
       marked, tail, readingValue, isValid);
 }
 
-std::unique_ptr<InputStates::AssociatedPhrasesPlain>
-KeyHandler::buildAssociatedPhrasesPlainState(std::string key) {
+std::unique_ptr<InputStates::AssociatedPhrases>
+KeyHandler::buildAssociatedPhrasesState(
+    std::unique_ptr<InputStates::NotEmpty> previousState,
+    const std::string& selectedPhrase, const std::string& selectedReading,
+    size_t selectedCandidateIndex) {
   McBopomofoLM* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
-  if (lm != nullptr) {
-    if (lm->hasAssociatedPhrasesForKey(key)) {
-      std::vector<std::string> phrases = lm->associatedPhrasesForKey(key);
-      std::vector<InputStates::ChoosingCandidate::Candidate> cs;
-      for (auto phrase : phrases) {
-        cs.emplace_back(
-            InputStates::ChoosingCandidate::Candidate(phrase, phrase));
-      }
-      return std::make_unique<InputStates::AssociatedPhrasesPlain>(cs);
+  FCITX_MCBOPOMOFO_INFO() << "buildAssociatedPhrasesState 1";
+
+  if (lm == nullptr) {
+    return nullptr;
+  }
+
+  FCITX_MCBOPOMOFO_INFO() << "buildAssociatedPhrasesState 2" << selectedPhrase;
+
+  if (lm->hasAssociatedPhrasesForKey(selectedPhrase)) {
+    std::vector<std::string> phrases =
+        lm->associatedPhrasesForKey(selectedPhrase);
+    std::vector<InputStates::ChoosingCandidate::Candidate> cs;
+    for (const auto& phrase : phrases) {
+      cs.emplace_back(phrase, phrase);
     }
+      FCITX_MCBOPOMOFO_INFO() << "buildAssociatedPhrasesState 22";
+    return std::make_unique<InputStates::AssociatedPhrases>(
+        std::move(previousState), selectedPhrase, selectedReading,
+        selectedCandidateIndex, cs);
+  }
+  FCITX_MCBOPOMOFO_INFO() << "buildAssociatedPhrasesState 3";
+  return nullptr;
+}
+
+std::unique_ptr<InputStates::AssociatedPhrasesPlain>
+KeyHandler::buildAssociatedPhrasesPlainState(const std::string& key) {
+  McBopomofoLM* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
+  if (lm == nullptr) {
+    return nullptr;
+  }
+  if (lm->hasAssociatedPhrasesForKey(key)) {
+    std::vector<std::string> phrases = lm->associatedPhrasesForKey(key);
+    std::vector<InputStates::ChoosingCandidate::Candidate> cs;
+    for (const auto& phrase : phrases) {
+      cs.emplace_back(phrase, phrase);
+    }
+    return std::make_unique<InputStates::AssociatedPhrasesPlain>(cs);
   }
   return nullptr;
 }

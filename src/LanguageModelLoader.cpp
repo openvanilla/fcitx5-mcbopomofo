@@ -52,6 +52,12 @@ LanguageModelLoader::LanguageModelLoader(
   if (!lm_->isDataModelLoaded()) {
     FCITX_MCBOPOMOFO_INFO() << "Failed to open built-in LM";
   }
+  // load associated phrases.
+  std::string associatedPhrasesPath = fcitx::StandardPath::global().locate(
+      fcitx::StandardPath::Type::PkgData, kAssociatedPhrasesPath);
+  lm_->loadAssociatedPhrases(associatedPhrasesPath.c_str());
+  FCITX_MCBOPOMOFO_INFO() << "load associated phrases."
+                          << associatedPhrasesPath;
 
   FCITX_MCBOPOMOFO_INFO() << "Set macro converter";
   auto converter = [this](const std::string& input) {
@@ -120,6 +126,8 @@ void LanguageModelLoader::loadModelForMode(McBopomofo::InputMode mode) {
   std::string associatedPhrasesPath = fcitx::StandardPath::global().locate(
       fcitx::StandardPath::Type::PkgData, kAssociatedPhrasesPath);
   lm_->loadAssociatedPhrases(associatedPhrasesPath.c_str());
+  FCITX_MCBOPOMOFO_INFO() << "load associated phrases."
+                          << associatedPhrasesPath;
 }
 
 void LanguageModelLoader::addUserPhrase(const std::string_view& reading,

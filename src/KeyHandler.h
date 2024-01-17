@@ -137,6 +137,17 @@ class KeyHandler {
   // Reading joiner for retrieving unigrams from the language model.
   static constexpr char kJoinSeparator[] = "-";
 
+  // Build an Associated Phrase state.
+  std::unique_ptr<InputStates::AssociatedPhrases> buildAssociatedPhrasesState(
+      std::unique_ptr<InputStates::NotEmpty> previousState,
+      const std::string& selectedPhrase, const std::string& selectedReading,
+      size_t selectedCandidateIndex);
+
+  // Build an Associated Phrases Plain state by the given key. It could be
+  // nullptr when there is no associated phrases.
+  std::unique_ptr<InputStates::AssociatedPhrasesPlain>
+  buildAssociatedPhrasesPlainState(const std::string& key);
+
 #pragma endregion Settings
 
  private:
@@ -164,7 +175,10 @@ class KeyHandler {
   ComposedString getComposedString(size_t builderCursor);
   std::string getHTMLRubyText();
 
+  // Build a Inputting state.
   std::unique_ptr<InputStates::Inputting> buildInputtingState();
+
+  // Build a Choosing Candidate state.
   std::unique_ptr<InputStates::ChoosingCandidate> buildChoosingCandidateState(
       InputStates::NotEmpty* nonEmptyState);
 
@@ -173,9 +187,6 @@ class KeyHandler {
   // builder cursor.
   std::unique_ptr<InputStates::Marking> buildMarkingState(
       size_t beginCursorIndex);
-
-  std::unique_ptr<InputStates::AssociatedPhrasesPlain>
-  buildAssociatedPhrasesPlainState(std::string key);
 
   // Compute the actual candidate cursor index.
   size_t actualCandidateCursorIndex();
