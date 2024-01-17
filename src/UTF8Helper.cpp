@@ -135,5 +135,22 @@ std::string GetCodePoint(const std::string& s, size_t cp) {
   return {lastUsed, i};
 }
 
+std::vector<std::string> Split(const std::string& s) {
+  std::vector<std::string> output;
+  std::string::const_iterator i = s.cbegin();
+  std::string::const_iterator lastUsed = s.cbegin();
+  std::string::const_iterator end = s.cend();
+  while (i != end) {
+    lastUsed = i;
+    bool r = DecodeUTF8(i, end);
+    if (!r) {
+      break;
+    }
+    output.emplace_back(std::string({lastUsed, i}));
+  }
+
+  return output;
+}
+
 // NOLINTEND(readability-magic-numbers)
 }  // namespace McBopomofo

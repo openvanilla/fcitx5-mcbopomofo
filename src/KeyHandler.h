@@ -76,6 +76,10 @@ class KeyHandler {
       const InputStates::ChoosingCandidate::Candidate& candidate,
       const StateCallback& stateCallback);
 
+  void candidateAssociatedPhraseSelected(
+      size_t index, const InputStates::ChoosingCandidate::Candidate& candidate,
+      const std::string& phrase, const StateCallback& stateCallback);
+
   void dictionaryServiceSelected(std::string phrase, size_t index,
                                  InputState* currentState,
                                  const StateCallback& stateCallback);
@@ -134,6 +138,10 @@ class KeyHandler {
   void setOnAddNewPhrase(
       std::function<void(const std::string&)> onAddNewPhrase);
 
+  // Compute the actual candidate cursor index.
+  size_t actualCandidateCursorIndex();
+  size_t candidateCursorIndex();
+
   // Reading joiner for retrieving unigrams from the language model.
   static constexpr char kJoinSeparator[] = "-";
 
@@ -188,12 +196,12 @@ class KeyHandler {
   std::unique_ptr<InputStates::Marking> buildMarkingState(
       size_t beginCursorIndex);
 
-  // Compute the actual candidate cursor index.
-  size_t actualCandidateCursorIndex();
-
   // Pin a node with a fixed unigram value, usually a candidate.
   void pinNode(const InputStates::ChoosingCandidate::Candidate& candidate,
                bool useMoveCursorAfterSelectionSetting = true);
+
+  void pinNode(size_t cursor, const std::string& candidate,
+               const std::string& associatePhrase);
 
   void walk();
 

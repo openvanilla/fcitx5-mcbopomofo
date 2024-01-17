@@ -25,6 +25,7 @@
 #define SRC_UTF8HELPER_H_
 
 #include <string>
+#include <vector>
 
 namespace McBopomofo {
 
@@ -40,6 +41,9 @@ std::string SubstringToCodePoints(const std::string& s, size_t cp);
 
 // Gets the code point at the given index.
 std::string GetCodePoint(const std::string& s, size_t cp);
+
+// Splits the string.
+std::vector<std::string> Split(const std::string& s);
 
 }  // namespace McBopomofo
 

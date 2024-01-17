@@ -84,6 +84,10 @@ struct Inputting : NotEmpty {
   Inputting(const std::string& buf, const size_t index,
             const std::string_view& tooltipText = "")
       : NotEmpty(buf, index, tooltipText) {}
+
+  std::unique_ptr<Inputting> copy() {
+    return std::make_unique<Inputting>(composingBuffer, cursorIndex, tooltip);
+  }
 };
 
 // Candidate selecting state with a non-empty composing buffer.

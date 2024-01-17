@@ -508,6 +508,13 @@ void KeyHandler::candidateSelected(
   stateCallback(buildInputtingState());
 }
 
+void KeyHandler::candidateAssociatedPhraseSelected(
+    size_t index, const InputStates::ChoosingCandidate::Candidate& candidate,
+    const std::string& phrase, const StateCallback& stateCallback) {
+  pinNode(index, phrase, candidate.value);
+  stateCallback(buildInputtingState());
+}
+
 void KeyHandler::dictionaryServiceSelected(std::string phrase, size_t index,
                                            InputState* currentState,
                                            const StateCallback& stateCallback) {
@@ -1096,6 +1103,11 @@ size_t KeyHandler::actualCandidateCursorIndex() {
   return cursor;
 }
 
+size_t KeyHandler::candidateCursorIndex() {
+  size_t cursor = grid_.cursor();
+  return cursor;
+}
+
 #pragma endregion Build_States
 
 void KeyHandler::pinNode(
@@ -1129,6 +1141,41 @@ void KeyHandler::pinNode(
       moveCursorAfterSelection_) {
     grid_.setCursor(accumulatedCursor);
   }
+}
+
+void KeyHandler::pinNode(size_t cursor, const std::string& candidate,
+                         const std::string& associatePhrase) {
+  if (!grid_.overrideCandidate(cursor - 1, candidate)) {
+    return;
+  }
+  Formosa::Gramambular2::ReadingGrid::WalkResult prevWalk = latestWalk_;
+  walk();
+
+  // Update the user override model if warranted.
+  size_t accumulatedCursor = 0;
+  auto nodeIter = latestWalk_.findNodeAt(cursor, &accumulatedCursor);
+  if (nodeIter == latestWalk_.nodes.cend()) {
+    return;
+  }
+  const Formosa::Gramambular2::ReadingGrid::NodePtr& currentNode = *nodeIter;
+  if (currentNode != nullptr &&
+      currentNode->currentUnigram().score() > kNoOverrideThreshold) {
+    userOverrideModel_.observe(prevWalk, latestWalk_, cursor,
+                               GetEpochNowInSeconds());
+  }
+  grid_.setCursor(accumulatedCursor);
+  std::vector<std::string> characters = Split(associatePhrase);
+  auto* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
+  size_t index = 0;
+  if (lm != nullptr) {
+    for (const auto& character : characters) {
+      std::string reading = lm->getReading(character);
+      grid_.insertReading(reading);
+      grid_.overrideCandidate(accumulatedCursor + index, character);
+      index++;
+    }
+  }
+  walk();
 }
 
 void KeyHandler::walk() { latestWalk_ = grid_.walk(); }
