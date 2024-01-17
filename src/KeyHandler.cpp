@@ -278,7 +278,55 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       return true;
     }
 
-    if (key.ctrlPressed) {
+    // Shift + Enter
+    if (key.shiftPressed && inputMode_ == InputMode::McBopomofo &&
+        associatedPhrasesEnabled_) {
+      size_t cursor = grid_.cursor();
+      if (cursor < 1) {
+        errorCallback();
+        return true;
+      }
+      auto inputting = dynamic_cast<InputStates::Inputting*>(state);
+      if (inputting != nullptr) {
+        std::string composerBuffer = inputting->composingBuffer;
+        std::string characterBeforeCursor =
+            GetCodePoint(composerBuffer, cursor - 1);
+        auto candidates = grid_.candidatesAt(cursor - 1);
+        auto candidateIt =
+            std::find_if(candidates.begin(), candidates.end(),
+                         [characterBeforeCursor](auto candidate) {
+                           return candidate.value == characterBeforeCursor;
+                         });
+
+        if (candidateIt == candidates.end()) {
+          // The character before the cursor is not composed by a single
+          // reading.
+          errorCallback();
+          return true;
+        }
+
+        std::optional<Formosa::Gramambular2::ReadingGrid::NodePtr>
+            oneUnitLongSpan = grid_.findInSpan(
+                cursor - 1,
+                [](const Formosa::Gramambular2::ReadingGrid::NodePtr& node) {
+                  return node->spanningLength() == 1;
+                });
+
+        if (!oneUnitLongSpan.has_value()) {
+          errorCallback();
+          return true;
+        }
+        std::string reading = (*oneUnitLongSpan)->reading();
+        std::unique_ptr<InputStates::AssociatedPhrases> newState =
+            buildAssociatedPhrasesState(buildInputtingState(),
+                                        characterBeforeCursor, reading, 0);
+        stateCallback(std::move(newState));
+      }
+      return true;
+    }
+
+    // Ctrl + Enter
+    if (key.ctrlPressed && inputMode_ == InputMode::McBopomofo) {
       if (ctrlEnterKey_ == KeyHandlerCtrlEnter::OutputBpmfReadings) {
         std::vector<std::string> readings = grid_.readings();
         std::string readingValue;
@@ -976,13 +1024,10 @@ KeyHandler::buildAssociatedPhrasesState(
     const std::string& selectedPhrase, const std::string& selectedReading,
     size_t selectedCandidateIndex) {
   McBopomofoLM* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
-  FCITX_MCBOPOMOFO_INFO() << "buildAssociatedPhrasesState 1";
 
   if (lm == nullptr) {
     return nullptr;
   }
-
-  FCITX_MCBOPOMOFO_INFO() << "buildAssociatedPhrasesState 2" << selectedPhrase;
 
   if (lm->hasAssociatedPhrasesForKey(selectedPhrase)) {
     std::vector<std::string> phrases =
@@ -991,12 +1036,10 @@ KeyHandler::buildAssociatedPhrasesState(
     for (const auto& phrase : phrases) {
       cs.emplace_back(phrase, phrase);
     }
-      FCITX_MCBOPOMOFO_INFO() << "buildAssociatedPhrasesState 22";
     return std::make_unique<InputStates::AssociatedPhrases>(
         std::move(previousState), selectedPhrase, selectedReading,
         selectedCandidateIndex, cs);
   }
-  FCITX_MCBOPOMOFO_INFO() << "buildAssociatedPhrasesState 3";
   return nullptr;
 }
 

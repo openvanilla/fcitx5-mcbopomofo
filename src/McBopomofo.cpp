@@ -448,6 +448,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
         dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
             nullptr ||
         dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr ||
+        dynamic_cast<InputStates::AssociatedPhrases*>(state_.get()) !=
+            nullptr ||
         dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
             nullptr) {
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
@@ -525,22 +527,16 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     if (choosingCandidate != nullptr) {
       // Enter selecting dictionary service state.
       if (keyHandler_->hasDictionaryServices()) {
-#ifdef USE_LEGACY_FCITX5_API
         int page = candidateList->currentPage();
         int pageSize = candidateList->size();
         int selectedCandidateIndex =
             page * pageSize + candidateList->cursorIndex();
         std::string phrase =
-            candidateList->candidate(selectedCandidateIndex)->text().toString();
-#else
-        int selectedIndex = candidateList->globalCursorIndex();
-        std::string phrase =
-            candidateList->candidate(selectedIndex).text().toString();
-#endif
+            choosingCandidate->candidates[selectedCandidateIndex].value;
         std::unique_ptr<InputStates::ChoosingCandidate> copy =
             choosingCandidate->copy();
         auto state = keyHandler_->buildSelectingDictionaryState(
-            std::move(copy), phrase, selectedIndex);
+            std::move(copy), phrase, selectedCandidateIndex);
         enterNewState(context, std::move(state));
         return true;
       }
@@ -554,6 +550,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   }
 
   if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
+      config_.associatedPhrasesEnabled.value() == true &&
       origKey.code() == 36 && (origKey.states() & fcitx::KeyState::Shift)) {
     int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
