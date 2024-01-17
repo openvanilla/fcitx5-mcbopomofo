@@ -511,7 +511,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 
   // When pressing "?" in the candidate list, tries to look up the candidate in
   // dictionaries.
-  if (keyHandler_->inputMode() == McBopomofo::InputMode::PlainBopomofo &&
+  if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
       key.check(FcitxKey_question)) {
     auto choosingCandidate =
         dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
