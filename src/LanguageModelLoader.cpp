@@ -54,7 +54,7 @@ LanguageModelLoader::LanguageModelLoader(
   }
 
   FCITX_MCBOPOMOFO_INFO() << "Set macro converter";
-  auto converter = [this](std::string input) {
+  auto converter = [this](const std::string& input) {
     return this->inputMacroController_.handle(input);
   };
   lm_->setMacroConverter(converter);
@@ -62,7 +62,7 @@ LanguageModelLoader::LanguageModelLoader(
   std::string userDataPath = fcitx::StandardPath::global().userDirectory(
       fcitx::StandardPath::Type::PkgData);
 
-  // fcitx5 is configured to not to provide userDataPath, bail.
+  // fcitx5 is configured not to provide userDataPath, bail.
   if (userDataPath.empty()) {
     return;
   }

@@ -311,6 +311,14 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       if (marking->acceptable) {
         userPhraseAdder_->addUserPhrase(marking->reading, marking->markedText);
         onAddNewPhrase_(marking->markedText);
+
+        // If the cursor was at the end of the buffer when the marking started,
+        // move back.
+        if (marking->markStartGridCursorIndex == grid_.length() &&
+            grid_.cursor() < marking->markStartGridCursorIndex) {
+          grid_.setCursor(grid_.length());
+        }
+
         stateCallback(buildInputtingState());
       } else {
         errorCallback();
@@ -591,7 +599,7 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
     errorCallback();
     return true;
   }
-  Formosa::Gramambular2::ReadingGrid::NodePtr currentNode = *nodeIter;
+  const Formosa::Gramambular2::ReadingGrid::NodePtr& currentNode = *nodeIter;
 
   size_t currentIndex = 0;
   if (!currentNode->isOverridden()) {
@@ -1036,7 +1044,7 @@ void KeyHandler::pinNode(
   if (nodeIter == latestWalk_.nodes.cend()) {
     return;
   }
-  Formosa::Gramambular2::ReadingGrid::NodePtr currentNode = *nodeIter;
+  const Formosa::Gramambular2::ReadingGrid::NodePtr& currentNode = *nodeIter;
 
   if (currentNode != nullptr &&
       currentNode->currentUnigram().score() > kNoOverrideThreshold) {
