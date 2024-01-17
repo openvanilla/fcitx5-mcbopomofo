@@ -585,8 +585,12 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       auto* choosingCandidate =
           dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
       if (choosingCandidate != nullptr) {
+#ifdef USE_LEGACY_FCITX5_API
         size_t globalIndex =
-            idx + candidateList->pageSize() * candidateList->currentPage();
+            idx + candidateList->size() * candidateList->currentPage();
+#else
+        size_t globalIndex = candidateList->globalCursorIndex();
+#endif
         auto prevState = choosingCandidate->copy();
         auto selectedPhrase = choosingCandidate->candidates[idx].value;
         auto selectedReading = choosingCandidate->candidates[idx].reading;
