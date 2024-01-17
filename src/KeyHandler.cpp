@@ -1145,7 +1145,7 @@ void KeyHandler::pinNode(
 
 void KeyHandler::pinNode(size_t cursor, const std::string& candidate,
                          const std::string& associatePhrase) {
-  if (!grid_.overrideCandidate(cursor - 1, candidate)) {
+  if (!grid_.overrideCandidate(cursor, candidate)) {
     return;
   }
   Formosa::Gramambular2::ReadingGrid::WalkResult prevWalk = latestWalk_;

@@ -102,6 +102,7 @@ static Key MapFcitxKey(const fcitx::Key& key) {
   return {};
 }
 
+// The candidate word for the standard candidates.
 class McBopomofoCandidateWord : public fcitx::CandidateWord {
  public:
   McBopomofoCandidateWord(fcitx::Text displayText,
@@ -123,6 +124,7 @@ class McBopomofoCandidateWord : public fcitx::CandidateWord {
   KeyHandler::StateCallback stateCallback_;
 };
 
+// The candidate word for the associated phrases for McBopomofo mode.
 class McBopomofoAssociatedPhraseCandidateWord : public fcitx::CandidateWord {
  public:
   McBopomofoAssociatedPhraseCandidateWord(
@@ -139,7 +141,6 @@ class McBopomofoAssociatedPhraseCandidateWord : public fcitx::CandidateWord {
         cursorIndex_(cursorIndex) {}
 
   void select(fcitx::InputContext* /*unused*/) const override {
-    // zonble
     keyHandler_->candidateAssociatedPhraseSelected(
         cursorIndex_, candidate_, selectedPhrase_, stateCallback_);
   }
