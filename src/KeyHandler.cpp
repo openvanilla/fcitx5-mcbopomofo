@@ -102,8 +102,8 @@ KeyHandler::KeyHandler(
 }
 
 bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
-                        const StateCallback& stateCallback,
-                        const ErrorCallback& errorCallback) {
+                        StateCallback stateCallback,
+                        ErrorCallback errorCallback) {
   // From Key's definition, if shiftPressed is true, it can't be a simple key
   // that can be represented by ASCII.
   char simpleAscii = (key.ctrlPressed || key.shiftPressed) ? '\0' : key.ascii;
@@ -431,7 +431,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
 void KeyHandler::candidateSelected(
     const InputStates::ChoosingCandidate::Candidate& candidate,
-    const StateCallback& stateCallback) {
+    StateCallback stateCallback) {
   if (inputMode_ == InputMode::PlainBopomofo) {
     reset();
     std::unique_ptr<InputStates::Committing> committingState =
@@ -446,12 +446,12 @@ void KeyHandler::candidateSelected(
 
 void KeyHandler::dictionaryServiceSelected(std::string phrase, size_t index,
                                            InputState* currentState,
-                                           const StateCallback& stateCallback) {
+                                           StateCallback stateCallback) {
   dictionaryServices_->lookup(std::move(phrase), index, currentState,
                               stateCallback);
 }
 
-void KeyHandler::candidatePanelCancelled(const StateCallback& stateCallback) {
+void KeyHandler::candidatePanelCancelled(StateCallback stateCallback) {
   if (inputMode_ == InputMode::PlainBopomofo) {
     reset();
     std::unique_ptr<InputStates::EmptyIgnoringPrevious>
@@ -465,9 +465,8 @@ void KeyHandler::candidatePanelCancelled(const StateCallback& stateCallback) {
 }
 
 bool KeyHandler::handleCandidateKeyForTraditionalBopomofoIfRequired(
-    Key key,
-    const SelectCurrentCandidateCallback& SelectCurrentCandidateCallback,
-    const StateCallback& stateCallback, const ErrorCallback& errorCallback) {
+    Key key, SelectCurrentCandidateCallback SelectCurrentCandidateCallback,
+    StateCallback stateCallback, ErrorCallback errorCallback) {
   if (inputMode_ != McBopomofo::InputMode::PlainBopomofo) {
     return false;
   }

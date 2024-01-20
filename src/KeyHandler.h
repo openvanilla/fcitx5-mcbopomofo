@@ -68,26 +68,24 @@ class KeyHandler {
   // the key should be absorbed, signaling that the key is accepted and handled,
   // or false if the event should be let pass through.
   bool handle(Key key, McBopomofo::InputState* state,
-              const StateCallback& stateCallback,
-              const ErrorCallback& errorCallback);
+              StateCallback stateCallback, ErrorCallback errorCallback);
 
   // Candidate selected. Can assume the context is in a candidate state.
   void candidateSelected(
       const InputStates::ChoosingCandidate::Candidate& candidate,
-      const StateCallback& stateCallback);
+      StateCallback stateCallback);
 
   void dictionaryServiceSelected(std::string phrase, size_t index,
                                  InputState* currentState,
-                                 const StateCallback& stateCallback);
+                                 StateCallback stateCallback);
 
   // Candidate panel canceled. Can assume the context is in a candidate state.
-  void candidatePanelCancelled(const StateCallback& stateCallback);
+  void candidatePanelCancelled(StateCallback stateCallback);
 
   // Workaround for the Traditional Bopomofo mode.
   bool handleCandidateKeyForTraditionalBopomofoIfRequired(
-      Key key,
-      const SelectCurrentCandidateCallback& SelectCurrentCandidateCallback,
-      const StateCallback& stateCallback, const ErrorCallback& errorCallback);
+      Key key, SelectCurrentCandidateCallback SelectCurrentCandidateCallback,
+      StateCallback stateCallback, ErrorCallback errorCallback);
 
   void reset();
 
