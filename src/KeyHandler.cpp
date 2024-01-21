@@ -171,10 +171,10 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         stateCallback(std::move(committingState));
 
         if (associatedPhrasesEnabled_) {
-          std::unique_ptr<InputStates::AssociatedPhrasesPlain> newState =
+          auto associatedPhrasesPlainState =
               buildAssociatedPhrasesPlainState(value);
-          if (newState != nullptr) {
-            stateCallback(std::move(newState));
+          if (associatedPhrasesPlainState != nullptr) {
+            stateCallback(std::move(associatedPhrasesPlainState));
           }
         }
       } else {
@@ -317,10 +317,9 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
           return true;
         }
         std::string reading = (*oneUnitLongSpan)->reading();
-        std::unique_ptr<InputStates::AssociatedPhrases> newState =
-            buildAssociatedPhrasesState(buildInputtingState(),
-                                        characterBeforeCursor, reading, 0);
-        stateCallback(std::move(newState));
+        auto associatedPhrasesState = buildAssociatedPhrasesState(
+            buildInputtingState(), characterBeforeCursor, reading, 0);
+        stateCallback(std::move(associatedPhrasesState));
       }
       return true;
     }
@@ -495,10 +494,10 @@ void KeyHandler::candidateSelected(
     stateCallback(std::move(committingState));
 
     if (associatedPhrasesEnabled_) {
-      std::unique_ptr<InputStates::AssociatedPhrasesPlain> newState =
+      auto associatedPhrasesPlainState =
           buildAssociatedPhrasesPlainState(candidate.value);
-      if (newState != nullptr) {
-        stateCallback(std::move(newState));
+      if (associatedPhrasesPlainState != nullptr) {
+        stateCallback(std::move(associatedPhrasesPlainState));
       }
     }
     return;
