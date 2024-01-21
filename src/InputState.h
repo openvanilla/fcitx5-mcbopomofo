@@ -153,12 +153,6 @@ struct Marking : NotEmpty {
   const std::string tail;
   const std::string reading;
   const bool acceptable;
-
-  std::unique_ptr<InputStates::Marking> copy() {
-    return std::make_unique<InputStates::Marking>(
-        composingBuffer, cursorIndex, tooltip, markStartGridCursorIndex, head,
-        markedText, tail, reading, acceptable);
-  }
 };
 
 struct SelectingDictionary : NotEmpty {

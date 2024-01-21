@@ -653,7 +653,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       }
       auto* marking = dynamic_cast<InputStates::Marking*>(previous);
       if (marking != nullptr) {
-        stateCallback(marking->copy());
+        auto copy = std::make_unique<InputStates::Marking>(*marking);
+        stateCallback(std::move(copy));
       }
       return true;
     }
