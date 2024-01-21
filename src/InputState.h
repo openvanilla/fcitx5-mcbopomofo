@@ -85,9 +85,8 @@ struct Inputting : NotEmpty {
             const std::string_view& tooltipText = "")
       : NotEmpty(buf, index, tooltipText) {}
 
-  std::unique_ptr<Inputting> copy() {
-    return std::make_unique<Inputting>(composingBuffer, cursorIndex, tooltip);
-  }
+  Inputting(Inputting const& state)
+      : NotEmpty(state.composingBuffer, state.cursorIndex, state.tooltip) {}
 };
 
 // Candidate selecting state with a non-empty composing buffer.
@@ -98,6 +97,10 @@ struct ChoosingCandidate : NotEmpty {
                     std::vector<Candidate> cs)
       : NotEmpty(buf, index), candidates(std::move(cs)) {}
 
+  ChoosingCandidate(ChoosingCandidate const& state)
+      : NotEmpty(state.composingBuffer, state.cursorIndex),
+        candidates(state.candidates) {}
+
   const std::vector<Candidate> candidates;
 
   struct Candidate {
@@ -106,11 +109,6 @@ struct ChoosingCandidate : NotEmpty {
     const std::string reading;
     const std::string value;
   };
-
-  std::unique_ptr<ChoosingCandidate> copy() {
-    return std::make_unique<InputStates::ChoosingCandidate>(
-        composingBuffer, cursorIndex, candidates);
-  }
 };
 
 inline bool operator==(const ChoosingCandidate::Candidate& a,
@@ -140,6 +138,15 @@ struct Marking : NotEmpty {
         reading(std::move(readingText)),
         acceptable(canAccept) {}
 
+  Marking(Marking const& state)
+      : NotEmpty(state.composingBuffer, state.cursorIndex, state.tooltip),
+        markStartGridCursorIndex(state.markStartGridCursorIndex),
+        head(state.head),
+        markedText(state.markedText),
+        tail(state.tail),
+        reading(state.reading),
+        acceptable(state.acceptable) {}
+
   const size_t markStartGridCursorIndex;
   const std::string head;
   const std::string markedText;
@@ -165,26 +172,30 @@ struct SelectingDictionary : NotEmpty {
         selectedCandidateIndex(selectedIndex),
         menu(std::move(menu)) {}
 
+  SelectingDictionary(SelectingDictionary const& state)
+      : NotEmpty(state.previousState->composingBuffer,
+                 state.previousState->cursorIndex,
+                 state.previousState->tooltip),
+        selectedPhrase(state.selectedPhrase),
+        selectedCandidateIndex(state.selectedCandidateIndex),
+        menu(state.menu) {
+    auto* choosingCandidate =
+        dynamic_cast<ChoosingCandidate*>(state.previousState.get());
+    auto* marking = dynamic_cast<Marking*>(state.previousState.get());
+    std::unique_ptr<NotEmpty> copy;
+
+    if (choosingCandidate != nullptr) {
+      copy = std::make_unique<ChoosingCandidate>(*choosingCandidate);
+    } else if (marking != nullptr) {
+      copy = std::make_unique<Marking>(*marking);
+    }
+    previousState = std::move(copy);
+  }
+
   std::unique_ptr<NotEmpty> previousState;
   std::string selectedPhrase;
   size_t selectedCandidateIndex;
   std::vector<std::string> menu;
-
-  std::unique_ptr<SelectingDictionary> copy() {
-    ChoosingCandidate* choosingCandidate =
-        dynamic_cast<ChoosingCandidate*>(previousState.get());
-    Marking* marking = dynamic_cast<Marking*>(previousState.get());
-    std::unique_ptr<NotEmpty> copy;
-
-    if (choosingCandidate != nullptr) {
-      copy = choosingCandidate->copy();
-    } else if (marking != nullptr) {
-      copy = marking->copy();
-    }
-
-    return std::make_unique<SelectingDictionary>(
-        std::move(copy), selectedPhrase, selectedCandidateIndex, menu);
-  }
 };
 
 struct ShowingCharInfo : NotEmpty {
@@ -221,7 +232,7 @@ struct AssociatedPhrases : NotEmpty {
 };
 
 struct AssociatedPhrasesPlain : InputState {
-  AssociatedPhrasesPlain(std::vector<ChoosingCandidate::Candidate> cs)
+  explicit AssociatedPhrasesPlain(std::vector<ChoosingCandidate::Candidate> cs)
       : candidates(std::move(cs)) {}
   const std::vector<ChoosingCandidate::Candidate> candidates;
 };
