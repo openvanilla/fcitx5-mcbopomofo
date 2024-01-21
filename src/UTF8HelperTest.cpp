@@ -91,4 +91,17 @@ TEST(UTF8HelperTest, CountingAndClapmingPrematurelyTerminatingSequence) {
   ASSERT_EQ(SubstringToCodePoints(s, 2), "");
 }
 
+TEST(UTF8HelperTest, Split) {
+  std::string input = "落魄江湖載酒行";
+  std::vector<std::string> output = Split(input);
+  ASSERT_EQ(output.size(), 7);
+  ASSERT_EQ(output[0], "落");
+  ASSERT_EQ(output[1], "魄");
+  ASSERT_EQ(output[2], "江");
+  ASSERT_EQ(output[3], "湖");
+  ASSERT_EQ(output[4], "載");
+  ASSERT_EQ(output[5], "酒");
+  ASSERT_EQ(output[6], "行");
+}
+
 }  // namespace McBopomofo
