@@ -576,8 +576,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   }
 
   if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
-      config_.associatedPhrasesEnabled.value() &&
-      origKey.code() == 36 && (origKey.states() & fcitx::KeyState::Shift)) {
+      config_.associatedPhrasesEnabled.value() && origKey.code() == 36 &&
+      (origKey.states() & fcitx::KeyState::Shift)) {
     int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
       auto* choosingCandidate =

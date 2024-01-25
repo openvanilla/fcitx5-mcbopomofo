@@ -18,10 +18,11 @@ using StateCallback =
  */
 class DictionaryService {
  public:
-  virtual ~DictionaryService() {};
+  virtual ~DictionaryService(){};
 
   virtual std::string name() const = 0;
-  virtual void lookup(std::string phrase, InputState* state, size_t serviceIndex,
+  virtual void lookup(std::string phrase, InputState* state,
+                      size_t serviceIndex,
                       const StateCallback& stateCallback) = 0;
   virtual std::string textForMenu(std::string selectedString) const = 0;
 };
