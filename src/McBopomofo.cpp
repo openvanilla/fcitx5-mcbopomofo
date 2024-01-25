@@ -569,17 +569,14 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
         enterNewState(context, std::move(state));
         return true;
       }
-    } else if (selectingDictionary != nullptr) {
-      // Leave selecting dictionary service state.
-      keyIsCancel = true;
-    } else if (showingCharInfo != nullptr) {
+    } else if (selectingDictionary != nullptr || showingCharInfo != nullptr) {
       // Leave selecting dictionary service state.
       keyIsCancel = true;
     }
   }
 
   if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
-      config_.associatedPhrasesEnabled.value() == true &&
+      config_.associatedPhrasesEnabled.value() &&
       origKey.code() == 36 && (origKey.states() & fcitx::KeyState::Shift)) {
     int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
@@ -901,7 +898,7 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   selectionKeys_.clear();
 
   if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-      nullptr) {
+      nullptr) {  // NOLINT(bugprone-branch-clone)
     selectionKeys_.emplace_back(FcitxKey_1);
     selectionKeys_.emplace_back(FcitxKey_2);
     selectionKeys_.emplace_back(FcitxKey_3);
