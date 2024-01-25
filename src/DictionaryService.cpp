@@ -43,7 +43,9 @@ class CharacterInfoService : public McBopomofo::DictionaryService {
     auto selecting =
         dynamic_cast<McBopomofo::InputStates::SelectingDictionary*>(state);
     if (selecting != nullptr) {
-      auto copy = selecting->copy();
+      auto copy =
+          std::make_unique<McBopomofo::InputStates::SelectingDictionary>(
+              *selecting);
       auto newState =
           std::make_unique<McBopomofo::InputStates::ShowingCharInfo>(
               std::move(copy), phrase);

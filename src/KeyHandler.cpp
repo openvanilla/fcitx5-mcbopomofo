@@ -169,6 +169,14 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         std::string value = choosingCandidate->candidates[0].value;
         auto committingState = std::make_unique<InputStates::Committing>(value);
         stateCallback(std::move(committingState));
+
+        if (associatedPhrasesEnabled_) {
+          auto associatedPhrasesPlainState =
+              buildAssociatedPhrasesPlainState(value);
+          if (associatedPhrasesPlainState != nullptr) {
+            stateCallback(std::move(associatedPhrasesPlainState));
+          }
+        }
       } else {
         stateCallback(std::move(choosingCandidate));
       }
@@ -270,7 +278,54 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       return true;
     }
 
-    if (key.ctrlPressed) {
+    // Shift + Enter
+    if (key.shiftPressed && inputMode_ == InputMode::McBopomofo &&
+        associatedPhrasesEnabled_) {
+      size_t cursor = grid_.cursor();
+      if (cursor < 1) {
+        errorCallback();
+        return true;
+      }
+      auto inputting = dynamic_cast<InputStates::Inputting*>(state);
+      if (inputting != nullptr) {
+        std::string composerBuffer = inputting->composingBuffer;
+        std::string characterBeforeCursor =
+            GetCodePoint(composerBuffer, cursor - 1);
+        auto candidates = grid_.candidatesAt(cursor - 1);
+        auto candidateIt =
+            std::find_if(candidates.begin(), candidates.end(),
+                         [characterBeforeCursor](auto candidate) {
+                           return candidate.value == characterBeforeCursor;
+                         });
+
+        if (candidateIt == candidates.end()) {
+          // The character before the cursor is not composed by a single
+          // reading.
+          errorCallback();
+          return true;
+        }
+
+        std::optional<Formosa::Gramambular2::ReadingGrid::NodePtr>
+            oneUnitLongSpan = grid_.findInSpan(
+                cursor - 1,
+                [](const Formosa::Gramambular2::ReadingGrid::NodePtr& node) {
+                  return node->spanningLength() == 1;
+                });
+
+        if (!oneUnitLongSpan.has_value()) {
+          errorCallback();
+          return true;
+        }
+        std::string reading = (*oneUnitLongSpan)->reading();
+        auto associatedPhrasesState = buildAssociatedPhrasesState(
+            buildInputtingState(), characterBeforeCursor, reading, 0);
+        stateCallback(std::move(associatedPhrasesState));
+      }
+      return true;
+    }
+
+    // Ctrl + Enter
+    if (key.ctrlPressed && inputMode_ == InputMode::McBopomofo) {
       if (ctrlEnterKey_ == KeyHandlerCtrlEnter::OutputBpmfReadings) {
         std::vector<std::string> readings = grid_.readings();
         std::string readingValue;
@@ -334,7 +389,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     if (marking != nullptr) {
       // Enter the state to select a dictionary service.
       std::string markedText = marking->markedText;
-      std::unique_ptr<InputStates::Marking> copy = marking->copy();
+      auto copy = std::make_unique<InputStates::Marking>(*marking);
       auto selecting =
           buildSelectingDictionaryState(std::move(copy), markedText, 0);
       stateCallback(std::move(selecting));
@@ -437,10 +492,25 @@ void KeyHandler::candidateSelected(
     std::unique_ptr<InputStates::Committing> committingState =
         std::make_unique<InputStates::Committing>(candidate.value);
     stateCallback(std::move(committingState));
+
+    if (associatedPhrasesEnabled_) {
+      auto associatedPhrasesPlainState =
+          buildAssociatedPhrasesPlainState(candidate.value);
+      if (associatedPhrasesPlainState != nullptr) {
+        stateCallback(std::move(associatedPhrasesPlainState));
+      }
+    }
     return;
   }
 
   pinNode(candidate);
+  stateCallback(buildInputtingState());
+}
+
+void KeyHandler::candidateAssociatedPhraseSelected(
+    size_t index, const InputStates::ChoosingCandidate::Candidate& candidate,
+    const std::string& phrase, const StateCallback& stateCallback) {
+  pinNode(index, phrase, candidate.value);
   stateCallback(buildInputtingState());
 }
 
@@ -536,6 +606,10 @@ void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
 
 void KeyHandler::setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior) {
   ctrlEnterKey_ = behavior;
+}
+
+void KeyHandler::setAssociatedPhrasesEnabled(bool enabled) {
+  associatedPhrasesEnabled_ = enabled;
 }
 
 void KeyHandler::setOnAddNewPhrase(
@@ -949,6 +1023,48 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
       marked, tail, readingValue, isValid);
 }
 
+std::unique_ptr<InputStates::AssociatedPhrases>
+KeyHandler::buildAssociatedPhrasesState(
+    std::unique_ptr<InputStates::NotEmpty> previousState,
+    const std::string& selectedPhrase, const std::string& selectedReading,
+    size_t selectedCandidateIndex) {
+  McBopomofoLM* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
+
+  if (lm == nullptr) {
+    return nullptr;
+  }
+
+  if (lm->hasAssociatedPhrasesForKey(selectedPhrase)) {
+    std::vector<std::string> phrases =
+        lm->associatedPhrasesForKey(selectedPhrase);
+    std::vector<InputStates::ChoosingCandidate::Candidate> cs;
+    for (const auto& phrase : phrases) {
+      cs.emplace_back(phrase, phrase);
+    }
+    return std::make_unique<InputStates::AssociatedPhrases>(
+        std::move(previousState), selectedPhrase, selectedReading,
+        selectedCandidateIndex, cs);
+  }
+  return nullptr;
+}
+
+std::unique_ptr<InputStates::AssociatedPhrasesPlain>
+KeyHandler::buildAssociatedPhrasesPlainState(const std::string& key) {
+  McBopomofoLM* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
+  if (lm == nullptr) {
+    return nullptr;
+  }
+  if (lm->hasAssociatedPhrasesForKey(key)) {
+    std::vector<std::string> phrases = lm->associatedPhrasesForKey(key);
+    std::vector<InputStates::ChoosingCandidate::Candidate> cs;
+    for (const auto& phrase : phrases) {
+      cs.emplace_back(phrase, phrase);
+    }
+    return std::make_unique<InputStates::AssociatedPhrasesPlain>(cs);
+  }
+  return nullptr;
+}
+
 bool KeyHandler::hasDictionaryServices() {
   return dictionaryServices_->hasServices();
 }
@@ -985,6 +1101,11 @@ size_t KeyHandler::actualCandidateCursorIndex() {
   return cursor;
 }
 
+size_t KeyHandler::candidateCursorIndex() {
+  size_t cursor = grid_.cursor();
+  return cursor;
+}
+
 #pragma endregion Build_States
 
 void KeyHandler::pinNode(
@@ -1018,6 +1139,41 @@ void KeyHandler::pinNode(
       moveCursorAfterSelection_) {
     grid_.setCursor(accumulatedCursor);
   }
+}
+
+void KeyHandler::pinNode(size_t cursor, const std::string& candidate,
+                         const std::string& associatePhrase) {
+  if (!grid_.overrideCandidate(cursor, candidate)) {
+    return;
+  }
+  Formosa::Gramambular2::ReadingGrid::WalkResult prevWalk = latestWalk_;
+  walk();
+
+  // Update the user override model if warranted.
+  size_t accumulatedCursor = 0;
+  auto nodeIter = latestWalk_.findNodeAt(cursor, &accumulatedCursor);
+  if (nodeIter == latestWalk_.nodes.cend()) {
+    return;
+  }
+  const Formosa::Gramambular2::ReadingGrid::NodePtr& currentNode = *nodeIter;
+  if (currentNode != nullptr &&
+      currentNode->currentUnigram().score() > kNoOverrideThreshold) {
+    userOverrideModel_.observe(prevWalk, latestWalk_, cursor,
+                               GetEpochNowInSeconds());
+  }
+  grid_.setCursor(accumulatedCursor);
+  std::vector<std::string> characters = Split(associatePhrase);
+  auto* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
+  size_t index = 0;
+  if (lm != nullptr) {
+    for (const auto& character : characters) {
+      std::string reading = lm->getReading(character);
+      grid_.insertReading(reading);
+      grid_.overrideCandidate(accumulatedCursor + index, character);
+      index++;
+    }
+  }
+  walk();
 }
 
 void KeyHandler::walk() { latestWalk_ = grid_.walk(); }

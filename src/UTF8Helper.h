@@ -25,6 +25,7 @@
 #define SRC_UTF8HELPER_H_
 
 #include <string>
+#include <vector>
 
 namespace McBopomofo {
 
@@ -37,6 +38,12 @@ size_t CodePointCount(const std::string& s);
 // is a copy of s. If s contains some invalid UTF-8 sequence, the returned value
 // will be the string clamped up to before that invalid sequence.
 std::string SubstringToCodePoints(const std::string& s, size_t cp);
+
+// Gets the code point at the given index.
+std::string GetCodePoint(const std::string& s, size_t cp);
+
+// Splits the string.
+std::vector<std::string> Split(const std::string& s);
 
 }  // namespace McBopomofo
 

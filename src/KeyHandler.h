@@ -75,6 +75,10 @@ class KeyHandler {
       const InputStates::ChoosingCandidate::Candidate& candidate,
       StateCallback stateCallback);
 
+  void candidateAssociatedPhraseSelected(
+      size_t index, const InputStates::ChoosingCandidate::Candidate& candidate,
+      const std::string& phrase, const StateCallback& stateCallback);
+
   void dictionaryServiceSelected(std::string phrase, size_t index,
                                  InputState* currentState,
                                  StateCallback stateCallback);
@@ -120,16 +124,35 @@ class KeyHandler {
   // Sets if we should put lowercased letters into the composing buffer.
   void setPutLowercaseLettersToComposingBuffer(bool flag);
 
-  /// Sets if the ESC key clears entire composing buffer.
+  // Sets if the ESC key clears entire composing buffer.
   void setEscKeyClearsEntireComposingBuffer(bool flag);
 
+  // Sets the behaviour of the Ctrl + Enter key
   void setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior);
+
+  // Sets if associated phrases is enabled or not.
+  void setAssociatedPhrasesEnabled(bool enabled);
 
   void setOnAddNewPhrase(
       std::function<void(const std::string&)> onAddNewPhrase);
 
+  // Compute the actual candidate cursor index.
+  size_t actualCandidateCursorIndex();
+  size_t candidateCursorIndex();
+
   // Reading joiner for retrieving unigrams from the language model.
   static constexpr char kJoinSeparator[] = "-";
+
+  // Build an Associated Phrase state.
+  std::unique_ptr<InputStates::AssociatedPhrases> buildAssociatedPhrasesState(
+      std::unique_ptr<InputStates::NotEmpty> previousState,
+      const std::string& selectedPhrase, const std::string& selectedReading,
+      size_t selectedCandidateIndex);
+
+  // Build an Associated Phrases Plain state by the given key. It could be
+  // nullptr when there is no associated phrases.
+  std::unique_ptr<InputStates::AssociatedPhrasesPlain>
+  buildAssociatedPhrasesPlainState(const std::string& key);
 
 #pragma endregion Settings
 
@@ -158,7 +181,10 @@ class KeyHandler {
   ComposedString getComposedString(size_t builderCursor);
   std::string getHTMLRubyText();
 
+  // Build a Inputting state.
   std::unique_ptr<InputStates::Inputting> buildInputtingState();
+
+  // Build a Choosing Candidate state.
   std::unique_ptr<InputStates::ChoosingCandidate> buildChoosingCandidateState(
       InputStates::NotEmpty* nonEmptyState);
 
@@ -168,12 +194,12 @@ class KeyHandler {
   std::unique_ptr<InputStates::Marking> buildMarkingState(
       size_t beginCursorIndex);
 
-  // Compute the actual candidate cursor index.
-  size_t actualCandidateCursorIndex();
-
   // Pin a node with a fixed unigram value, usually a candidate.
   void pinNode(const InputStates::ChoosingCandidate::Candidate& candidate,
                bool useMoveCursorAfterSelectionSetting = true);
+
+  void pinNode(size_t cursor, const std::string& candidate,
+               const std::string& associatePhrase);
 
   void walk();
 
@@ -194,6 +220,7 @@ class KeyHandler {
   bool moveCursorAfterSelection_ = false;
   bool putLowercaseLettersToComposingBuffer_ = false;
   bool escKeyClearsEntireComposingBuffer_ = false;
+  bool associatedPhrasesEnabled_ = false;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
   std::function<void(const std::string&)> onAddNewPhrase_;
 
