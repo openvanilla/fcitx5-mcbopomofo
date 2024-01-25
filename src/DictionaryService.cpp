@@ -40,7 +40,7 @@ class CharacterInfoService : public McBopomofo::DictionaryService {
   void lookup(std::string phrase, McBopomofo::InputState* state,
               size_t /*Unused*/,
               const McBopomofo::StateCallback& stateCallback) override {
-    auto selecting =
+    auto* selecting =
         dynamic_cast<McBopomofo::InputStates::SelectingDictionary*>(state);
     if (selecting != nullptr) {
       auto copy =
@@ -95,7 +95,7 @@ void McBopomofo::DictionaryServices::lookup(
   if (serviceIndex >= services_.size()) {
     return;
   }
-  auto service = services_[serviceIndex].get();
+  auto* service = services_[serviceIndex].get();
   service->lookup(std::move(phrase), state, serviceIndex, stateCallback);
 }
 
