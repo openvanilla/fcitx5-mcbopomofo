@@ -210,8 +210,8 @@ TEST(ReadingGridTest, Span) {
   auto n10 = std::make_shared<ReadingGrid::Node>("", 10, lm.getUnigrams(""));
   ASSERT_DEATH({ (void)span.add(n10); }, "Assertion");
   ASSERT_DEATH({ (void)span.nodeOf(0); }, "Assertion");
-  ASSERT_DEATH(
-      { (void)span.nodeOf(ReadingGrid::kMaximumSpanLength + 1); }, "Assertion");
+  ASSERT_DEATH({ (void)span.nodeOf(ReadingGrid::kMaximumSpanLength + 1); },
+               "Assertion");
 #endif
 }
 
@@ -741,4 +741,3 @@ TEST(ReadingGridTest, FindInSpan2) {
 }
 
 }  // namespace Formosa::Gramambular2
-
