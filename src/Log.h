@@ -28,7 +28,8 @@
 
 FCITX_DECLARE_LOG_CATEGORY(mcbopomofo_log);
 
-#define FCITX_MCBOPOMOFO_WARN() FCITX_LOGC(::mcbopomofo_log, Warn)
+#define FCITX_MCBOPOMOFO_ERROR() FCITX_LOGC(::mcbopomofo_log, Error)
 #define FCITX_MCBOPOMOFO_INFO() FCITX_LOGC(::mcbopomofo_log, Info)
+#define FCITX_MCBOPOMOFO_WARN() FCITX_LOGC(::mcbopomofo_log, Warn)
 
 #endif  // SRC_LOG_H_

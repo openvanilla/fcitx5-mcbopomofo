@@ -43,6 +43,17 @@ namespace McBopomofo {
 
 constexpr char kConfigPath[] = "conf/mcbopomofo.conf";
 
+// These two are used to determine whether Shift-[1-9] is pressed.
+constexpr int kFcitxRawKeycode_1 = 10;
+constexpr int kFcitxRawKeycode_9 = 18;
+
+// For determining whether Shift-Enter is pressed in the candidate panel.
+constexpr int kFcitxRawKeycode_Enter = 36;
+
+// If a horizontal panel contains a candidate that's longer than this number,
+// the panel will be changed to a vertical panel.
+constexpr size_t kForceVerticalCandidateThreshold = 8;
+
 static Key MapFcitxKey(const fcitx::Key& key) {
   if (key.isSimple()) {
     return Key::asciiKey(key.sym(), false);
@@ -512,9 +523,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
       nullptr) {
     int code = origKey.code();
-    if ((origKey.states() & fcitx::KeyState::Shift) && code >= 10 &&
-        code <= 19) {
-      int idx = code - 10;
+    if ((origKey.states() & fcitx::KeyState::Shift) &&
+        code >= kFcitxRawKeycode_1 && code <= kFcitxRawKeycode_9) {
+      int idx = code - kFcitxRawKeycode_1;
       if (idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
         candidateList->candidate(idx)->select(context);
@@ -527,14 +538,12 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 
   } else {
     int idx = key.keyListIndex(selectionKeys_);
-    if (idx >= 0) {
-      if (idx < candidateList->size()) {
+    if (idx != -1 && idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
-        candidateList->candidate(idx)->select(context);
+      candidateList->candidate(idx)->select(context);
 #else
-        candidateList->candidate(idx).select(context);
+      candidateList->candidate(idx).select(context);
 #endif
-      }
       return true;
     }
   }
@@ -576,7 +585,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   }
 
   if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
-      config_.associatedPhrasesEnabled.value() && origKey.code() == 36 &&
+      config_.associatedPhrasesEnabled.value() &&
+      origKey.code() == kFcitxRawKeycode_Enter &&
       (origKey.states() & fcitx::KeyState::Shift)) {
     int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
@@ -899,6 +909,8 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
 
   if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
       nullptr) {  // NOLINT(bugprone-branch-clone)
+    // Associated phrases in Plain Bopomofo only takes Shift-[1-9]; we push
+    // these keys and will detect the shift mask later.
     selectionKeys_.emplace_back(FcitxKey_1);
     selectionKeys_.emplace_back(FcitxKey_2);
     selectionKeys_.emplace_back(FcitxKey_3);
@@ -1116,7 +1128,8 @@ fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
     for (const InputStates::ChoosingCandidate::Candidate& candidate :
          candidates) {
       std::string value = candidate.value;
-      if (McBopomofo::CodePointCount(value) > 8) {
+      if (McBopomofo::CodePointCount(value) >
+          kForceVerticalCandidateThreshold) {
         return fcitx::CandidateLayoutHint::Vertical;
       }
     }

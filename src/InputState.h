@@ -85,7 +85,7 @@ struct Inputting : NotEmpty {
             const std::string_view& tooltipText = "")
       : NotEmpty(buf, index, tooltipText) {}
 
-  Inputting(Inputting const& state)
+  Inputting(const Inputting& state)
       : NotEmpty(state.composingBuffer, state.cursorIndex, state.tooltip) {}
 };
 
@@ -97,7 +97,7 @@ struct ChoosingCandidate : NotEmpty {
                     std::vector<Candidate> cs)
       : NotEmpty(buf, index), candidates(std::move(cs)) {}
 
-  ChoosingCandidate(ChoosingCandidate const& state)
+  ChoosingCandidate(const ChoosingCandidate& state)
       : NotEmpty(state.composingBuffer, state.cursorIndex),
         candidates(state.candidates) {}
 
@@ -138,7 +138,7 @@ struct Marking : NotEmpty {
         reading(std::move(readingText)),
         acceptable(canAccept) {}
 
-  Marking(Marking const& state)
+  Marking(const Marking& state)
       : NotEmpty(state.composingBuffer, state.cursorIndex, state.tooltip),
         markStartGridCursorIndex(state.markStartGridCursorIndex),
         head(state.head),
@@ -166,7 +166,7 @@ struct SelectingDictionary : NotEmpty {
         selectedCandidateIndex(selectedIndex),
         menu(std::move(menu)) {}
 
-  SelectingDictionary(SelectingDictionary const& state)
+  SelectingDictionary(const SelectingDictionary& state)
       : NotEmpty(state.previousState->composingBuffer,
                  state.previousState->cursorIndex,
                  state.previousState->tooltip),
