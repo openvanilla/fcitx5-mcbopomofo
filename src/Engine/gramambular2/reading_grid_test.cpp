@@ -210,8 +210,8 @@ TEST(ReadingGridTest, Span) {
   auto n10 = std::make_shared<ReadingGrid::Node>("", 10, lm.getUnigrams(""));
   ASSERT_DEATH({ (void)span.add(n10); }, "Assertion");
   ASSERT_DEATH({ (void)span.nodeOf(0); }, "Assertion");
-  ASSERT_DEATH(
-      { (void)span.nodeOf(ReadingGrid::kMaximumSpanLength + 1); }, "Assertion");
+  ASSERT_DEATH({ (void)span.nodeOf(ReadingGrid::kMaximumSpanLength + 1); },
+               "Assertion");
 #endif
 }
 
@@ -454,6 +454,81 @@ TEST(ReadingGridTest, LongGridDeletion) {
   ASSERT_EQ(grid.spans()[6].nodeOf(6)->reading(), "hijklm");
   ASSERT_EQ(grid.spans()[7].nodeOf(6)->reading(), "ijklmn");
   ASSERT_EQ(grid.spans()[8].nodeOf(5)->reading(), "jklmn");
+}
+
+TEST(ReadingGridTest, FindNodeInSpans) {
+  ReadingGrid grid(std::make_shared<MockLM>());
+  grid.setReadingSeparator(";");
+  grid.insertReading("a");
+  grid.insertReading("b");
+  grid.insertReading("c");
+
+  ASSERT_FALSE(
+      grid.findInSpan(0, [](const auto& n) { return n->spanningLength() == 4; })
+          .has_value());
+  ASSERT_FALSE(
+      grid.findInSpan(1, [](const auto& n) { return n->spanningLength() == 0; })
+          .has_value());
+  ASSERT_EQ(
+      grid.findInSpan(0, [](const auto& n) { return n->spanningLength() == 1; })
+          ->get()
+          ->reading(),
+      "a");
+  ASSERT_EQ(
+      grid.findInSpan(1, [](const auto& n) { return n->spanningLength() == 1; })
+          ->get()
+          ->reading(),
+      "b");
+  ASSERT_EQ(
+      grid.findInSpan(2, [](const auto& n) { return n->spanningLength() == 1; })
+          ->get()
+          ->reading(),
+      "c");
+  ASSERT_EQ(
+      grid.findInSpan(3, [](const auto& n) { return n->spanningLength() == 1; })
+          ->get()
+          ->reading(),
+      "c");
+  ASSERT_EQ(
+      grid.findInSpan(0, [](const auto& n) { return n->spanningLength() == 2; })
+          ->get()
+          ->reading(),
+      "a;b");
+  ASSERT_EQ(
+      grid.findInSpan(1, [](const auto& n) { return n->spanningLength() == 2; })
+          ->get()
+          ->reading(),
+      "b;c");
+  ASSERT_EQ(
+      grid.findInSpan(2, [](const auto& n) { return n->spanningLength() == 2; })
+          ->get()
+          ->reading(),
+      "b;c");
+  ASSERT_EQ(
+      grid.findInSpan(3, [](const auto& n) { return n->spanningLength() == 2; })
+          ->get()
+          ->reading(),
+      "b;c");
+  ASSERT_EQ(
+      grid.findInSpan(0, [](const auto& n) { return n->spanningLength() == 3; })
+          ->get()
+          ->reading(),
+      "a;b;c");
+  ASSERT_EQ(
+      grid.findInSpan(1, [](const auto& n) { return n->spanningLength() == 3; })
+          ->get()
+          ->reading(),
+      "a;b;c");
+  ASSERT_EQ(
+      grid.findInSpan(2, [](const auto& n) { return n->spanningLength() == 3; })
+          ->get()
+          ->reading(),
+      "a;b;c");
+  ASSERT_EQ(
+      grid.findInSpan(3, [](const auto& n) { return n->spanningLength() == 3; })
+          ->get()
+          ->reading(),
+      "a;b;c");
 }
 
 TEST(ReadingGridTest, StressTest) {
@@ -741,4 +816,3 @@ TEST(ReadingGridTest, FindInSpan2) {
 }
 
 }  // namespace Formosa::Gramambular2
-

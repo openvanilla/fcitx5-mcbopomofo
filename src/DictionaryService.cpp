@@ -40,7 +40,7 @@ class CharacterInfoService : public McBopomofo::DictionaryService {
   void lookup(std::string phrase, McBopomofo::InputState* state,
               size_t /*Unused*/,
               const McBopomofo::StateCallback& stateCallback) override {
-    auto selecting =
+    auto* selecting =
         dynamic_cast<McBopomofo::InputStates::SelectingDictionary*>(state);
     if (selecting != nullptr) {
       auto copy =
@@ -99,7 +99,7 @@ void McBopomofo::DictionaryServices::lookup(
   if (serviceIndex >= services_.size()) {
     return;
   }
-  auto service = services_[serviceIndex].get();
+  auto* service = services_[serviceIndex].get();
   service->lookup(std::move(phrase), state, serviceIndex, stateCallback);
 }
 
@@ -122,18 +122,51 @@ void McBopomofo::DictionaryServices::load() {
   FILE* file = fopen(dictionaryServicesPath.c_str(), "r");
   if (!file) {
     FCITX_MCBOPOMOFO_INFO()
-        << "No dictionary service file" << dictionaryServicesPath;
+        << "No dictionary service file: " << dictionaryServicesPath;
     return;
   }
-  fseek(file, 0, SEEK_END);
+  int err = fseek(file, 0, SEEK_END);
+  if (err != 0) {
+    FCITX_MCBOPOMOFO_ERROR()
+        << "Error seeking dictionary service file: " << dictionaryServicesPath;
+    (void)fclose(file);
+    return;
+  }
+
   long file_size = ftell(file);
-  fseek(file, 0, SEEK_SET);
+  if (file_size == -1) {
+    FCITX_MCBOPOMOFO_ERROR()
+        << "Error ftelling dictionary service file: " << dictionaryServicesPath;
+    (void)fclose(file);
+    return;
+  }
+  err = fseek(file, 0, SEEK_SET);
+  if (err != 0) {
+    FCITX_MCBOPOMOFO_ERROR()
+        << "Error seeking dictionary service file: " << dictionaryServicesPath;
+    (void)fclose(file);
+    return;
+  }
+
   std::unique_ptr<char[]> json_data(new char[file_size + 1]);
-  fread(json_data.get(), 1, file_size, file);
-  fclose(file);
+  size_t nchunkread = fread(json_data.get(), file_size, 1, file);
+  if (nchunkread != 1) {
+    FCITX_MCBOPOMOFO_ERROR()
+        << "Error reading dictionary service file: " << dictionaryServicesPath;
+    (void)fclose(file);
+    return;
+  }
+  err = fclose(file);
+  if (err != 0) {
+    FCITX_MCBOPOMOFO_ERROR()
+        << "Error closing dictionary service file: " << dictionaryServicesPath;
+    // Pass through since we've already read the data.
+  }
   json_data[file_size] = '\0';
   struct json_object* json_obj = json_tokener_parse(json_data.get());
   if (json_obj == nullptr) {
+    FCITX_MCBOPOMOFO_WARN()
+        << "Dictionary service file not valid: " << dictionaryServicesPath;
     return;
   }
   struct json_object* servicesArray;

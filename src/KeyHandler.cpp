@@ -286,7 +286,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         errorCallback();
         return true;
       }
-      auto inputting = dynamic_cast<InputStates::Inputting*>(state);
+      auto* inputting = dynamic_cast<InputStates::Inputting*>(state);
       if (inputting != nullptr) {
         std::string composerBuffer = inputting->composingBuffer;
         std::string characterBeforeCursor =
