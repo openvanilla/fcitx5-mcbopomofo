@@ -67,11 +67,15 @@ class HttpBasedDictionaryService : public McBopomofo::DictionaryService {
 
   void lookup(std::string phrase, McBopomofo::InputState* /*unused*/,
               size_t /*unused*/,
-              const McBopomofo::StateCallback& /*unused*/) override {
+              const McBopomofo::StateCallback& stateCallback) override {
     std::string url = urlTemplate_;
     std::string encoded = "(encoded)";
     url.replace(url.find(encoded), url.length(), urlEncode(phrase));
     fcitx::startProcess({"xdg-open", url});
+    // Since the input method launches a web browser, we just
+    // change the state to close the candidate window.
+    auto empty =  std::make_unique<McBopomofo::InputStates::Empty>();
+    stateCallback(std::move(empty));
   }
 
   std::string textForMenu(std::string selectedString) const override {
