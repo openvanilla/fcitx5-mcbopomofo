@@ -17,6 +17,7 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.23.0")
 endif()
 
 add_subdirectory(Engine)
+add_subdirectory(ChineseNumbers)
 
 set(MCBOPOMOFO_LIB_SOURCES
  KeyHandler.cpp
