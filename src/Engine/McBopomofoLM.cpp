@@ -26,6 +26,7 @@
 #include <iterator>
 #include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace McBopomofo {
@@ -174,13 +175,22 @@ bool McBopomofoLM::externalConverterEnabled() const
 
 void McBopomofoLM::setExternalConverter(std::function<std::string(const std::string&)> externalConverter)
 {
-    m_externalConverter = externalConverter;
+    m_externalConverter = std::move(externalConverter);
 }
 
 void McBopomofoLM::setMacroConverter(std::function<std::string(const std::string&)> macroConverter)
 {
-    m_macroConverter = macroConverter;
+    m_macroConverter = std::move(macroConverter);
 }
+
+std::string McBopomofoLM::convertMacro(std::string input)
+{
+    if (m_macroConverter != nullptr) {
+        return m_macroConverter(input);
+    }
+    return input;
+}
+
 
 std::vector<Formosa::Gramambular2::LanguageModel::Unigram> McBopomofoLM::filterAndTransformUnigrams(const std::vector<Formosa::Gramambular2::LanguageModel::Unigram> unigrams, const std::unordered_set<std::string>& excludedValues, std::unordered_set<std::string>& insertedValues)
 {
@@ -189,7 +199,7 @@ std::vector<Formosa::Gramambular2::LanguageModel::Unigram> McBopomofoLM::filterA
     for (auto&& unigram : unigrams) {
         // excludedValues filters out the unigrams with the original value.
         // insertedValues filters out the ones with the converted value
-        std::string originalValue = unigram.value();
+        const std::string& originalValue = unigram.value();
         if (excludedValues.find(originalValue) != excludedValues.end()) {
             continue;
         }
@@ -226,5 +236,6 @@ bool McBopomofoLM::hasAssociatedPhrasesForKey(const std::string& key)
 {
     return m_associatedPhrases.hasValuesForKey(key);
 }
+
 
 } // namespace McBopomofo

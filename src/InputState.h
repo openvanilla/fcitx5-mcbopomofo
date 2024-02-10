@@ -259,36 +259,76 @@ struct ChineseNumber : InputState {
   ChineseNumberStyle style;
 };
 
+static std::string DateMacros[] = {"MACRO@DATE_TODAY_SHORT",
+                                   "MACRO@DATE_TODAY_MEDIUM",
+                                   "MACRO@DATE_TODAY_MEDIUM_ROC",
+                                   "MACRO@DATE_TODAY_MEDIUM_CHINESE",
+                                   "MACRO@DATE_TODAY_MEDIUM_JAPANESE",
+                                   "MACRO@THIS_YEAR_PLAIN",
+                                   "MACRO@THIS_YEAR_PLAIN_WITH_ERA",
+                                   "MACRO@THIS_YEAR_ROC",
+                                   "MACRO@THIS_YEAR_JAPANESE",
+                                   "MACRO@DATE_TODAY_WEEKDAY_SHORT",
+                                   "MACRO@DATE_TODAY_WEEKDAY",
+                                   "MACRO@DATE_TODAY2_WEEKDAY",
+                                   "MACRO@DATE_TODAY_WEEKDAY_JAPANESE",
+                                   "MACRO@TIME_NOW_SHORT",
+                                   "MACRO@TIME_NOW_MEDIUM",
+                                   "MACRO@THIS_YEAR_GANZHI",
+                                   "MACRO@THIS_YEAR_CHINESE_ZODIAC"};
+
+struct SelectingDateMacro : InputState {
+  SelectingDateMacro(std::function<std::string(std::string)> converter)
+      : converter(converter) {
+    for (std::string macro : DateMacros) {
+      menu.emplace_back(converter(macro));
+    }
+  }
+
+  SelectingDateMacro(SelectingDateMacro const& selectingDateMacro)
+      : converter(selectingDateMacro.converter) {
+    for (std::string macro : DateMacros) {
+      menu.emplace_back(selectingDateMacro.converter(macro));
+    }
+  }
+
+  std::vector<std::string> menu;
+  std::function<std::string(std::string)> converter;
+};
+
 struct SelectingFeature : InputState {
   struct Feature {
-    Feature(std::string name, std::unique_ptr<InputState> nextState)
+    Feature(std::string name,
+            std::function<std::unique_ptr<InputState>(void)> nextState)
         : name(std::move(name)), nextState(std::move(nextState)) {}
     std::string name;
-    std::unique_ptr<InputState> nextState;
+    std::function<std::unique_ptr<InputState>(void)> nextState;
   };
 
-  SelectingFeature() {
-    features.emplace_back(std::make_unique<Feature>(
-        "中文數字",
-        std::make_unique<ChineseNumber>("", ChineseNumberStyle::LOWER)));
-    features.emplace_back(std::make_unique<Feature>(
-        "大寫數字",
-        std::make_unique<ChineseNumber>("", ChineseNumberStyle::UPPER)));
-    features.emplace_back(std::make_unique<Feature>(
-        "蘇州碼",
-        std::make_unique<ChineseNumber>("", ChineseNumberStyle::SUZHOU)));
+  SelectingFeature(std::function<std::string(std::string)> converter)
+      : converter(converter) {
+    features.emplace_back(std::make_unique<Feature>("日期與時間", [this]() {
+      return std::make_unique<SelectingDateMacro>(this->converter);
+    }));
+    features.emplace_back(std::make_unique<Feature>("中文數字", []() {
+      return std::make_unique<ChineseNumber>("", ChineseNumberStyle::LOWER);
+    }));
+    features.emplace_back(std::make_unique<Feature>("大寫數字", []() {
+      return std::make_unique<ChineseNumber>("", ChineseNumberStyle::UPPER);
+    }));
+    features.emplace_back(std::make_unique<Feature>("蘇州碼", []() {
+      return std::make_unique<ChineseNumber>("", ChineseNumberStyle::SUZHOU);
+    }));
+  }
+
+  std::unique_ptr<InputState> nextState(size_t index) {
+    return features[index]->nextState();
   }
 
   std::vector<std::unique_ptr<Feature>> features;
 
-  std::unique_ptr<InputState> nextState(size_t index) {
-    ChineseNumber* chineseNumber =
-        dynamic_cast<ChineseNumber*>(features[index]->nextState.get());
-    if (chineseNumber != nullptr) {
-      return std::make_unique<ChineseNumber>(*chineseNumber);
-    }
-    return std::make_unique<Empty>();
-  }
+ protected:
+  std::function<std::string(std::string)> converter;
 };
 
 }  // namespace InputStates

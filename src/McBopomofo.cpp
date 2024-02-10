@@ -215,6 +215,22 @@ class McBopomofoFeatureWord : public fcitx::CandidateWord {
   KeyHandler::StateCallback stateCallback_;
 };
 
+class McBopomofoDirectInsertWord : public fcitx::CandidateWord {
+ public:
+  explicit McBopomofoDirectInsertWord(fcitx::Text displayText, std::string text,
+                                      KeyHandler::StateCallback callback)
+      : fcitx::CandidateWord(std::move(displayText)),
+        text(std::move(text)),
+        callback(std::move(callback)) {}
+  void select(fcitx::InputContext* /*unused*/) const override {
+    callback(std::make_unique<InputStates::Committing>(text));
+//    callback(std::make_unique<InputStates::Empty>());
+  }
+
+  std::string text;
+  KeyHandler::StateCallback callback;
+};
+
 class McBopomofoTextOnlyCandidateWord : public fcitx::CandidateWord {
  public:
   explicit McBopomofoTextOnlyCandidateWord(fcitx::Text displayText)
@@ -480,7 +496,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       dynamic_cast<InputStates::AssociatedPhrases*>(state_.get()) != nullptr ||
       dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
           nullptr ||
-      dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr) {
+      dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr ||
+      dynamic_cast<InputStates::SelectingDateMacro*>(state_.get()) != nullptr) {
     // Absorb all keys when the candidate panel is on.
     keyEvent.filterAndAccept();
 
@@ -518,7 +535,9 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
             nullptr ||
         dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
             nullptr ||
-        dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr) {
+        dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr ||
+        dynamic_cast<InputStates::SelectingDateMacro*>(state_.get()) !=
+            nullptr) {
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       context->updatePreedit();
     }
@@ -888,6 +907,9 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
   } else if (auto* selectingFeature =
                  dynamic_cast<InputStates::SelectingFeature*>(currentPtr)) {
     handleCandidatesState(context, prevPtr, selectingFeature);
+  } else if (auto* selectingDateMacro =
+                 dynamic_cast<InputStates::SelectingDateMacro*>(currentPtr)) {
+    handleCandidatesState(context, prevPtr, selectingDateMacro);
   } else if (auto* chineseNumber =
                  dynamic_cast<InputStates::ChineseNumber*>(currentPtr)) {
     handleChineseNumberState(context, prevPtr, chineseNumber);
@@ -1007,6 +1029,8 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       dynamic_cast<InputStates::AssociatedPhrasesPlain*>(current);
   auto* selectingFeature =
       dynamic_cast<InputStates::SelectingFeature*>(current);
+  auto* selectingDateMacro =
+      dynamic_cast<InputStates::SelectingDateMacro*>(current);
 
   if (choosing != nullptr) {
     // Construct the candidate list with special care for candidates that have
@@ -1144,6 +1168,19 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
 #endif
       index++;
     }
+  } else if (selectingDateMacro != nullptr) {
+    for (const auto& displayText : selectingDateMacro->menu) {
+#ifdef USE_LEGACY_FCITX5_API
+      fcitx::CandidateWord* candidate = new McBopomofoDirectInsertWord(
+          fcitx::Text(displayText), displayText, callback);
+      candidateList->append(candidate);
+#else
+      std::unique_ptr<fcitx::CandidateWord> candidate =
+          std::make_unique<McBopomofoDirectInsertWord>(fcitx::Text(displayText),
+                                                       displayText, callback);
+      candidateList->append(std::move(candidate));
+#endif
+    }
   }
 
   candidateList->toCursorMovable()->nextCandidate();
@@ -1198,13 +1235,10 @@ fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
   fcitx::CandidateLayoutHint layoutHint = fcitx::CandidateLayoutHint::NotSet;
 
   if (dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
-      nullptr) {
-    return fcitx::CandidateLayoutHint::Vertical;
-  }
-  if (dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr) {
-    return fcitx::CandidateLayoutHint::Vertical;
-  }
-  if (dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr) {
+          nullptr ||
+      dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr ||
+      dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr ||
+      dynamic_cast<InputStates::SelectingDateMacro*>(state_.get()) != nullptr) {
     return fcitx::CandidateLayoutHint::Vertical;
   }
 

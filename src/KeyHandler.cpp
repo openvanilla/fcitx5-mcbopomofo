@@ -108,7 +108,14 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                         ErrorCallback errorCallback) {
   if (key.ascii == '\\' && key.ctrlPressed) {
     stateCallback(std::make_unique<InputStates::Empty>());
-    stateCallback(std::make_unique<InputStates::SelectingFeature>());
+    stateCallback(std::make_unique<InputStates::SelectingFeature>(
+        [this](std::string input) {
+          auto* lm = dynamic_cast<McBopomofoLM*>(this->lm_.get());
+          if (lm != nullptr) {
+            return lm->convertMacro(input);
+          }
+          return input;
+        }));
     reset();
     return true;
   }
