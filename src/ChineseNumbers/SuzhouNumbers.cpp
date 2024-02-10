@@ -51,8 +51,6 @@ std::string SuzhouNumbers::Generate(const std::string& intPart,
     }
   }
   size_t joinedLength = joined.length();
-  std::cout << joined << std::endl;
-  std::cout << joinedLength << std::endl;
   if (joinedLength == 1 && trimmedZeroCounts == 0) {
     output << unit;
     return output.str();

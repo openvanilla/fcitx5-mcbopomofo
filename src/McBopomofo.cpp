@@ -76,6 +76,8 @@ static Key MapFcitxKey(const fcitx::Key& key) {
         return Key::asciiKey(';', shiftPressed, ctrlPressed);
       case FcitxKey_apostrophe:
         return Key::asciiKey('\'', shiftPressed, ctrlPressed);
+      case FcitxKey_backslash:
+        return Key::asciiKey('\\', shiftPressed, ctrlPressed);
       default:
         break;
     }
@@ -185,6 +187,30 @@ class McBopomofoDictionaryServiceWord : public fcitx::CandidateWord {
  private:
   size_t index_;
   InputStates::SelectingDictionary* currentState_;
+  std::shared_ptr<KeyHandler> keyHandler_;
+  KeyHandler::StateCallback stateCallback_;
+};
+
+class McBopomofoFeatureWord : public fcitx::CandidateWord {
+ public:
+  McBopomofoFeatureWord(fcitx::Text displayText, size_t index,
+                        InputStates::SelectingFeature* currentState,
+                        std::shared_ptr<KeyHandler> keyHandler,
+                        KeyHandler::StateCallback callback)
+      : fcitx::CandidateWord(std::move(displayText)),
+        index_(index),
+        currentState_(currentState),
+        keyHandler_(std::move(keyHandler)),
+        stateCallback_(std::move(callback)) {}
+
+  void select(fcitx::InputContext* /*unused*/) const override {
+    auto nextState = currentState_->nextState(index_);
+    stateCallback_(std::move(nextState));
+  }
+
+ private:
+  size_t index_;
+  InputStates::SelectingFeature* currentState_;
   std::shared_ptr<KeyHandler> keyHandler_;
   KeyHandler::StateCallback stateCallback_;
 };
@@ -453,7 +479,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr ||
       dynamic_cast<InputStates::AssociatedPhrases*>(state_.get()) != nullptr ||
       dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-          nullptr) {
+          nullptr ||
+      dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr) {
     // Absorb all keys when the candidate panel is on.
     keyEvent.filterAndAccept();
 
@@ -490,7 +517,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
         dynamic_cast<InputStates::AssociatedPhrases*>(state_.get()) !=
             nullptr ||
         dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-            nullptr) {
+            nullptr ||
+        dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr) {
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       context->updatePreedit();
     }
@@ -857,6 +885,12 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
                  dynamic_cast<InputStates::AssociatedPhrasesPlain*>(
                      currentPtr)) {
     handleCandidatesState(context, prevPtr, associatePhrasePlain);
+  } else if (auto* selectingFeature =
+                 dynamic_cast<InputStates::SelectingFeature*>(currentPtr)) {
+    handleCandidatesState(context, prevPtr, selectingFeature);
+  } else if (auto* chineseNumber =
+                 dynamic_cast<InputStates::ChineseNumber*>(currentPtr)) {
+    handleChineseNumberState(context, prevPtr, chineseNumber);
   }
 }
 
@@ -971,6 +1005,8 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       dynamic_cast<InputStates::AssociatedPhrases*>(current);
   auto* associatedPhrasesPlain =
       dynamic_cast<InputStates::AssociatedPhrasesPlain*>(current);
+  auto* selectingFeature =
+      dynamic_cast<InputStates::SelectingFeature*>(current);
 
   if (choosing != nullptr) {
     // Construct the candidate list with special care for candidates that have
@@ -1089,6 +1125,25 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       candidateList->append(std::move(candidate));
 #endif
     }
+  } else if (selectingFeature != nullptr) {
+    size_t index = 0;
+    for (const auto& menuItem : selectingFeature->features) {
+      std::string displayText = menuItem->name;
+
+#ifdef USE_LEGACY_FCITX5_API
+      fcitx::CandidateWord* candidate =
+          new McBopomofoFeatureWord(fcitx::Text(displayText), index,
+                                    selectingFeature, keyHandler_, callback);
+      candidateList->append(candidate);
+#else
+      std::unique_ptr<fcitx::CandidateWord> candidate =
+          std::make_unique<McBopomofoFeatureWord>(fcitx::Text(displayText),
+                                                  index, selectingFeature,
+                                                  keyHandler_, callback);
+      candidateList->append(std::move(candidate));
+#endif
+      index++;
+    }
   }
 
   candidateList->toCursorMovable()->nextCandidate();
@@ -1110,6 +1165,35 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
   updatePreedit(context, current);
 }
 
+void McBopomofoEngine::handleChineseNumberState(
+    fcitx::InputContext* context, InputState* /*unused*/,
+    InputStates::ChineseNumber* current) {
+  context->inputPanel().reset();
+  context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+
+  bool useClientPreedit =
+      context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
+#ifdef USE_LEGACY_FCITX5_API
+  fcitx::TextFormatFlags normalFormat{useClientPreedit
+                                          ? fcitx::TextFormatFlag::Underline
+                                          : fcitx::TextFormatFlag::None};
+#else
+  fcitx::TextFormatFlags normalFormat{useClientPreedit
+                                          ? fcitx::TextFormatFlag::Underline
+                                          : fcitx::TextFormatFlag::NoFlag};
+#endif
+  fcitx::Text preedit;
+  preedit.append(current->composingBuffer(), normalFormat);
+  preedit.setCursor((int)current->composingBuffer().length());
+
+  if (useClientPreedit) {
+    context->inputPanel().setClientPreedit(preedit);
+  } else {
+    context->inputPanel().setPreedit(preedit);
+  }
+  context->updatePreedit();
+}
+
 fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
   fcitx::CandidateLayoutHint layoutHint = fcitx::CandidateLayoutHint::NotSet;
 
@@ -1118,6 +1202,9 @@ fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
     return fcitx::CandidateLayoutHint::Vertical;
   }
   if (dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr) {
+    return fcitx::CandidateLayoutHint::Vertical;
+  }
+  if (dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr) {
     return fcitx::CandidateLayoutHint::Vertical;
   }
 

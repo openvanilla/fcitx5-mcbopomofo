@@ -31,6 +31,12 @@
 
 namespace McBopomofo {
 
+enum class ChineseNumberStyle {
+  LOWER,
+  UPPER,
+  SUZHOU,
+};
+
 struct InputState {
   virtual ~InputState() = default;
 };
@@ -229,6 +235,60 @@ struct AssociatedPhrasesPlain : InputState {
   explicit AssociatedPhrasesPlain(std::vector<ChoosingCandidate::Candidate> cs)
       : candidates(std::move(cs)) {}
   const std::vector<ChoosingCandidate::Candidate> candidates;
+};
+
+struct ChineseNumber : InputState {
+  ChineseNumber(std::string number, ChineseNumberStyle style)
+      : number(std::move(number)), style(style) {}
+  ChineseNumber(ChineseNumber const& number)
+      : number(number.number), style(number.style) {}
+
+  std::string composingBuffer() const {
+    if (style == ChineseNumberStyle::LOWER) {
+      return "[中文數字] " + number;
+    } else if (style == ChineseNumberStyle::UPPER) {
+      return "[大寫數字] " + number;
+    } else if (style == ChineseNumberStyle::SUZHOU) {
+      return "[蘇州碼] " + number;
+    }
+
+    return number;
+  }
+
+  std::string number;
+  ChineseNumberStyle style;
+};
+
+struct SelectingFeature : InputState {
+  struct Feature {
+    Feature(std::string name, std::unique_ptr<InputState> nextState)
+        : name(std::move(name)), nextState(std::move(nextState)) {}
+    std::string name;
+    std::unique_ptr<InputState> nextState;
+  };
+
+  SelectingFeature() {
+    features.emplace_back(std::make_unique<Feature>(
+        "中文數字",
+        std::make_unique<ChineseNumber>("", ChineseNumberStyle::LOWER)));
+    features.emplace_back(std::make_unique<Feature>(
+        "大寫數字",
+        std::make_unique<ChineseNumber>("", ChineseNumberStyle::UPPER)));
+    features.emplace_back(std::make_unique<Feature>(
+        "蘇州碼",
+        std::make_unique<ChineseNumber>("", ChineseNumberStyle::SUZHOU)));
+  }
+
+  std::vector<std::unique_ptr<Feature>> features;
+
+  std::unique_ptr<InputState> nextState(size_t index) {
+    ChineseNumber* chineseNumber =
+        dynamic_cast<ChineseNumber*>(features[index]->nextState.get());
+    if (chineseNumber != nullptr) {
+      return std::make_unique<ChineseNumber>(*chineseNumber);
+    }
+    return std::make_unique<Empty>();
+  }
 };
 
 }  // namespace InputStates

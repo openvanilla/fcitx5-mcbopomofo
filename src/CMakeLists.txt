@@ -36,7 +36,7 @@ include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cma
 
 add_library(McBopomofoLib ${MCBOPOMOFO_LIB_SOURCES})
 target_compile_options(McBopomofoLib PRIVATE -Wno-unknown-pragmas)
-target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils ICU::uc ICU::i18n ${JSONC_LIBRARIES} gramambular2_lib McBopomofoLMLib MandarinLib)
+target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils ICU::uc ICU::i18n ${JSONC_LIBRARIES} gramambular2_lib McBopomofoLMLib MandarinLib ChineseNumbersLib)
 target_include_directories(McBopomofoLib PRIVATE Fcitx5::Utils)
 target_compile_definitions(McBopomofoLib PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 
@@ -47,6 +47,7 @@ endif ()
 include_directories(Engine)
 include_directories(Engine/Gramambular)
 include_directories(Engine/Mandarin)
+include_directories(ChineseNumbers)
 
 add_library(mcbopomofo MODULE McBopomofo.cpp)
 # Use this to build McBopomofo on, for example, Ubuntu 20.04 LTS

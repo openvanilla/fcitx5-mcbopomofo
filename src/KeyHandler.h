@@ -157,6 +157,10 @@ class KeyHandler {
 #pragma endregion Settings
 
  private:
+  bool handleChineseNumber(Key key,
+                           McBopomofo::InputStates::ChineseNumber* state,
+                           StateCallback stateCallback,
+                           ErrorCallback errorCallback);
   bool handleTabKey(Key key, McBopomofo::InputState* state,
                     const StateCallback& stateCallback,
                     const ErrorCallback& errorCallback);

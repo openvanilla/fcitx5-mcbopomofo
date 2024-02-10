@@ -66,7 +66,7 @@ struct Key {
                       bool ctrlPressed = false) {
     return Key(0, name, shiftPressed, ctrlPressed);
   }
-
+;
   // Regardless of the shift state.
   bool isCursorKeys() {
     return name == KeyName::LEFT || name == KeyName::RIGHT ||

@@ -27,6 +27,8 @@
 #include <chrono>
 #include <utility>
 
+#include "ChineseNumbers/ChineseNumbers.h"
+#include "ChineseNumbers/SuzhouNumbers.h"
 #include "Log.h"
 #include "UTF8Helper.h"
 
@@ -104,6 +106,19 @@ KeyHandler::KeyHandler(
 bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                         StateCallback stateCallback,
                         ErrorCallback errorCallback) {
+  if (key.ascii == '\\' && key.ctrlPressed) {
+    stateCallback(std::make_unique<InputStates::Empty>());
+    stateCallback(std::make_unique<InputStates::SelectingFeature>());
+    reset();
+    return true;
+  }
+
+  auto chineseNumber = dynamic_cast<InputStates::ChineseNumber*>(state);
+  if (chineseNumber != nullptr) {
+    return handleChineseNumber(key, chineseNumber, stateCallback,
+                               errorCallback);
+  }
+
   // From Key's definition, if shiftPressed is true, it can't be a simple key
   // that can be represented by ASCII.
   char simpleAscii = (key.ctrlPressed || key.shiftPressed) ? '\0' : key.ascii;
@@ -830,6 +845,99 @@ bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
   } else {
     auto inputting = buildInputtingState();
     stateCallback(std::move(inputting));
+  }
+
+  return true;
+}
+
+bool KeyHandler::handleChineseNumber(
+    Key key, McBopomofo::InputStates::ChineseNumber* state,
+    StateCallback stateCallback, KeyHandler::ErrorCallback errorCallback) {
+  if (key.ascii == Key::ESC) {
+    stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+    return true;
+  }
+  if (key.isDeleteKeys()) {
+    std::string number = state->number;
+    if (!number.empty()) {
+      number = number.substr(0, number.length() - 1);
+    } else {
+      errorCallback();
+      return true;
+    }
+    auto newState =
+        std::make_unique<InputStates::ChineseNumber>(number, state->style);
+    stateCallback(std::move(newState));
+    return true;
+  }
+  if (key.ascii == Key::RETURN) {
+    if (state->number.empty()) {
+      stateCallback(std::make_unique<InputStates::Empty>());
+      return true;
+    }
+    bool commonFound = false;
+    std::stringstream intStream;
+    std::stringstream decStream;
+
+    for (char c : state->number) {
+      if (c == '.') {
+        commonFound = true;
+        continue;
+      }
+      if (commonFound) {
+        decStream << c;
+      } else {
+        intStream << c;
+      }
+    }
+    std::string intPart = intStream.str();
+    std::string decPart = decStream.str();
+    std::string commitSting;
+    switch (state->style) {
+      case ChineseNumberStyle::LOWER:
+        commitSting = ChineseNumbers::ChineseNumbers::Generate(
+            intPart, decPart, ChineseNumbers::ChineseNumberCase::LOWERCASE);
+        break;
+      case ChineseNumberStyle::UPPER:
+        commitSting = ChineseNumbers::ChineseNumbers::Generate(
+            intPart, decPart, ChineseNumbers::ChineseNumberCase::UPPERCASE);
+        break;
+      case ChineseNumberStyle::SUZHOU:
+        commitSting = ChineseNumbers::SuzhouNumbers::Generate(intPart, decPart,
+                                                              "單位", true);
+        break;
+      default:
+        break;
+    }
+    auto newState = std::make_unique<InputStates::Committing>(commitSting);
+    stateCallback(std::move(newState));
+    return true;
+  }
+  if (key.ascii >= '0' && key.ascii <= '9') {
+    if (state->number.length() > 20) {
+      errorCallback();
+      return true;
+    }
+    std::string newNumber = state->number + key.ascii;
+    auto newState =
+        std::make_unique<InputStates::ChineseNumber>(newNumber, state->style);
+    stateCallback(std::move(newState));
+  } else if (key.ascii == '.') {
+    if (state->number.find('.') != std::string::npos) {
+      errorCallback();
+      return true;
+    }
+    if (state->number.empty() || state->number.length() > 20) {
+      errorCallback();
+      return true;
+    }
+    std::string newNumber = state->number + key.ascii;
+    auto newState =
+        std::make_unique<InputStates::ChineseNumber>(newNumber, state->style);
+    stateCallback(std::move(newState));
+
+  } else {
+    errorCallback();
   }
 
   return true;
