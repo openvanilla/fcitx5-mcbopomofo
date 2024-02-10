@@ -8,7 +8,9 @@ add_library(ChineseNumbersLib
         ChineseNumbers.h
         ChineseNumbers.cpp
         StringUtils.h
-        StringUtils.cpp)
+        StringUtils.cpp
+        SuzhouNumbers.h
+        SuzhouNumbers.cpp)
 
 if (ENABLE_CLANG_TIDY)
     set_target_properties(McBopomofoLMLib PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
@@ -22,7 +24,9 @@ if (ENABLE_TEST)
 
         # Test target declarations.
         add_executable(ChineseNumbersLibTest
-                ChineseNumbersTest.cpp)
+                ChineseNumbersTest.cpp
+                SuzhouNumbersTest.cpp
+        )
         target_link_libraries(ChineseNumbersLibTest GTest::gtest_main ChineseNumbersLib)
         include(GoogleTest)
         gtest_discover_tests(ChineseNumbersLibTest)
@@ -32,11 +36,4 @@ if (ENABLE_TEST)
                 COMMAND ${CMAKE_CURRENT_BINARY_DIR}/ChineseNumbersLibTest
         )
         add_dependencies(runChineseNumbersLibTest ChineseNumbersLibTest)
-
-        # Benchmark target; to run, manually uncomment the lines below.
-        #
-        # find_package(benchmark)
-        # add_executable(ParselessLMBenchmark
-        #         ParselessLMBenchmark.cpp)
-        # target_link_libraries(ParselessLMBenchmark McBopomofoLMLib benchmark::benchmark)
 endif ()

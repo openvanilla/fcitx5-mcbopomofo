@@ -24,9 +24,11 @@ std::string ChineseNumbers::StringUtils::TrimZerosAtStart(
 
 std::string ChineseNumbers::StringUtils::TrimZerosAtEnd(
     const std::string& input) {
-  std::string reversed = input;
+  std::string reversed(input);
   reverse(reversed.begin(), reversed.end());
-  return StringUtils::TrimZerosAtStart(input);
+  std::string trimmed = StringUtils::TrimZerosAtStart(reversed);
+  reverse(trimmed.begin(), trimmed.end());
+  return trimmed;
 }
 
 std::string ChineseNumbers::StringUtils::LeftPadding(std::string input,

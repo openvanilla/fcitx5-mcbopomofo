@@ -59,9 +59,6 @@ std::string ChineseNumbers::ChineseNumbers::Generate(
   std::string intTrimmed = StringUtils::TrimZerosAtStart(intPart);
   std::string decTrimmed = StringUtils::TrimZerosAtEnd(decPart);
 
-  //  std::cout << intTrimmed << std::endl;
-  //  std::cout << decPart << std::endl;
-
   std::stringstream output;
   if (intTrimmed.empty()) {
     output << "0";
