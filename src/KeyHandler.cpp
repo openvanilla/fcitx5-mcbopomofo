@@ -185,7 +185,8 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     if (inputMode_ == McBopomofo::InputMode::PlainBopomofo) {
       auto inputting = buildInputtingState();
-      auto choosingCandidate = buildChoosingCandidateState(inputting.get());
+      auto choosingCandidate =
+          buildChoosingCandidateState(inputting.get(), grid_.cursor());
       if (choosingCandidate->candidates.size() == 1) {
         reset();
         std::string value = choosingCandidate->candidates[0].value;
@@ -244,7 +245,14 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   auto* maybeNotEmptyState = dynamic_cast<InputStates::NotEmpty*>(state);
   if ((simpleAscii == Key::SPACE || key.name == Key::KeyName::DOWN) &&
       maybeNotEmptyState != nullptr && reading_.isEmpty()) {
-    stateCallback(buildChoosingCandidateState(maybeNotEmptyState));
+    size_t originalCursor = grid_.cursor();
+    if (originalCursor == grid_.length() &&
+        selectPhraseAfterCursorAsCandidate_ && moveCursorAfterSelection_) {
+      grid_.setCursor(originalCursor - 1);
+    }
+    auto candidateState = buildChoosingCandidateState(
+        buildInputtingState().get(), originalCursor);
+    stateCallback(std::move(candidateState));
     return true;
   }
 
@@ -426,9 +434,13 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       grid_.insertReading(kPunctuationListUnigramKey);
       walk();
 
+      size_t originalCursor = grid_.cursor();
+      if (selectPhraseAfterCursorAsCandidate_) {
+        grid_.setCursor(originalCursor - 1);
+      }
       auto inputtingState = buildInputtingState();
       auto choosingCandidateState =
-          buildChoosingCandidateState(inputtingState.get());
+          buildChoosingCandidateState(inputtingState.get(), originalCursor);
       stateCallback(std::move(inputtingState));
       stateCallback(std::move(choosingCandidateState));
     } else {
@@ -508,7 +520,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
 void KeyHandler::candidateSelected(
     const InputStates::ChoosingCandidate::Candidate& candidate,
-    StateCallback stateCallback) {
+    size_t originalCursor, StateCallback stateCallback) {
   if (inputMode_ == InputMode::PlainBopomofo) {
     reset();
     std::unique_ptr<InputStates::Committing> committingState =
@@ -525,7 +537,7 @@ void KeyHandler::candidateSelected(
     return;
   }
 
-  pinNode(candidate);
+  pinNode(originalCursor, candidate);
   stateCallback(buildInputtingState());
 }
 
@@ -543,7 +555,8 @@ void KeyHandler::dictionaryServiceSelected(std::string phrase, size_t index,
                               stateCallback);
 }
 
-void KeyHandler::candidatePanelCancelled(StateCallback stateCallback) {
+void KeyHandler::candidatePanelCancelled(size_t originalCursor,
+                                         StateCallback stateCallback) {
   if (inputMode_ == InputMode::PlainBopomofo) {
     reset();
     std::unique_ptr<InputStates::EmptyIgnoringPrevious>
@@ -552,7 +565,7 @@ void KeyHandler::candidatePanelCancelled(StateCallback stateCallback) {
     stateCallback(std::move(emptyIgnorePreviousState));
     return;
   }
-
+  grid_.setCursor(originalCursor);
   stateCallback(buildInputtingState());
 }
 
@@ -662,7 +675,8 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
     return true;
   }
 
-  const auto candidates = buildChoosingCandidateState(inputting)->candidates;
+  const auto candidates =
+      buildChoosingCandidateState(inputting, grid_.cursor())->candidates;
   if (candidates.empty()) {
     errorCallback();
     return true;
@@ -715,7 +729,7 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
     currentIndex = 0;
   }
 
-  pinNode(candidates[currentIndex],
+  pinNode(grid_.cursor(), candidates[currentIndex],
           /*useMoveCursorAfterSelectionSetting=*/false);
   stateCallback(buildInputtingState());
   return true;
@@ -840,7 +854,8 @@ bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
 
   if (inputMode_ == McBopomofo::InputMode::PlainBopomofo) {
     auto inputting = buildInputtingState();
-    auto choosingCandidate = buildChoosingCandidateState(inputting.get());
+    auto choosingCandidate =
+        buildChoosingCandidateState(inputting.get(), grid_.cursor());
     if (choosingCandidate->candidates.size() == 1) {
       reset();
       std::string value = choosingCandidate->candidates[0].value;
@@ -1066,7 +1081,8 @@ std::unique_ptr<InputStates::Inputting> KeyHandler::buildInputtingState() {
 }
 
 std::unique_ptr<InputStates::ChoosingCandidate>
-KeyHandler::buildChoosingCandidateState(InputStates::NotEmpty* nonEmptyState) {
+KeyHandler::buildChoosingCandidateState(InputStates::NotEmpty* nonEmptyState,
+                                        size_t originalCursor) {
   auto candidates = grid_.candidatesAt(actualCandidateCursorIndex());
   std::vector<InputStates::ChoosingCandidate::Candidate> stateCandidates;
   for (const auto& c : candidates) {
@@ -1075,7 +1091,7 @@ KeyHandler::buildChoosingCandidateState(InputStates::NotEmpty* nonEmptyState) {
 
   return std::make_unique<InputStates::ChoosingCandidate>(
       nonEmptyState->composingBuffer, nonEmptyState->cursorIndex,
-      std::move(stateCandidates));
+      originalCursor, std::move(stateCandidates));
 }
 
 std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
@@ -1224,6 +1240,7 @@ size_t KeyHandler::candidateCursorIndex() {
 #pragma endregion Build_States
 
 void KeyHandler::pinNode(
+    size_t originalCursor,
     const InputStates::ChoosingCandidate::Candidate& candidate,
     bool useMoveCursorAfterSelectionSetting) {
   size_t actualCursor = actualCandidateCursorIndex();
@@ -1253,6 +1270,8 @@ void KeyHandler::pinNode(
   if (currentNode != nullptr && useMoveCursorAfterSelectionSetting &&
       moveCursorAfterSelection_) {
     grid_.setCursor(accumulatedCursor);
+  } else {
+    grid_.setCursor(originalCursor);
   }
 }
 

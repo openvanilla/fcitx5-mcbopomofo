@@ -73,7 +73,7 @@ class KeyHandler {
   // Candidate selected. Can assume the context is in a candidate state.
   void candidateSelected(
       const InputStates::ChoosingCandidate::Candidate& candidate,
-      StateCallback stateCallback);
+      size_t originalCursor, StateCallback stateCallback);
 
   void candidateAssociatedPhraseSelected(
       size_t index, const InputStates::ChoosingCandidate::Candidate& candidate,
@@ -84,7 +84,8 @@ class KeyHandler {
                                  StateCallback stateCallback);
 
   // Candidate panel canceled. Can assume the context is in a candidate state.
-  void candidatePanelCancelled(StateCallback stateCallback);
+  void candidatePanelCancelled(size_t originalCursor,
+                               StateCallback stateCallback);
 
   // Workaround for the Traditional Bopomofo mode.
   bool handleCandidateKeyForTraditionalBopomofoIfRequired(
@@ -190,7 +191,7 @@ class KeyHandler {
 
   // Build a Choosing Candidate state.
   std::unique_ptr<InputStates::ChoosingCandidate> buildChoosingCandidateState(
-      InputStates::NotEmpty* nonEmptyState);
+      InputStates::NotEmpty* nonEmptyState, size_t originalCursor);
 
   // Build a Marking state, ranging from beginCursorIndex to the current builder
   // cursor. It doesn't matter if the beginCursorIndex is behind or after the
@@ -199,7 +200,8 @@ class KeyHandler {
       size_t beginCursorIndex);
 
   // Pin a node with a fixed unigram value, usually a candidate.
-  void pinNode(const InputStates::ChoosingCandidate::Candidate& candidate,
+  void pinNode(size_t originalCursor,
+               const InputStates::ChoosingCandidate::Candidate& candidate,
                bool useMoveCursorAfterSelectionSetting = true);
 
   void pinNode(size_t cursor, const std::string& candidate,

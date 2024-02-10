@@ -120,19 +120,22 @@ class McBopomofoCandidateWord : public fcitx::CandidateWord {
  public:
   McBopomofoCandidateWord(fcitx::Text displayText,
                           InputStates::ChoosingCandidate::Candidate candidate,
+                          size_t originalCursor,
                           std::shared_ptr<KeyHandler> keyHandler,
                           KeyHandler::StateCallback callback)
       : fcitx::CandidateWord(std::move(displayText)),
         candidate_(std::move(candidate)),
+        originalCursor_(originalCursor),
         keyHandler_(std::move(keyHandler)),
         stateCallback_(std::move(callback)) {}
 
   void select(fcitx::InputContext* /*unused*/) const override {
-    keyHandler_->candidateSelected(candidate_, stateCallback_);
+    keyHandler_->candidateSelected(candidate_, originalCursor_, stateCallback_);
   }
 
  private:
   InputStates::ChoosingCandidate::Candidate candidate_;
+  size_t originalCursor_;
   std::shared_ptr<KeyHandler> keyHandler_;
   KeyHandler::StateCallback stateCallback_;
 };
@@ -224,7 +227,6 @@ class McBopomofoDirectInsertWord : public fcitx::CandidateWord {
         callback(std::move(callback)) {}
   void select(fcitx::InputContext* /*unused*/) const override {
     callback(std::make_unique<InputStates::Committing>(text));
-//    callback(std::make_unique<InputStates::Empty>());
   }
 
   std::string text;
@@ -739,7 +741,14 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       return true;
     }
 
+    size_t originalCursor = 0;
+    auto * choosing = dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
+    if (choosing != nullptr) {
+      originalCursor = choosing->originalCursor;
+    }
+
     keyHandler_->candidatePanelCancelled(
+        originalCursor,
         [this, context](std::unique_ptr<InputState> next) {
           enterNewState(context, std::move(next));
         });
@@ -1057,12 +1066,14 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
 
 #ifdef USE_LEGACY_FCITX5_API
       fcitx::CandidateWord* candidate = new McBopomofoCandidateWord(
-          fcitx::Text(displayText), c, keyHandler_, callback);
+          fcitx::Text(displayText), c, choosing->originalCursor, keyHandler_,
+          callback);
       // ownership of candidate is transferred to candidateList.
       candidateList->append(candidate);
 #else
       std::unique_ptr<fcitx::CandidateWord> candidate =
           std::make_unique<McBopomofoCandidateWord>(fcitx::Text(displayText), c,
+                                                    choosing->originalCursor,
                                                     keyHandler_, callback);
       candidateList->append(std::move(candidate));
 #endif
@@ -1139,12 +1150,12 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
     for (const auto& c : candidates) {
 #ifdef USE_LEGACY_FCITX5_API
       fcitx::CandidateWord* candidate = new McBopomofoCandidateWord(
-          fcitx::Text(c.value), c, keyHandler_, callback);
+          fcitx::Text(c.value), c, 0, keyHandler_, callback);
       // ownership of candidate is transferred to candidateList.
       candidateList->append(candidate);
 #else
       std::unique_ptr<fcitx::CandidateWord> candidate =
-          std::make_unique<McBopomofoCandidateWord>(fcitx::Text(c.value), c,
+          std::make_unique<McBopomofoCandidateWord>(fcitx::Text(c.value), c, 0,
                                                     keyHandler_, callback);
       candidateList->append(std::move(candidate));
 #endif

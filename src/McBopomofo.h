@@ -197,6 +197,8 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
                              InputState* current);
   void handleMarkingState(fcitx::InputContext* context, InputState* prev,
                           InputStates::Marking* current);
+  void handleChineseNumberState(fcitx::InputContext* context, InputState*,
+                                InputStates::ChineseNumber* current);
 
   // Helpers.
 
@@ -215,8 +217,6 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
 
   std::unique_ptr<fcitx::SimpleAction> editUserPhrasesAction_;
   std::unique_ptr<fcitx::SimpleAction> excludedPhrasesAction_;
-  void handleChineseNumberState(fcitx::InputContext* context, InputState*,
-                           InputStates::ChineseNumber* current);
 };
 
 class McBopomofoEngineFactory : public fcitx::AddonFactory {

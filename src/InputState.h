@@ -100,14 +100,18 @@ struct ChoosingCandidate : NotEmpty {
   struct Candidate;
 
   ChoosingCandidate(const std::string& buf, const size_t index,
-                    std::vector<Candidate> cs)
-      : NotEmpty(buf, index), candidates(std::move(cs)) {}
+                    const size_t originalIndex, std::vector<Candidate> cs)
+      : NotEmpty(buf, index),
+        candidates(std::move(cs)),
+        originalCursor(originalIndex) {}
 
   ChoosingCandidate(const ChoosingCandidate& state)
       : NotEmpty(state.composingBuffer, state.cursorIndex),
-        candidates(state.candidates) {}
+        candidates(state.candidates),
+        originalCursor(state.originalCursor) {}
 
   const std::vector<Candidate> candidates;
+  size_t originalCursor;
 
   struct Candidate {
     Candidate(std::string r, std::string v)
@@ -251,7 +255,6 @@ struct ChineseNumber : InputState {
     } else if (style == ChineseNumberStyle::SUZHOU) {
       return "[蘇州碼] " + number;
     }
-
     return number;
   }
 
@@ -282,13 +285,6 @@ struct SelectingDateMacro : InputState {
       : converter(converter) {
     for (std::string macro : DateMacros) {
       menu.emplace_back(converter(macro));
-    }
-  }
-
-  SelectingDateMacro(SelectingDateMacro const& selectingDateMacro)
-      : converter(selectingDateMacro.converter) {
-    for (std::string macro : DateMacros) {
-      menu.emplace_back(selectingDateMacro.converter(macro));
     }
   }
 
