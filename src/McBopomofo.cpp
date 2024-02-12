@@ -1163,7 +1163,7 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   } else if (selectingFeature != nullptr) {
     size_t index = 0;
     for (const auto& menuItem : selectingFeature->features) {
-      std::string displayText = menuItem->name;
+      std::string displayText = menuItem.name;
 
 #ifdef USE_LEGACY_FCITX5_API
       fcitx::CandidateWord* candidate =
