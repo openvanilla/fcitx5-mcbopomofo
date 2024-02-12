@@ -742,14 +742,14 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
 
     size_t originalCursor = 0;
-    auto * choosing = dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
+    auto* choosing =
+        dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
     if (choosing != nullptr) {
       originalCursor = choosing->originalCursor;
     }
 
     keyHandler_->candidatePanelCancelled(
-        originalCursor,
-        [this, context](std::unique_ptr<InputState> next) {
+        originalCursor, [this, context](std::unique_ptr<InputState> next) {
           enterNewState(context, std::move(next));
         });
     return true;

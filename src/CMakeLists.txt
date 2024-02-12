@@ -23,6 +23,7 @@ set(MCBOPOMOFO_LIB_SOURCES
  KeyHandler.cpp
  LanguageModelLoader.cpp
  UTF8Helper.cpp
+ InputState.cpp
  InputMacro.cpp
  Log.cpp
  DictionaryService.cpp
