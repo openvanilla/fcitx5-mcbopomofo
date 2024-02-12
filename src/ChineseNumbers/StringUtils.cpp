@@ -4,8 +4,7 @@
 #include <algorithm>
 #include <sstream>
 
-std::string ChineseNumbers::StringUtils::TrimZerosAtStart(
-    const std::string& input) {
+std::string StringUtils::TrimZerosAtStart(const std::string& input) {
   std::stringstream output;
   bool nonZeroFound = false;
   for (char it : input) {
@@ -22,8 +21,7 @@ std::string ChineseNumbers::StringUtils::TrimZerosAtStart(
   return output.str();
 }
 
-std::string ChineseNumbers::StringUtils::TrimZerosAtEnd(
-    const std::string& input) {
+std::string StringUtils::TrimZerosAtEnd(const std::string& input) {
   std::string reversed(input);
   reverse(reversed.begin(), reversed.end());
   std::string trimmed = StringUtils::TrimZerosAtStart(reversed);
@@ -31,9 +29,8 @@ std::string ChineseNumbers::StringUtils::TrimZerosAtEnd(
   return trimmed;
 }
 
-std::string ChineseNumbers::StringUtils::LeftPadding(std::string input,
-                                                     size_t toLength,
-                                                     char character) {
+std::string StringUtils::LeftPadding(const std::string& input, size_t toLength,
+                                     char character) {
   size_t currentLength = input.length();
   if (currentLength < toLength) {
     std::stringstream ss;

@@ -183,7 +183,7 @@ void McBopomofoLM::setMacroConverter(std::function<std::string(const std::string
     m_macroConverter = std::move(macroConverter);
 }
 
-std::string McBopomofoLM::convertMacro(std::string input)
+std::string McBopomofoLM::convertMacro(const std::string& input)
 {
     if (m_macroConverter != nullptr) {
         return m_macroConverter(input);

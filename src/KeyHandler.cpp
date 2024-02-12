@@ -917,16 +917,15 @@ bool KeyHandler::handleChineseNumber(
     std::string commitSting;
     switch (state->style) {
       case ChineseNumberStyle::LOWER:
-        commitSting = ChineseNumbers::ChineseNumbers::Generate(
+        commitSting = ChineseNumbers::Generate(
             intPart, decPart, ChineseNumbers::ChineseNumberCase::LOWERCASE);
         break;
       case ChineseNumberStyle::UPPER:
-        commitSting = ChineseNumbers::ChineseNumbers::Generate(
+        commitSting = ChineseNumbers::Generate(
             intPart, decPart, ChineseNumbers::ChineseNumberCase::UPPERCASE);
         break;
       case ChineseNumberStyle::SUZHOU:
-        commitSting = ChineseNumbers::SuzhouNumbers::Generate(intPart, decPart,
-                                                              "單位", true);
+        commitSting = SuzhouNumbers::Generate(intPart, decPart, "單位", true);
         break;
       default:
         break;

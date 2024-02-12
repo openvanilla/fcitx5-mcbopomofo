@@ -6,16 +6,16 @@
 
 #include "StringUtils.h"
 
-static std::string lowerDigits[] = {"〇", "一", "二", "三", "四",
-                                    "五", "六", "七", "八", "九"};
-static std::string upperDigits[] = {"零", "壹", "貳", "參", "肆",
-                                    "伍", "陸", "柒", "捌", "玖"};
-static std::string lowerPlaces[] = {"千", "百", "十", ""};
-static std::string upperPlaces[] = {"仟", "佰", "拾", ""};
-static std::string higherPlaces[] = {"",   "萬", "億", "兆", "京", "垓",
-                                     "秭", "穰", "溝", "澗", "正", "載"};
+static const std::string lowerDigits[] = {"〇", "一", "二", "三", "四",
+                                          "五", "六", "七", "八", "九"};
+static const std::string upperDigits[] = {"零", "壹", "貳", "參", "肆",
+                                          "伍", "陸", "柒", "捌", "玖"};
+static const std::string lowerPlaces[] = {"千", "百", "十", ""};
+static const std::string upperPlaces[] = {"仟", "佰", "拾", ""};
+static const std::string higherPlaces[] = {"",   "萬", "億", "兆", "京", "垓",
+                                           "秭", "穰", "溝", "澗", "正", "載"};
 
-static std::string convert4Digits(std::string substring,
+static std::string convert4Digits(const std::string& substring,
                                   ChineseNumbers::ChineseNumberCase digitCase,
                                   bool zeroEverHappened) {
   bool zeroHappened = zeroEverHappened;
@@ -53,9 +53,9 @@ static std::string convert4Digits(std::string substring,
   return output.str();
 }
 
-std::string ChineseNumbers::ChineseNumbers::Generate(
-    const std::string& intPart, const std::string& decPart,
-    ChineseNumberCase digitCase) {
+std::string ChineseNumbers::Generate(const std::string& intPart,
+                                     const std::string& decPart,
+                                     ChineseNumberCase digitCase) {
   std::string intTrimmed = StringUtils::TrimZerosAtStart(intPart);
   std::string decTrimmed = StringUtils::TrimZerosAtEnd(decPart);
 
@@ -98,5 +98,4 @@ std::string ChineseNumbers::ChineseNumbers::Generate(
   }
 
   return output.str();
-
-}  // namespace ChineseNumbers
+}

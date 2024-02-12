@@ -107,7 +107,7 @@ public:
 
     /// Sets a lambda to convert the macro to a string.
     void setMacroConverter(std::function<std::string(const std::string&)> macroConverter);
-    std::string convertMacro(std::string  input);
+    std::string convertMacro(const std::string& input);
 
     const std::vector<std::string> associatedPhrasesForKey(const std::string& key);
     bool hasAssociatedPhrasesForKey(const std::string& key);

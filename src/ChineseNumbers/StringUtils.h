@@ -3,10 +3,11 @@
 
 #include <string>
 
-namespace ChineseNumbers::StringUtils {
+namespace StringUtils {
 std::string TrimZerosAtStart(const std::string& input);
 std::string TrimZerosAtEnd(const std::string& input);
-std::string LeftPadding(std::string input, size_t toLength, char character);
-}  // namespace ChineseNumbers::StringUtils
+std::string LeftPadding(const std::string& input, size_t toLength,
+                        char character);
+}  // namespace StringUtils
 
 #endif  // FCITX5_MCBOPOMOFO_STRINGUTILS_H

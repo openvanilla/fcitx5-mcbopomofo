@@ -5,8 +5,6 @@
 
 #include "StringUtils.h"
 
-namespace ChineseNumbers {
-
 static std::string verticalDigits[] = {"〇", "〡", "〢", "〣", "〤",
                                        "〥", "〦", "〧", "〨", "〩"};
 static std::string horizontalDigits[] = {"〇", "一", "二", "三"};
@@ -73,4 +71,3 @@ std::string SuzhouNumbers::Generate(const std::string& intPart,
   output << placeNames[place] << unit;
   return output.str();
 }
-}  // namespace ChineseNumbers
