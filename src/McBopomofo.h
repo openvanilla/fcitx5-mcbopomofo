@@ -197,6 +197,8 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
                              InputState* current);
   void handleMarkingState(fcitx::InputContext* context, InputState* prev,
                           InputStates::Marking* current);
+  void handleChineseNumberState(fcitx::InputContext* context, InputState*,
+                                InputStates::ChineseNumber* current);
 
   // Helpers.
 

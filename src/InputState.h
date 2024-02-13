@@ -24,12 +24,20 @@
 #ifndef SRC_INPUTSTATE_H_
 #define SRC_INPUTSTATE_H_
 
+#include <functional>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
 
 namespace McBopomofo {
+
+enum class ChineseNumberStyle {
+  LOWER,
+  UPPER,
+  SUZHOU,
+};
 
 struct InputState {
   virtual ~InputState() = default;
@@ -94,14 +102,18 @@ struct ChoosingCandidate : NotEmpty {
   struct Candidate;
 
   ChoosingCandidate(const std::string& buf, const size_t index,
-                    std::vector<Candidate> cs)
-      : NotEmpty(buf, index), candidates(std::move(cs)) {}
+                    const size_t originalIndex, std::vector<Candidate> cs)
+      : NotEmpty(buf, index),
+        candidates(std::move(cs)),
+        originalCursor(originalIndex) {}
 
   ChoosingCandidate(const ChoosingCandidate& state)
       : NotEmpty(state.composingBuffer, state.cursorIndex),
-        candidates(state.candidates) {}
+        candidates(state.candidates),
+        originalCursor(state.originalCursor) {}
 
   const std::vector<Candidate> candidates;
+  size_t originalCursor;
 
   struct Candidate {
     Candidate(std::string r, std::string v)
@@ -229,6 +241,69 @@ struct AssociatedPhrasesPlain : InputState {
   explicit AssociatedPhrasesPlain(std::vector<ChoosingCandidate::Candidate> cs)
       : candidates(std::move(cs)) {}
   const std::vector<ChoosingCandidate::Candidate> candidates;
+};
+
+struct ChineseNumber : InputState {
+  ChineseNumber(std::string number, ChineseNumberStyle style)
+      : number(std::move(number)), style(style) {}
+  ChineseNumber(ChineseNumber const& number)
+      : number(number.number), style(number.style) {}
+
+  std::string composingBuffer() const {
+    if (style == ChineseNumberStyle::LOWER) {
+      return "[中文數字] " + number;
+    } else if (style == ChineseNumberStyle::UPPER) {
+      return "[大寫數字] " + number;
+    } else if (style == ChineseNumberStyle::SUZHOU) {
+      return "[蘇州碼] " + number;
+    }
+    return number;
+  }
+
+  std::string number;
+  ChineseNumberStyle style;
+};
+
+struct SelectingDateMacro : InputState {
+  explicit SelectingDateMacro(
+      const std::function<std::string(std::string)>& converter);
+
+  std::vector<std::string> menu;
+};
+
+struct SelectingFeature : InputState {
+  struct Feature {
+    Feature(std::string name,
+            std::function<std::unique_ptr<InputState>(void)> nextState)
+        : name(std::move(name)), nextState(std::move(nextState)) {}
+    std::string name;
+    std::function<std::unique_ptr<InputState>(void)> nextState;
+  };
+
+  explicit SelectingFeature(std::function<std::string(std::string)> converter)
+      : converter(std::move(converter)) {
+    features.emplace_back("日期與時間", [this]() {
+      return std::make_unique<SelectingDateMacro>(this->converter);
+    });
+    features.emplace_back("中文數字", []() {
+      return std::make_unique<ChineseNumber>("", ChineseNumberStyle::LOWER);
+    });
+    features.emplace_back("大寫數字", []() {
+      return std::make_unique<ChineseNumber>("", ChineseNumberStyle::UPPER);
+    });
+    features.emplace_back("蘇州碼", []() {
+      return std::make_unique<ChineseNumber>("", ChineseNumberStyle::SUZHOU);
+    });
+  }
+
+  std::unique_ptr<InputState> nextState(size_t index) {
+    return features[index].nextState();
+  }
+
+  std::vector<Feature> features;
+
+ protected:
+  std::function<std::string(std::string)> converter;
 };
 
 }  // namespace InputStates

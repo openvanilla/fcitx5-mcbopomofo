@@ -74,7 +74,7 @@ class HttpBasedDictionaryService : public McBopomofo::DictionaryService {
     fcitx::startProcess({"xdg-open", url});
     // Since the input method launches a web browser, we just
     // change the state to close the candidate window.
-    auto empty =  std::make_unique<McBopomofo::InputStates::Empty>();
+    auto empty = std::make_unique<McBopomofo::InputStates::Empty>();
     stateCallback(std::move(empty));
   }
 
