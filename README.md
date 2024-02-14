@@ -31,7 +31,7 @@
 
 ```bash
 sudo apt install \
-    pkg-config fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev \
+    pkg-config fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev fcitx5-modules-dev\
     cmake extra-cmake-modules gettext libfmt-dev libicu-dev libjson-c-dev
 ```
 
