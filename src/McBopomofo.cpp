@@ -348,19 +348,28 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
 
   associatedPhrasesAction_ = std::make_unique<fcitx::SimpleAction>();
   associatedPhrasesAction_->connect<fcitx::SimpleAction::Activated>(
-      [this](fcitx::InputContext*) {
+      [this](fcitx::InputContext* context) {
         bool enabled = config_.associatedPhrasesEnabled.value();
         enabled = !enabled;
         config_.associatedPhrasesEnabled.setValue(enabled);
         keyHandler_->setAssociatedPhrasesEnabled(enabled);
         fcitx::safeSaveAsIni(config_, kConfigPath);
+        associatedPhrasesAction_->setShortText(
+            config_.associatedPhrasesEnabled.value()
+                ? _("Associated Phrases - On")
+                : _("Associated Phrases - Off"));
+        associatedPhrasesAction_->update(context);
+
         if (notifications()) {
+          auto mode = keyHandler_->inputMode();
           notifications()->call<fcitx::INotifications::showTip>(
               "mcbopomofo-associated-phrases-toggle", _("Associated Phrases"),
               "fcitx-mcbopomofo",
               enabled ? _("Associated Phrases On")
                       : _("Associated Phrases Off"),
-              enabled ? _("Associated Phrases is now enabled.")
+              enabled ? mode == InputMode::McBopomofo
+                            ? _("Now you can use Shift + Enter to insert associated phrases")
+                            : _("Associated Phrases is now enabled.")
                       : _("Associated Phrases is now disabled."),
               1000);
         }
@@ -425,9 +434,9 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
                                          action);
   }
 
+  bool enabled = config_.associatedPhrasesEnabled.value();
   associatedPhrasesAction_->setShortText(
-      config_.associatedPhrasesEnabled.value() ? _("Associated Phrases On")
-                                               : _("Associated Phrases Off"));
+      enabled ? _("Associated Phrases - On") : _("Associated Phrases - Off"));
   associatedPhrasesAction_->update(inputContext);
   inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
                                        associatedPhrasesAction_.get());
