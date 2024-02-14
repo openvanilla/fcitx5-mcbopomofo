@@ -38,6 +38,7 @@
 #include "Key.h"
 #include "Log.h"
 #include "UTF8Helper.h"
+#include "notifications_public.h"
 
 namespace McBopomofo {
 
@@ -345,6 +346,28 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
 
   state_ = std::make_unique<InputStates::Empty>();
 
+  associatedPhrasesAction_ = std::make_unique<fcitx::SimpleAction>();
+  associatedPhrasesAction_->connect<fcitx::SimpleAction::Activated>(
+      [this](fcitx::InputContext*) {
+        bool enabled = config_.associatedPhrasesEnabled.value();
+        enabled = !enabled;
+        config_.associatedPhrasesEnabled.setValue(enabled);
+        keyHandler_->setAssociatedPhrasesEnabled(enabled);
+        fcitx::safeSaveAsIni(config_, kConfigPath);
+        if (notifications()) {
+          notifications()->call<fcitx::INotifications::showTip>(
+              "mcbopomofo-associated-phrases-toggle", _("Associated Phrases"),
+              "fcitx-mcbopomofo",
+              enabled ? _("Associated Phrases On")
+                      : _("Associated Phrases Off"),
+              enabled ? _("Associated Phrases is now enabled.")
+                      : _("Associated Phrases is now disabled."),
+              1000);
+        }
+      });
+  instance_->userInterfaceManager().registerAction(
+      "mcbopomofo-associated-phrases", associatedPhrasesAction_.get());
+
   editUserPhrasesAction_ = std::make_unique<fcitx::SimpleAction>();
   editUserPhrasesAction_->setShortText(_("Edit User Phrases"));
   editUserPhrasesAction_->connect<fcitx::SimpleAction::Activated>(
@@ -401,6 +424,13 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
     inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
                                          action);
   }
+
+  associatedPhrasesAction_->setShortText(
+      config_.associatedPhrasesEnabled.value() ? _("Associated Phrases On")
+                                               : _("Associated Phrases Off"));
+  associatedPhrasesAction_->update(inputContext);
+  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                       associatedPhrasesAction_.get());
 
   if (mode == McBopomofo::InputMode::McBopomofo) {
     inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,

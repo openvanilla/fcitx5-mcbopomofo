@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${C
 find_package(PkgConfig REQUIRED)
 find_package(Fcitx5Core REQUIRED)
 find_package(Fcitx5Utils REQUIRED)
+find_package(Fcitx5Module REQUIRED COMPONENTS Notifications)
 find_package(fmt REQUIRED)
 find_package(Gettext REQUIRED)
 
