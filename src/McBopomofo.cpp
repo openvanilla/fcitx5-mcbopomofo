@@ -346,6 +346,34 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
 
   state_ = std::make_unique<InputStates::Empty>();
 
+  halfWidthPunctuationAction_ = std::make_unique<fcitx::SimpleAction>();
+  halfWidthPunctuationAction_->connect<fcitx::SimpleAction::Activated>(
+      [this](fcitx::InputContext* context) {
+        bool enabled = config_.halfWidthPunctuationEnable.value();
+        enabled = !enabled;
+        config_.halfWidthPunctuationEnable.setValue(enabled);
+        keyHandler_->setHalfWidthPunctuationEnabled(enabled);
+        fcitx::safeSaveAsIni(config_, kConfigPath);
+        halfWidthPunctuationAction_->setShortText(
+            config_.halfWidthPunctuationEnable.value()
+                ? _("Half width Punctuation")
+                : _("Full width Punctuation"));
+        halfWidthPunctuationAction_->update(context);
+
+        if (notifications()) {
+          notifications()->call<fcitx::INotifications::showTip>(
+              "mcbopomofo-half-width-punctuation-toggle", _("Punctuation"),
+              "fcitx-mcbopomofo",
+              enabled ? _("Half width punctuation")
+                      : _("Full width punctuation"),
+              enabled ? _("Now using half width punctuation")
+                      : _("Now using full width punctuation"),
+              1000);
+        }
+      });
+  instance_->userInterfaceManager().registerAction(
+      "mcbopomofo-half-width-punctuation", halfWidthPunctuationAction_.get());
+
   associatedPhrasesAction_ = std::make_unique<fcitx::SimpleAction>();
   associatedPhrasesAction_->connect<fcitx::SimpleAction::Activated>(
       [this](fcitx::InputContext* context) {
@@ -368,7 +396,8 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
               enabled ? _("Associated Phrases On")
                       : _("Associated Phrases Off"),
               enabled ? mode == InputMode::McBopomofo
-                            ? _("Now you can use Shift + Enter to insert associated phrases")
+                            ? _("Now you can use Shift + Enter to insert "
+                                "associated phrases")
                             : _("Associated Phrases is now enabled.")
                       : _("Associated Phrases is now disabled."),
               1000);
@@ -434,9 +463,16 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
                                          action);
   }
 
-  bool enabled = config_.associatedPhrasesEnabled.value();
+  halfWidthPunctuationAction_->setShortText(
+      config_.halfWidthPunctuationEnable.value() ? _("Half width Punctuation")
+                                                 : _("Full width Punctuation"));
+  halfWidthPunctuationAction_->update(inputContext);
+  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                       halfWidthPunctuationAction_.get());
+
   associatedPhrasesAction_->setShortText(
-      enabled ? _("Associated Phrases - On") : _("Associated Phrases - Off"));
+      config_.associatedPhrasesEnabled.value() ? _("Associated Phrases - On")
+                                               : _("Associated Phrases - Off"));
   associatedPhrasesAction_->update(inputContext);
   inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
                                        associatedPhrasesAction_.get());
@@ -486,6 +522,8 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
   keyHandler_->setCtrlEnterKeyBehavior(config_.ctrlEnterKeys.value());
   keyHandler_->setAssociatedPhrasesEnabled(
       config_.associatedPhrasesEnabled.value());
+  keyHandler_->setHalfWidthPunctuationEnabled(
+      config_.halfWidthPunctuationEnable.value());
   languageModelLoader_->reloadUserModelsIfNeeded();
 }
 

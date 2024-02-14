@@ -154,6 +154,10 @@ FCITX_CONFIGURATION(
         this, "AddScriptHookEnabled",
         _("Run the hook script after adding a phrase"), false};
 
+    fcitx::HiddenOption<bool> halfWidthPunctuationEnable{
+        this, "HalfWidthPunctuationEnable", _("Enable Half Width Punctuation"),
+        false};
+
     fcitx::HiddenOption<bool> associatedPhrasesEnabled{
         this, "AssociatedPhrasesEnabled", _("Enable Associated Phrases"),
         false};);
@@ -221,6 +225,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   McBopomofoConfig config_;
   fcitx::KeyList selectionKeys_;
 
+  std::unique_ptr<fcitx::SimpleAction> halfWidthPunctuationAction_;
   std::unique_ptr<fcitx::SimpleAction> associatedPhrasesAction_;
   std::unique_ptr<fcitx::SimpleAction> editUserPhrasesAction_;
   std::unique_ptr<fcitx::SimpleAction> excludedPhrasesAction_;

@@ -134,6 +134,9 @@ class KeyHandler {
   // Sets if associated phrases is enabled or not.
   void setAssociatedPhrasesEnabled(bool enabled);
 
+  // Sets if half width punctuation is enabled or not.
+  void setHalfWidthPunctuationEnabled(bool enabled);
+
   void setOnAddNewPhrase(
       std::function<void(const std::string&)> onAddNewPhrase);
 
@@ -227,6 +230,7 @@ class KeyHandler {
   bool putLowercaseLettersToComposingBuffer_ = false;
   bool escKeyClearsEntireComposingBuffer_ = false;
   bool associatedPhrasesEnabled_ = false;
+  bool halfWidthPunctuationEnabled_ = false;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
   std::function<void(const std::string&)> onAddNewPhrase_;
 
