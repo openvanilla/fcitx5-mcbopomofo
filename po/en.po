@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-17 23:27+0800\n"
+"POT-Creation-Date: 2024-02-14 15:16+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,88 +17,153 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/McBopomofo.cpp:192
+#: src/McBopomofo.cpp:248
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
-#: src/McBopomofo.cpp:197
+#: src/McBopomofo.cpp:253
 msgid "{0} syllables required"
 msgstr ""
 
-#: src/McBopomofo.cpp:201
+#: src/McBopomofo.cpp:257
 msgid "{0} syllables maximum"
 msgstr ""
 
-#: src/McBopomofo.cpp:205
+#: src/McBopomofo.cpp:261
 msgid "phrase already exists"
 msgstr ""
 
-#: src/McBopomofo.cpp:209
+#: src/McBopomofo.cpp:265
 msgid "press Enter to add the phrase"
 msgstr ""
 
-#: src/McBopomofo.cpp:215
+#: src/McBopomofo.cpp:271
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
-#: src/McBopomofo.cpp:227
+#: src/McBopomofo.cpp:283
 msgid "# Custom Phrases or Characters."
 msgstr ""
 
-#: src/McBopomofo.cpp:229
+#: src/McBopomofo.cpp:285
 msgid ""
 "# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動加詞 for "
 "usage."
 msgstr ""
 
-#: src/McBopomofo.cpp:231
+#: src/McBopomofo.cpp:287
 msgid ""
 "# Add your phrases and their respective Bopomofo reading below. Use hyphen "
 "(\"-\")"
 msgstr ""
 
-#: src/McBopomofo.cpp:232
+#: src/McBopomofo.cpp:288
 msgid "# to connect the Bopomofo syllables."
 msgstr ""
 
-#: src/McBopomofo.cpp:236 src/McBopomofo.cpp:255
+#: src/McBopomofo.cpp:292 src/McBopomofo.cpp:311
 msgid "# Any line that starts with \"#\" is treated as comment."
 msgstr ""
 
-#: src/McBopomofo.cpp:245
+#: src/McBopomofo.cpp:301
 msgid "# Custom Excluded Phrases or Characters."
 msgstr ""
 
-#: src/McBopomofo.cpp:247
+#: src/McBopomofo.cpp:303
 msgid ""
 "# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動刪詞 for "
 "usage."
 msgstr ""
 
-#: src/McBopomofo.cpp:249
+#: src/McBopomofo.cpp:305
 msgid ""
 "# For example, the line below will prevent the phrase \"家祠\" from showing "
 "up anywhere:"
 msgstr ""
 
-#: src/McBopomofo.cpp:253
+#: src/McBopomofo.cpp:309
 msgid ""
 "# Note that you need to use a hyphen (\"-\") between Bopomofo syllables."
 msgstr ""
 
-#: src/McBopomofo.cpp:294
+#: src/McBopomofo.cpp:359 src/McBopomofo.cpp:367
+#, fuzzy
+msgid "Half Width Punctuation"
+msgstr "Half Width Punctuation"
+
+#: src/McBopomofo.cpp:360 src/McBopomofo.cpp:368 src/McBopomofo.cpp:468
+#, fuzzy
+msgid "Full Width Punctuation"
+msgstr "Full Width Punctuation"
+
+#: src/McBopomofo.cpp:365
+msgid "Punctuation"
+msgstr ""
+
+#: src/McBopomofo.cpp:369
+msgid "Now using half width punctuation"
+msgstr ""
+
+#: src/McBopomofo.cpp:370
+msgid "Now using full width punctuation"
+msgstr ""
+
+#: src/McBopomofo.cpp:387 src/McBopomofo.cpp:474
+#, fuzzy
+msgid "Associated Phrases - On"
+msgstr "Associated Phrases - On"
+
+#: src/McBopomofo.cpp:388 src/McBopomofo.cpp:475
+#, fuzzy
+msgid "Associated Phrases - Off"
+msgstr "Associated Phrases - Off"
+
+#: src/McBopomofo.cpp:394
+#, fuzzy
+msgid "Associated Phrases"
+msgstr "Associated Phrases"
+
+#: src/McBopomofo.cpp:396
+#, fuzzy
+msgid "Associated Phrases On"
+msgstr "Associated Phrases On"
+
+#: src/McBopomofo.cpp:397
+#, fuzzy
+msgid "Associated Phrases Off"
+msgstr "Associated Phrases Off"
+
+#: src/McBopomofo.cpp:399
+msgid "Now you can use Shift + Enter to insert associated phrases"
+msgstr ""
+
+#: src/McBopomofo.cpp:401
+#, fuzzy
+msgid "Associated Phrases is now enabled."
+msgstr "Associated Phrases is now enabled."
+
+#: src/McBopomofo.cpp:402
+#, fuzzy
+msgid "Associated Phrases is now disabled."
+msgstr "Associated Phrases is now disabled."
+
+#: src/McBopomofo.cpp:410
 msgid "Edit User Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:304
+#: src/McBopomofo.cpp:420
 msgid "Edit Excluded Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:1015
+#: src/McBopomofo.cpp:467
+msgid "Half width Punctuation"
+msgstr ""
+
+#: src/McBopomofo.cpp:1195
 msgid "UTF8 String Length: {0}"
 msgstr ""
 
-#: src/McBopomofo.cpp:1018
+#: src/McBopomofo.cpp:1198
 msgid "Code Point Count: {0}"
 msgstr ""
 
@@ -191,48 +256,61 @@ msgid "Selection Keys"
 msgstr "Selection Keys"
 
 #: src/McBopomofo.h:114
+#, fuzzy
+msgid "Selection Keys Count"
+msgstr "Selection Keys Count"
+
+#: src/McBopomofo.h:119
 msgid "Show Candidate Phrase"
 msgstr "Show Candidates"
 
-#: src/McBopomofo.h:119
+#: src/McBopomofo.h:124
 msgid "Move cursor after selection"
 msgstr "Move cursor after selection"
 
-#: src/McBopomofo.h:125
+#: src/McBopomofo.h:129
+msgid "Allow using J and K key to move the cursor when choosing candidates"
+msgstr ""
+
+#: src/McBopomofo.h:136
 msgid "ESC key clears entire composing buffer"
 msgstr "ESC key clears entire composing buffer"
 
-#: src/McBopomofo.h:129
+#: src/McBopomofo.h:140
 msgid "Shift + Letter Keys"
 msgstr "Shift + Letter Keys"
 
-#: src/McBopomofo.h:135
+#: src/McBopomofo.h:146
 msgid "Control + Enter Key"
 msgstr "Control + Enter Key"
 
-#: src/McBopomofo.h:140
+#: src/McBopomofo.h:151
 msgid "Open User Phrase Files With"
 msgstr "Open User Phrase Files With"
 
-#: src/McBopomofo.h:145
+#: src/McBopomofo.h:156
 msgid "Add Phrase Hook Path"
 msgstr "Add Phrase Hook Path"
 
-#: src/McBopomofo.h:150
+#: src/McBopomofo.h:161
 msgid "Run the hook script after adding a phrase"
 msgstr "Run the hook script after adding a phrase"
 
-#: src/McBopomofo.h:153
+#: src/McBopomofo.h:164
+msgid "Enable Half Width Punctuation"
+msgstr "Enable Half Width Punctuation"
+
+#: src/McBopomofo.h:168
 msgid "Enable Associated Phrases"
 msgstr "Enable Associated Phrases"
 
-#: src/DictionaryService.cpp:37 src/DictionaryService.cpp:55
+#: src/DictionaryService.cpp:37 src/DictionaryService.cpp:57
 msgid "Character Information"
-msgstr ""
+msgstr "Character Information"
 
-#: src/DictionaryService.cpp:76
+#: src/DictionaryService.cpp:82
 msgid "Look up \"{0}\" in {1}"
-msgstr ""
+msgstr "Look up \"{0}\" in {1}"
 
 #: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
 #, fuzzy

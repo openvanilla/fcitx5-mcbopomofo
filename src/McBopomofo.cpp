@@ -356,16 +356,16 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
         fcitx::safeSaveAsIni(config_, kConfigPath);
         halfWidthPunctuationAction_->setShortText(
             config_.halfWidthPunctuationEnable.value()
-                ? _("Half width Punctuation")
-                : _("Full width Punctuation"));
+                ? _("Half Width Punctuation")
+                : _("Full Width Punctuation"));
         halfWidthPunctuationAction_->update(context);
 
         if (notifications()) {
           notifications()->call<fcitx::INotifications::showTip>(
               "mcbopomofo-half-width-punctuation-toggle", _("Punctuation"),
               "fcitx-mcbopomofo",
-              enabled ? _("Half width punctuation")
-                      : _("Full width punctuation"),
+              enabled ? _("Half Width Punctuation")
+                      : _("Full Width Punctuation"),
               enabled ? _("Now using half width punctuation")
                       : _("Now using full width punctuation"),
               1000);
@@ -465,7 +465,7 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
 
   halfWidthPunctuationAction_->setShortText(
       config_.halfWidthPunctuationEnable.value() ? _("Half width Punctuation")
-                                                 : _("Full width Punctuation"));
+                                                 : _("Full Width Punctuation"));
   halfWidthPunctuationAction_->update(inputContext);
   inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
                                        halfWidthPunctuationAction_.get());
