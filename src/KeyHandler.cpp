@@ -1254,6 +1254,13 @@ size_t KeyHandler::candidateCursorIndex() {
   return cursor;
 }
 
+void KeyHandler::setCandidateCursorIndex(size_t newCursor) {
+  if (newCursor > grid_.length()) {
+    newCursor = grid_.length();
+  }
+  grid_.setCursor(newCursor);
+}
+
 #pragma endregion Build_States
 
 void KeyHandler::pinNode(

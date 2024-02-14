@@ -674,6 +674,35 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
+  bool isCursorMovingKey =
+      (config_.allowMovingCursorWhenChoosingCandidates.value() &&
+       (key.check(FcitxKey_j) || key.check(FcitxKey_k))) ||
+      (key.check(FcitxKey_Left, fcitx::KeyStates(fcitx::KeyState::Shift)) ||
+       key.check(FcitxKey_Right, fcitx::KeyStates(fcitx::KeyState::Shift)));
+
+  if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
+      dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr &&
+      isCursorMovingKey) {
+    size_t cursor = keyHandler_->candidateCursorIndex();
+
+    if (key.check(FcitxKey_j) ||
+        key.check(FcitxKey_Left, fcitx::KeyStates(fcitx::KeyState::Shift))) {
+      if (cursor > 0) {
+        cursor--;
+      }
+    } else if (key.check(FcitxKey_k) ||
+               key.check(FcitxKey_Right,
+                         fcitx::KeyStates(fcitx::KeyState::Shift))) {
+      cursor++;
+    }
+    keyHandler_->setCandidateCursorIndex(cursor);
+    auto inputting = keyHandler_->buildInputtingState();
+    auto choosing = keyHandler_->buildChoosingCandidateState(
+        inputting.get(), keyHandler_->candidateCursorIndex());
+    stateCallback(std::move(choosing));
+    return true;
+  }
+
   bool keyIsCancel = false;
 
   // When pressing "?" in the candidate list, tries to look up the candidate in
@@ -699,9 +728,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
         std::unique_ptr<InputStates::ChoosingCandidate> copy =
             std::make_unique<InputStates::ChoosingCandidate>(
                 *choosingCandidate);
-        auto state = keyHandler_->buildSelectingDictionaryState(
+        auto newState = keyHandler_->buildSelectingDictionaryState(
             std::move(copy), phrase, selectedCandidateIndex);
-        enterNewState(context, std::move(state));
+        stateCallback(std::move(newState));
         return true;
       }
     } else if (selectingDictionary != nullptr || showingCharInfo != nullptr) {
@@ -826,8 +855,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
 
     keyHandler_->candidatePanelCancelled(
-        originalCursor, [this, context](std::unique_ptr<InputState> next) {
-          enterNewState(context, std::move(next));
+        originalCursor,
+        [this, context, stateCallback](std::unique_ptr<InputState> next) {
+          stateCallback(std::move(next));
         });
     return true;
   }

@@ -143,6 +143,14 @@ class KeyHandler {
   // Compute the actual candidate cursor index.
   size_t actualCandidateCursorIndex();
   size_t candidateCursorIndex();
+  void setCandidateCursorIndex(size_t newCursor);
+
+  // Build a Inputting state.
+  std::unique_ptr<InputStates::Inputting> buildInputtingState();
+
+  // Build a Choosing Candidate state.
+  std::unique_ptr<InputStates::ChoosingCandidate> buildChoosingCandidateState(
+      InputStates::NotEmpty* nonEmptyState, size_t originalCursor);
 
   // Reading joiner for retrieving unigrams from the language model.
   static constexpr char kJoinSeparator[] = "-";
@@ -188,13 +196,6 @@ class KeyHandler {
   };
   ComposedString getComposedString(size_t builderCursor);
   std::string getHTMLRubyText();
-
-  // Build a Inputting state.
-  std::unique_ptr<InputStates::Inputting> buildInputtingState();
-
-  // Build a Choosing Candidate state.
-  std::unique_ptr<InputStates::ChoosingCandidate> buildChoosingCandidateState(
-      InputStates::NotEmpty* nonEmptyState, size_t originalCursor);
 
   // Build a Marking state, ranging from beginCursorIndex to the current builder
   // cursor. It doesn't matter if the beginCursorIndex is behind or after the

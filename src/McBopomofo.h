@@ -124,6 +124,12 @@ FCITX_CONFIGURATION(
         this, "MoveCursorAfterSelection", _("Move cursor after selection"),
         false};
 
+    fcitx::Option<bool> allowMovingCursorWhenChoosingCandidates{
+        this, "AllowMovingCursorWhenChoosingCandidates",
+        _("Allow using J and K key to move the cursor when choosing "
+          "candidates"),
+        false};
+
     // ESC key clears entire composing buffer.
     fcitx::Option<bool> escKeyClearsEntireComposingBuffer{
         this, "EscKeyClearsEntireComposingBuffer",
