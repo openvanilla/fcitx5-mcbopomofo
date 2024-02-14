@@ -1002,49 +1002,35 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   auto keysConfig = config_.selectionKeys.value();
   selectionKeys_.clear();
 
+  _FcitxKeySym key_123456789[9] = {FcitxKey_1, FcitxKey_2, FcitxKey_3,
+                                   FcitxKey_4, FcitxKey_5, FcitxKey_6,
+                                   FcitxKey_7, FcitxKey_8, FcitxKey_9};
+  _FcitxKeySym key_asdfghjkl[9] = {FcitxKey_a, FcitxKey_s, FcitxKey_d,
+                                   FcitxKey_f, FcitxKey_g, FcitxKey_h,
+                                   FcitxKey_j, FcitxKey_k, FcitxKey_l};
+  _FcitxKeySym key_asdfzxcvb[9] = {FcitxKey_a, FcitxKey_s, FcitxKey_d,
+                                   FcitxKey_f, FcitxKey_z, FcitxKey_x,
+                                   FcitxKey_c, FcitxKey_v, FcitxKey_b};
+
   if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
       nullptr) {  // NOLINT(bugprone-branch-clone)
     // Associated phrases in Plain Bopomofo only takes Shift-[1-9]; we push
     // these keys and will detect the shift mask later.
-    selectionKeys_.emplace_back(FcitxKey_1);
-    selectionKeys_.emplace_back(FcitxKey_2);
-    selectionKeys_.emplace_back(FcitxKey_3);
-    selectionKeys_.emplace_back(FcitxKey_4);
-    selectionKeys_.emplace_back(FcitxKey_5);
-    selectionKeys_.emplace_back(FcitxKey_6);
-    selectionKeys_.emplace_back(FcitxKey_7);
-    selectionKeys_.emplace_back(FcitxKey_8);
-    selectionKeys_.emplace_back(FcitxKey_9);
+    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
+      selectionKeys_.emplace_back(key_123456789[i]);
+    }
   } else if (keysConfig == SelectionKeys::Key_asdfghjkl) {
-    selectionKeys_.emplace_back(FcitxKey_a);
-    selectionKeys_.emplace_back(FcitxKey_s);
-    selectionKeys_.emplace_back(FcitxKey_d);
-    selectionKeys_.emplace_back(FcitxKey_f);
-    selectionKeys_.emplace_back(FcitxKey_g);
-    selectionKeys_.emplace_back(FcitxKey_h);
-    selectionKeys_.emplace_back(FcitxKey_j);
-    selectionKeys_.emplace_back(FcitxKey_k);
-    selectionKeys_.emplace_back(FcitxKey_l);
+    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
+      selectionKeys_.emplace_back(key_asdfghjkl[i]);
+    }
   } else if (keysConfig == SelectionKeys::Key_asdfzxcvb) {
-    selectionKeys_.emplace_back(FcitxKey_a);
-    selectionKeys_.emplace_back(FcitxKey_s);
-    selectionKeys_.emplace_back(FcitxKey_d);
-    selectionKeys_.emplace_back(FcitxKey_f);
-    selectionKeys_.emplace_back(FcitxKey_z);
-    selectionKeys_.emplace_back(FcitxKey_x);
-    selectionKeys_.emplace_back(FcitxKey_c);
-    selectionKeys_.emplace_back(FcitxKey_v);
-    selectionKeys_.emplace_back(FcitxKey_b);
+    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
+      selectionKeys_.emplace_back(key_asdfzxcvb[i]);
+    }
   } else {
-    selectionKeys_.emplace_back(FcitxKey_1);
-    selectionKeys_.emplace_back(FcitxKey_2);
-    selectionKeys_.emplace_back(FcitxKey_3);
-    selectionKeys_.emplace_back(FcitxKey_4);
-    selectionKeys_.emplace_back(FcitxKey_5);
-    selectionKeys_.emplace_back(FcitxKey_6);
-    selectionKeys_.emplace_back(FcitxKey_7);
-    selectionKeys_.emplace_back(FcitxKey_8);
-    selectionKeys_.emplace_back(FcitxKey_9);
+    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
+      selectionKeys_.emplace_back(key_123456789[i]);
+    }
   }
 
   candidateList->setSelectionKey(selectionKeys_);
