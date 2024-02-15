@@ -134,12 +134,26 @@ class KeyHandler {
   // Sets if associated phrases is enabled or not.
   void setAssociatedPhrasesEnabled(bool enabled);
 
+  // Sets if half width punctuation is enabled or not.
+  void setHalfWidthPunctuationEnabled(bool enabled);
+
+  // Sets the lambda for adding the phrases.
   void setOnAddNewPhrase(
       std::function<void(const std::string&)> onAddNewPhrase);
 
   // Compute the actual candidate cursor index.
   size_t actualCandidateCursorIndex();
+  // Get the current cursor index.
   size_t candidateCursorIndex();
+  // Set the current cursor index.
+  void setCandidateCursorIndex(size_t newCursor);
+
+  // Build an Inputting state.
+  std::unique_ptr<InputStates::Inputting> buildInputtingState();
+
+  // Build a Choosing Candidate state.
+  std::unique_ptr<InputStates::ChoosingCandidate> buildChoosingCandidateState(
+      InputStates::NotEmpty* nonEmptyState, size_t originalCursor);
 
   // Reading joiner for retrieving unigrams from the language model.
   static constexpr char kJoinSeparator[] = "-";
@@ -186,13 +200,6 @@ class KeyHandler {
   ComposedString getComposedString(size_t builderCursor);
   std::string getHTMLRubyText();
 
-  // Build a Inputting state.
-  std::unique_ptr<InputStates::Inputting> buildInputtingState();
-
-  // Build a Choosing Candidate state.
-  std::unique_ptr<InputStates::ChoosingCandidate> buildChoosingCandidateState(
-      InputStates::NotEmpty* nonEmptyState, size_t originalCursor);
-
   // Build a Marking state, ranging from beginCursorIndex to the current builder
   // cursor. It doesn't matter if the beginCursorIndex is behind or after the
   // builder cursor.
@@ -227,6 +234,7 @@ class KeyHandler {
   bool putLowercaseLettersToComposingBuffer_ = false;
   bool escKeyClearsEntireComposingBuffer_ = false;
   bool associatedPhrasesEnabled_ = false;
+  bool halfWidthPunctuationEnabled_ = false;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
   std::function<void(const std::string&)> onAddNewPhrase_;
 

@@ -39,6 +39,7 @@ constexpr char kPunctuationListKey = '`';  // Hit the key to bring up the list.
 constexpr char kPunctuationListUnigramKey[] = "_punctuation_list";
 constexpr char kPunctuationKeyPrefix[] = "_punctuation_";
 constexpr char kCtrlPunctuationKeyPrefix[] = "_ctrl_punctuation_";
+constexpr char kHalfWidthPunctuationKeyPrefix[] = "_half_punctuation_";
 constexpr char kLetterPrefix[] = "_letter_";
 constexpr size_t kMinValidMarkingReadingCount = 2;
 constexpr size_t kMaxValidMarkingReadingCount = 6;
@@ -459,6 +460,19 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       return handlePunctuation(unigram, stateCallback, errorCallback);
     }
 
+    if (halfWidthPunctuationEnabled_) {
+      unigram = std::string(kHalfWidthPunctuationKeyPrefix) +
+                GetKeyboardLayoutName(reading_.keyboardLayout()) + "_" + chrStr;
+      if (handlePunctuation(unigram, stateCallback, errorCallback)) {
+        return true;
+      }
+
+      unigram = std::string(kHalfWidthPunctuationKeyPrefix) + chrStr;
+      if (handlePunctuation(unigram, stateCallback, errorCallback)) {
+        return true;
+      }
+    }
+
     // Bopomofo layout-specific punctuation handling.
     unigram = std::string(kPunctuationKeyPrefix) +
               GetKeyboardLayoutName(reading_.keyboardLayout()) + "_" + chrStr;
@@ -645,6 +659,10 @@ void KeyHandler::setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior) {
 
 void KeyHandler::setAssociatedPhrasesEnabled(bool enabled) {
   associatedPhrasesEnabled_ = enabled;
+}
+
+void KeyHandler::setHalfWidthPunctuationEnabled(bool enabled) {
+  halfWidthPunctuationEnabled_ = enabled;
 }
 
 void KeyHandler::setOnAddNewPhrase(
@@ -1234,6 +1252,13 @@ size_t KeyHandler::actualCandidateCursorIndex() {
 size_t KeyHandler::candidateCursorIndex() {
   size_t cursor = grid_.cursor();
   return cursor;
+}
+
+void KeyHandler::setCandidateCursorIndex(size_t newCursor) {
+  if (newCursor > grid_.length()) {
+    newCursor = grid_.length();
+  }
+  grid_.setCursor(newCursor);
 }
 
 #pragma endregion Build_States

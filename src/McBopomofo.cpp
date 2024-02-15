@@ -38,6 +38,7 @@
 #include "Key.h"
 #include "Log.h"
 #include "UTF8Helper.h"
+#include "notifications_public.h"
 
 namespace McBopomofo {
 
@@ -345,6 +346,66 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
 
   state_ = std::make_unique<InputStates::Empty>();
 
+  halfWidthPunctuationAction_ = std::make_unique<fcitx::SimpleAction>();
+  halfWidthPunctuationAction_->connect<fcitx::SimpleAction::Activated>(
+      [this](fcitx::InputContext* context) {
+        bool enabled = config_.halfWidthPunctuationEnable.value();
+        enabled = !enabled;
+        config_.halfWidthPunctuationEnable.setValue(enabled);
+        keyHandler_->setHalfWidthPunctuationEnabled(enabled);
+        fcitx::safeSaveAsIni(config_, kConfigPath);
+        halfWidthPunctuationAction_->setShortText(
+            config_.halfWidthPunctuationEnable.value()
+                ? _("Half Width Punctuation")
+                : _("Full Width Punctuation"));
+        halfWidthPunctuationAction_->update(context);
+
+        if (notifications()) {
+          notifications()->call<fcitx::INotifications::showTip>(
+              "mcbopomofo-half-width-punctuation-toggle", _("Punctuation"),
+              "fcitx-mcbopomofo",
+              enabled ? _("Half Width Punctuation")
+                      : _("Full Width Punctuation"),
+              enabled ? _("Now using half width punctuation")
+                      : _("Now using full width punctuation"),
+              1000);
+        }
+      });
+  instance_->userInterfaceManager().registerAction(
+      "mcbopomofo-half-width-punctuation", halfWidthPunctuationAction_.get());
+
+  associatedPhrasesAction_ = std::make_unique<fcitx::SimpleAction>();
+  associatedPhrasesAction_->connect<fcitx::SimpleAction::Activated>(
+      [this](fcitx::InputContext* context) {
+        bool enabled = config_.associatedPhrasesEnabled.value();
+        enabled = !enabled;
+        config_.associatedPhrasesEnabled.setValue(enabled);
+        keyHandler_->setAssociatedPhrasesEnabled(enabled);
+        fcitx::safeSaveAsIni(config_, kConfigPath);
+        associatedPhrasesAction_->setShortText(
+            config_.associatedPhrasesEnabled.value()
+                ? _("Associated Phrases - On")
+                : _("Associated Phrases - Off"));
+        associatedPhrasesAction_->update(context);
+
+        if (notifications()) {
+          auto mode = keyHandler_->inputMode();
+          notifications()->call<fcitx::INotifications::showTip>(
+              "mcbopomofo-associated-phrases-toggle", _("Associated Phrases"),
+              "fcitx-mcbopomofo",
+              enabled ? _("Associated Phrases On")
+                      : _("Associated Phrases Off"),
+              enabled ? mode == InputMode::McBopomofo
+                            ? _("Now you can use Shift + Enter to insert "
+                                "associated phrases")
+                            : _("Associated Phrases is now enabled.")
+                      : _("Associated Phrases is now disabled."),
+              1000);
+        }
+      });
+  instance_->userInterfaceManager().registerAction(
+      "mcbopomofo-associated-phrases", associatedPhrasesAction_.get());
+
   editUserPhrasesAction_ = std::make_unique<fcitx::SimpleAction>();
   editUserPhrasesAction_->setShortText(_("Edit User Phrases"));
   editUserPhrasesAction_->connect<fcitx::SimpleAction::Activated>(
@@ -402,6 +463,20 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
                                          action);
   }
 
+  halfWidthPunctuationAction_->setShortText(
+      config_.halfWidthPunctuationEnable.value() ? _("Half width Punctuation")
+                                                 : _("Full Width Punctuation"));
+  halfWidthPunctuationAction_->update(inputContext);
+  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                       halfWidthPunctuationAction_.get());
+
+  associatedPhrasesAction_->setShortText(
+      config_.associatedPhrasesEnabled.value() ? _("Associated Phrases - On")
+                                               : _("Associated Phrases - Off"));
+  associatedPhrasesAction_->update(inputContext);
+  inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
+                                       associatedPhrasesAction_.get());
+
   if (mode == McBopomofo::InputMode::McBopomofo) {
     inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
                                          editUserPhrasesAction_.get());
@@ -447,6 +522,8 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
   keyHandler_->setCtrlEnterKeyBehavior(config_.ctrlEnterKeys.value());
   keyHandler_->setAssociatedPhrasesEnabled(
       config_.associatedPhrasesEnabled.value());
+  keyHandler_->setHalfWidthPunctuationEnabled(
+      config_.halfWidthPunctuationEnable.value());
   languageModelLoader_->reloadUserModelsIfNeeded();
 }
 
@@ -597,6 +674,35 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
+  bool isCursorMovingKey =
+      (config_.allowMovingCursorWhenChoosingCandidates.value() &&
+       (key.check(FcitxKey_j) || key.check(FcitxKey_k))) ||
+      (key.check(FcitxKey_Left, fcitx::KeyStates(fcitx::KeyState::Shift)) ||
+       key.check(FcitxKey_Right, fcitx::KeyStates(fcitx::KeyState::Shift)));
+
+  if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
+      dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr &&
+      isCursorMovingKey) {
+    size_t cursor = keyHandler_->candidateCursorIndex();
+
+    if (key.check(FcitxKey_j) ||
+        key.check(FcitxKey_Left, fcitx::KeyStates(fcitx::KeyState::Shift))) {
+      if (cursor > 0) {
+        cursor--;
+      }
+    } else if (key.check(FcitxKey_k) ||
+               key.check(FcitxKey_Right,
+                         fcitx::KeyStates(fcitx::KeyState::Shift))) {
+      cursor++;
+    }
+    keyHandler_->setCandidateCursorIndex(cursor);
+    auto inputting = keyHandler_->buildInputtingState();
+    auto choosing = keyHandler_->buildChoosingCandidateState(
+        inputting.get(), keyHandler_->candidateCursorIndex());
+    stateCallback(std::move(choosing));
+    return true;
+  }
+
   bool keyIsCancel = false;
 
   // When pressing "?" in the candidate list, tries to look up the candidate in
@@ -622,9 +728,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
         std::unique_ptr<InputStates::ChoosingCandidate> copy =
             std::make_unique<InputStates::ChoosingCandidate>(
                 *choosingCandidate);
-        auto state = keyHandler_->buildSelectingDictionaryState(
+        auto newState = keyHandler_->buildSelectingDictionaryState(
             std::move(copy), phrase, selectedCandidateIndex);
-        enterNewState(context, std::move(state));
+        stateCallback(std::move(newState));
         return true;
       }
     } else if (selectingDictionary != nullptr || showingCharInfo != nullptr) {
@@ -749,8 +855,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
 
     keyHandler_->candidatePanelCancelled(
-        originalCursor, [this, context](std::unique_ptr<InputState> next) {
-          enterNewState(context, std::move(next));
+        originalCursor,
+        [this, context, stateCallback](std::unique_ptr<InputState> next) {
+          stateCallback(std::move(next));
         });
     return true;
   }
@@ -972,49 +1079,35 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   auto keysConfig = config_.selectionKeys.value();
   selectionKeys_.clear();
 
+  _FcitxKeySym key_123456789[9] = {FcitxKey_1, FcitxKey_2, FcitxKey_3,
+                                   FcitxKey_4, FcitxKey_5, FcitxKey_6,
+                                   FcitxKey_7, FcitxKey_8, FcitxKey_9};
+  _FcitxKeySym key_asdfghjkl[9] = {FcitxKey_a, FcitxKey_s, FcitxKey_d,
+                                   FcitxKey_f, FcitxKey_g, FcitxKey_h,
+                                   FcitxKey_j, FcitxKey_k, FcitxKey_l};
+  _FcitxKeySym key_asdfzxcvb[9] = {FcitxKey_a, FcitxKey_s, FcitxKey_d,
+                                   FcitxKey_f, FcitxKey_z, FcitxKey_x,
+                                   FcitxKey_c, FcitxKey_v, FcitxKey_b};
+
   if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
       nullptr) {  // NOLINT(bugprone-branch-clone)
     // Associated phrases in Plain Bopomofo only takes Shift-[1-9]; we push
     // these keys and will detect the shift mask later.
-    selectionKeys_.emplace_back(FcitxKey_1);
-    selectionKeys_.emplace_back(FcitxKey_2);
-    selectionKeys_.emplace_back(FcitxKey_3);
-    selectionKeys_.emplace_back(FcitxKey_4);
-    selectionKeys_.emplace_back(FcitxKey_5);
-    selectionKeys_.emplace_back(FcitxKey_6);
-    selectionKeys_.emplace_back(FcitxKey_7);
-    selectionKeys_.emplace_back(FcitxKey_8);
-    selectionKeys_.emplace_back(FcitxKey_9);
+    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
+      selectionKeys_.emplace_back(key_123456789[i]);
+    }
   } else if (keysConfig == SelectionKeys::Key_asdfghjkl) {
-    selectionKeys_.emplace_back(FcitxKey_a);
-    selectionKeys_.emplace_back(FcitxKey_s);
-    selectionKeys_.emplace_back(FcitxKey_d);
-    selectionKeys_.emplace_back(FcitxKey_f);
-    selectionKeys_.emplace_back(FcitxKey_g);
-    selectionKeys_.emplace_back(FcitxKey_h);
-    selectionKeys_.emplace_back(FcitxKey_j);
-    selectionKeys_.emplace_back(FcitxKey_k);
-    selectionKeys_.emplace_back(FcitxKey_l);
+    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
+      selectionKeys_.emplace_back(key_asdfghjkl[i]);
+    }
   } else if (keysConfig == SelectionKeys::Key_asdfzxcvb) {
-    selectionKeys_.emplace_back(FcitxKey_a);
-    selectionKeys_.emplace_back(FcitxKey_s);
-    selectionKeys_.emplace_back(FcitxKey_d);
-    selectionKeys_.emplace_back(FcitxKey_f);
-    selectionKeys_.emplace_back(FcitxKey_z);
-    selectionKeys_.emplace_back(FcitxKey_x);
-    selectionKeys_.emplace_back(FcitxKey_c);
-    selectionKeys_.emplace_back(FcitxKey_v);
-    selectionKeys_.emplace_back(FcitxKey_b);
+    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
+      selectionKeys_.emplace_back(key_asdfzxcvb[i]);
+    }
   } else {
-    selectionKeys_.emplace_back(FcitxKey_1);
-    selectionKeys_.emplace_back(FcitxKey_2);
-    selectionKeys_.emplace_back(FcitxKey_3);
-    selectionKeys_.emplace_back(FcitxKey_4);
-    selectionKeys_.emplace_back(FcitxKey_5);
-    selectionKeys_.emplace_back(FcitxKey_6);
-    selectionKeys_.emplace_back(FcitxKey_7);
-    selectionKeys_.emplace_back(FcitxKey_8);
-    selectionKeys_.emplace_back(FcitxKey_9);
+    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
+      selectionKeys_.emplace_back(key_123456789[i]);
+    }
   }
 
   candidateList->setSelectionKey(selectionKeys_);

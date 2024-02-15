@@ -109,6 +109,11 @@ FCITX_CONFIGURATION(
         selectionKeys{this, "SelectionKeys", _("Selection Keys"),
                       SelectionKeys::Key_123456789};
 
+    // Select count of selection keys.
+    fcitx::Option<int, fcitx::IntConstrain> selectionKeysCount{
+        this, "SelectionKeysCount", _("Selection Keys Count"), 9,
+        fcitx::IntConstrain(4, 9)};
+
     // Select the phrase as candidate before or after the cursor.
     fcitx::OptionWithAnnotation<SelectPhrase, SelectPhraseI18NAnnotation>
         selectPhrase{this, "SelectPhrase", _("Show Candidate Phrase"),
@@ -117,6 +122,12 @@ FCITX_CONFIGURATION(
     // Move the cursor at the end of the selected candidate phrase.
     fcitx::Option<bool> moveCursorAfterSelection{
         this, "MoveCursorAfterSelection", _("Move cursor after selection"),
+        false};
+
+    fcitx::Option<bool> allowMovingCursorWhenChoosingCandidates{
+        this, "AllowMovingCursorWhenChoosingCandidates",
+        _("Allow using J and K key to move the cursor when choosing "
+          "candidates"),
         false};
 
     // ESC key clears entire composing buffer.
@@ -149,7 +160,11 @@ FCITX_CONFIGURATION(
         this, "AddScriptHookEnabled",
         _("Run the hook script after adding a phrase"), false};
 
-    fcitx::Option<bool> associatedPhrasesEnabled{
+    fcitx::HiddenOption<bool> halfWidthPunctuationEnable{
+        this, "HalfWidthPunctuationEnable", _("Enable Half Width Punctuation"),
+        false};
+
+    fcitx::HiddenOption<bool> associatedPhrasesEnabled{
         this, "AssociatedPhrasesEnabled", _("Enable Associated Phrases"),
         false};);
 
@@ -171,6 +186,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
 
  private:
   FCITX_ADDON_DEPENDENCY_LOADER(chttrans, instance_->addonManager());
+  FCITX_ADDON_DEPENDENCY_LOADER(notifications, instance_->addonManager());
   fcitx::Instance* instance_;
 
   bool handleCandidateKeyEvent(
@@ -215,6 +231,8 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   McBopomofoConfig config_;
   fcitx::KeyList selectionKeys_;
 
+  std::unique_ptr<fcitx::SimpleAction> halfWidthPunctuationAction_;
+  std::unique_ptr<fcitx::SimpleAction> associatedPhrasesAction_;
   std::unique_ptr<fcitx::SimpleAction> editUserPhrasesAction_;
   std::unique_ptr<fcitx::SimpleAction> excludedPhrasesAction_;
 };
