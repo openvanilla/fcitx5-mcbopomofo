@@ -137,15 +137,18 @@ class KeyHandler {
   // Sets if half width punctuation is enabled or not.
   void setHalfWidthPunctuationEnabled(bool enabled);
 
+  // Sets the lambda for adding the phrases.
   void setOnAddNewPhrase(
       std::function<void(const std::string&)> onAddNewPhrase);
 
   // Compute the actual candidate cursor index.
   size_t actualCandidateCursorIndex();
+  // Get the current cursor index.
   size_t candidateCursorIndex();
+  // Set the current cursor index.
   void setCandidateCursorIndex(size_t newCursor);
 
-  // Build a Inputting state.
+  // Build an Inputting state.
   std::unique_ptr<InputStates::Inputting> buildInputtingState();
 
   // Build a Choosing Candidate state.
