@@ -21,14 +21,16 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef FCITX5_MCBOPOMOFO_SUZHOUNUMBERS_H
-#define FCITX5_MCBOPOMOFO_SUZHOUNUMBERS_H
+#ifndef SRC_CHINESENUMBERS_SUZHOUNUMBERS_H_
+#define SRC_CHINESENUMBERS_SUZHOUNUMBERS_H_
 
 #include <string>
 
 namespace SuzhouNumbers {
+
 std::string Generate(const std::string& intPart, const std::string& decPart,
                      const std::string& unit, bool preferInitialVertical);
-}
 
-#endif  // FCITX5_MCBOPOMOFO_SUZHOUNUMBERS_H
+}  // namespace SuzhouNumbers
+
+#endif  // SRC_CHINESENUMBERS_SUZHOUNUMBERS_H_
