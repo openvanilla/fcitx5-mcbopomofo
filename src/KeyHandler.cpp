@@ -43,6 +43,7 @@ constexpr char kHalfWidthPunctuationKeyPrefix[] = "_half_punctuation_";
 constexpr char kLetterPrefix[] = "_letter_";
 constexpr size_t kMinValidMarkingReadingCount = 2;
 constexpr size_t kMaxValidMarkingReadingCount = 6;
+constexpr size_t kMaxChineseNumberConversionDigits = 20;
 
 constexpr int kUserOverrideModelCapacity = 500;
 constexpr double kObservedOverrideHalfLife = 5400.0;  // 1.5 hr.
@@ -121,7 +122,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     return true;
   }
 
-  auto chineseNumber = dynamic_cast<InputStates::ChineseNumber*>(state);
+  auto* chineseNumber = dynamic_cast<InputStates::ChineseNumber*>(state);
   if (chineseNumber != nullptr) {
     return handleChineseNumber(key, chineseNumber, stateCallback,
                                errorCallback);
@@ -953,7 +954,7 @@ bool KeyHandler::handleChineseNumber(
     return true;
   }
   if (key.ascii >= '0' && key.ascii <= '9') {
-    if (state->number.length() > 20) {
+    if (state->number.length() > kMaxChineseNumberConversionDigits) {
       errorCallback();
       return true;
     }
@@ -966,7 +967,8 @@ bool KeyHandler::handleChineseNumber(
       errorCallback();
       return true;
     }
-    if (state->number.empty() || state->number.length() > 20) {
+    if (state->number.empty() ||
+        state->number.length() > kMaxChineseNumberConversionDigits) {
       errorCallback();
       return true;
     }

@@ -45,6 +45,9 @@ std::string FormatTimeZone(icu::TimeZone::EDisplayType type);
 int GetCurrentYear();
 std::string GetGanzhi(int year);
 std::string GetChineseZodiac(int year);
+std::string ConvertWeekdayUnit(std::string original);
+void AddMacro(std::unordered_map<std::string, std::unique_ptr<InputMacro>>& m,
+              std::unique_ptr<InputMacro> p);
 }  // namespace
 
 class InputMacroDate : public InputMacro {
@@ -353,13 +356,6 @@ class InputMacroNextYearJapanese : public InputMacroYear {
       : InputMacroYear("MACRO@NEXT_YEAR_JAPANESE", "japanese", 1, "Gy") {}
 };
 
-std::string convertWeekdayUnit(std::string& original) {
-  // s/星期/禮拜/
-  std::string src = "星期";
-  std::string dst = "禮拜";
-  return original.replace(original.find(src), src.length(), dst);
-}
-
 class InputMacroWeekdayTodayShort : public InputMacroDayOfTheWeek {
  public:
   InputMacroWeekdayTodayShort()
@@ -378,7 +374,7 @@ class InputMacroWeekdayToday2 : public InputMacroDayOfTheWeek {
       : InputMacroDayOfTheWeek("MACRO@DATE_TODAY2_WEEKDAY", "", 0, "EEEE") {}
   [[nodiscard]] std::string replacement() const override {
     std::string original(InputMacroDayOfTheWeek::replacement());
-    return convertWeekdayUnit(original);
+    return ConvertWeekdayUnit(original);
   }
 };
 
@@ -410,7 +406,7 @@ class InputMacroWeekdayYesterday2 : public InputMacroDayOfTheWeek {
                                "EEEE") {}
   [[nodiscard]] std::string replacement() const override {
     std::string original(InputMacroDayOfTheWeek::replacement());
-    return convertWeekdayUnit(original);
+    return ConvertWeekdayUnit(original);
   }
 };
 
@@ -440,7 +436,7 @@ class InputMacroWeekdayTomorrow2 : public InputMacroDayOfTheWeek {
       : InputMacroDayOfTheWeek("MACRO@DATE_TOMORROW2_WEEKDAY", "", 1, "EEEE") {}
   [[nodiscard]] std::string replacement() const override {
     std::string original(InputMacroDayOfTheWeek::replacement());
-    return convertWeekdayUnit(original);
+    return ConvertWeekdayUnit(original);
   }
 };
 
@@ -511,12 +507,6 @@ class InputMacroNextYearChineseZodiac : public InputMacroZodiac {
   InputMacroNextYearChineseZodiac()
       : InputMacroZodiac("MACRO@NEXT_YEAR_CHINESE_ZODIAC", 1) {}
 };
-
-static void AddMacro(
-    std::unordered_map<std::string, std::unique_ptr<InputMacro>>& m,
-    std::unique_ptr<InputMacro> p) {
-  m.insert({p->name(), std::move(p)});
-}
 
 InputMacroController::InputMacroController() {
   AddMacro(macros_, std::make_unique<InputMacroDateTodayShort>());
@@ -700,6 +690,18 @@ std::string GetChineseZodiac(int year) {
   size_t ganIndex = base % gan.size();
   size_t zhiIndex = base % zhi.size();
   return gan[ganIndex] + zhi[zhiIndex] + "年";
+}
+
+std::string ConvertWeekdayUnit(std::string original) {
+  // s/星期/禮拜/
+  std::string src = "星期";
+  std::string dst = "禮拜";
+  return original.replace(original.find(src), src.length(), dst);
+}
+
+void AddMacro(std::unordered_map<std::string, std::unique_ptr<InputMacro>>& m,
+              std::unique_ptr<InputMacro> p) {
+  m.insert({p->name(), std::move(p)});
 }
 
 }  // namespace

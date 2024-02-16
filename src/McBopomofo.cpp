@@ -29,16 +29,17 @@
 #include <fcitx/inputcontext.h>
 #include <fcitx/userinterfacemanager.h>
 #include <fmt/format.h>
+#include <notifications_public.h>  // from fcitx-module/notifications
 
 #include <memory>
 #include <sstream>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "Key.h"
 #include "Log.h"
 #include "UTF8Helper.h"
-#include "notifications_public.h"
 
 namespace McBopomofo {
 
@@ -50,6 +51,10 @@ constexpr int kFcitxRawKeycode_9 = 18;
 
 // For determining whether Shift-Enter is pressed in the candidate panel.
 constexpr int kFcitxRawKeycode_Enter = 36;
+
+// Fctix5 notification timeout.
+// TODO(#117): In what unit?
+constexpr int32_t kFcitx5NotificationTimeout = 1000;
 
 // If a horizontal panel contains a candidate that's longer than this number,
 // the panel will be changed to a vertical panel.
@@ -113,7 +118,7 @@ static Key MapFcitxKey(const fcitx::Key& key) {
     default:
       break;
   }
-  return {};
+  return Key{};
 }
 
 // The candidate word for the standard candidates.
@@ -368,7 +373,7 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
                       : _("Full Width Punctuation"),
               enabled ? _("Now using half width punctuation")
                       : _("Now using full width punctuation"),
-              1000);
+              kFcitx5NotificationTimeout);
         }
       });
   instance_->userInterfaceManager().registerAction(
@@ -400,7 +405,7 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
                                 "associated phrases")
                             : _("Associated Phrases is now enabled.")
                       : _("Associated Phrases is now disabled."),
-              1000);
+              kFcitx5NotificationTimeout);
         }
       });
   instance_->userInterfaceManager().registerAction(
@@ -810,7 +815,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
             context->inputPanel().candidateList().get());
 #endif
         size_t index = selecting->selectedCandidateIndex;
-        maybeCandidateList->setGlobalCursorIndex((int)index);
+        maybeCandidateList->setGlobalCursorIndex(static_cast<int>(index));
         return true;
       }
       auto* marking = dynamic_cast<InputStates::Marking*>(previous);
@@ -839,7 +844,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
             context->inputPanel().candidateList().get());
 #endif
         size_t index = associatedPhrases->selectedCandidateIndex;
-        maybeCandidateList->setGlobalCursorIndex((int)index);
+        maybeCandidateList->setGlobalCursorIndex(static_cast<int>(index));
       } else if (inputting != nullptr) {
         auto copy = std::make_unique<InputStates::Inputting>(*inputting);
         stateCallback(std::move(copy));
@@ -855,8 +860,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
 
     keyHandler_->candidatePanelCancelled(
-        originalCursor,
-        [this, context, stateCallback](std::unique_ptr<InputState> next) {
+        originalCursor, [stateCallback](std::unique_ptr<InputState> next) {
           stateCallback(std::move(next));
         });
     return true;
@@ -1079,35 +1083,34 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   auto keysConfig = config_.selectionKeys.value();
   selectionKeys_.clear();
 
-  _FcitxKeySym key_123456789[9] = {FcitxKey_1, FcitxKey_2, FcitxKey_3,
-                                   FcitxKey_4, FcitxKey_5, FcitxKey_6,
-                                   FcitxKey_7, FcitxKey_8, FcitxKey_9};
-  _FcitxKeySym key_asdfghjkl[9] = {FcitxKey_a, FcitxKey_s, FcitxKey_d,
-                                   FcitxKey_f, FcitxKey_g, FcitxKey_h,
-                                   FcitxKey_j, FcitxKey_k, FcitxKey_l};
-  _FcitxKeySym key_asdfzxcvb[9] = {FcitxKey_a, FcitxKey_s, FcitxKey_d,
-                                   FcitxKey_f, FcitxKey_z, FcitxKey_x,
-                                   FcitxKey_c, FcitxKey_v, FcitxKey_b};
+  constexpr size_t keys = 9;
+  _FcitxKeySym key_123456789[keys] = {FcitxKey_1, FcitxKey_2, FcitxKey_3,
+                                      FcitxKey_4, FcitxKey_5, FcitxKey_6,
+                                      FcitxKey_7, FcitxKey_8, FcitxKey_9};
+  _FcitxKeySym key_asdfghjkl[keys] = {FcitxKey_a, FcitxKey_s, FcitxKey_d,
+                                      FcitxKey_f, FcitxKey_g, FcitxKey_h,
+                                      FcitxKey_j, FcitxKey_k, FcitxKey_l};
+  _FcitxKeySym key_asdfzxcvb[keys] = {FcitxKey_a, FcitxKey_s, FcitxKey_d,
+                                      FcitxKey_f, FcitxKey_z, FcitxKey_x,
+                                      FcitxKey_c, FcitxKey_v, FcitxKey_b};
 
+  _FcitxKeySym* selKeys;
   if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
       nullptr) {  // NOLINT(bugprone-branch-clone)
     // Associated phrases in Plain Bopomofo only takes Shift-[1-9]; we push
     // these keys and will detect the shift mask later.
-    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
-      selectionKeys_.emplace_back(key_123456789[i]);
-    }
+    selKeys = key_123456789;
   } else if (keysConfig == SelectionKeys::Key_asdfghjkl) {
-    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
-      selectionKeys_.emplace_back(key_asdfghjkl[i]);
-    }
+    selKeys = key_asdfghjkl;
   } else if (keysConfig == SelectionKeys::Key_asdfzxcvb) {
-    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
-      selectionKeys_.emplace_back(key_asdfzxcvb[i]);
-    }
+    selKeys = key_asdfzxcvb;
   } else {
-    for (size_t i = 0; i < (size_t)config_.selectionKeysCount.value(); i++) {
-      selectionKeys_.emplace_back(key_123456789[i]);
-    }
+    selKeys = key_123456789;
+  }
+  for (size_t i = 0,
+              s = static_cast<size_t>(config_.selectionKeysCount.value());
+       i < s; ++i) {
+    selectionKeys_.emplace_back(selKeys[i]);
   }
 
   candidateList->setSelectionKey(selectionKeys_);
@@ -1325,7 +1328,7 @@ void McBopomofoEngine::handleChineseNumberState(
 #endif
   fcitx::Text preedit;
   preedit.append(current->composingBuffer(), normalFormat);
-  preedit.setCursor((int)current->composingBuffer().length());
+  preedit.setCursor(static_cast<int>(current->composingBuffer().length()));
 
   if (useClientPreedit) {
     context->inputPanel().setClientPreedit(preedit);
