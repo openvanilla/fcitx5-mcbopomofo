@@ -52,9 +52,8 @@ constexpr int kFcitxRawKeycode_9 = 18;
 // For determining whether Shift-Enter is pressed in the candidate panel.
 constexpr int kFcitxRawKeycode_Enter = 36;
 
-// Fctix5 notification timeout.
-// TODO(#117): In what unit?
-constexpr int32_t kFcitx5NotificationTimeout = 1000;
+// Fctix5 notification timeout, in milliseconds.
+constexpr int32_t kFcitx5NotificationTimeoutInMs = 1000;
 
 // If a horizontal panel contains a candidate that's longer than this number,
 // the panel will be changed to a vertical panel.
@@ -373,7 +372,7 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
                       : _("Full Width Punctuation"),
               enabled ? _("Now using half width punctuation")
                       : _("Now using full width punctuation"),
-              kFcitx5NotificationTimeout);
+              kFcitx5NotificationTimeoutInMs);
         }
       });
   instance_->userInterfaceManager().registerAction(
@@ -405,7 +404,7 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
                                 "associated phrases")
                             : _("Associated Phrases is now enabled.")
                       : _("Associated Phrases is now disabled."),
-              kFcitx5NotificationTimeout);
+              kFcitx5NotificationTimeoutInMs);
         }
       });
   instance_->userInterfaceManager().registerAction(
