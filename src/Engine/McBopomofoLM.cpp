@@ -22,12 +22,14 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 #include "McBopomofoLM.h"
+
 #include <algorithm>
-#include <iterator>
 #include <limits>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "gramambular2/reading_grid.h"
 
 namespace McBopomofo {
 
@@ -122,7 +124,30 @@ std::vector<Formosa::Gramambular2::LanguageModel::Unigram> McBopomofoLM::getUnig
         allUnigrams = filterAndTransformUnigrams(rawGlobalUnigrams, excludedValues, insertedValues);
     }
 
-    allUnigrams.insert(allUnigrams.begin(), userUnigrams.begin(), userUnigrams.end());
+    // TODO(#118): Leaky abstraction. This relies on the impl. detail that we always use the default separator.
+    bool isKeyMultiSyllable = key.find(Formosa::Gramambular2::ReadingGrid::kDefaultSeparator) != std::string::npos;
+    if (isKeyMultiSyllable || allUnigrams.empty()) {
+        allUnigrams.insert(allUnigrams.begin(), userUnigrams.begin(), userUnigrams.end());
+    } else {
+        // Score rewrite. To ensure fairness, each user unigram is assigned a
+        // score that is slightly higher than its peer unigrams.
+        double topScore = std::numeric_limits<double>::lowest();
+        for (const auto& unigram : allUnigrams) {
+            if (unigram.score() > topScore) {
+                topScore = unigram.score();
+            }
+        }
+
+        constexpr double epsilon = 0.000000001;
+        topScore += epsilon;
+
+        std::vector<Formosa::Gramambular2::LanguageModel::Unigram> rewrittenUserUnigrams;
+        for (const auto& unigram : userUnigrams) {
+            rewrittenUserUnigrams.emplace_back(Formosa::Gramambular2::LanguageModel::Unigram(unigram.value(), topScore));
+        }
+        allUnigrams.insert(allUnigrams.begin(), rewrittenUserUnigrams.begin(), rewrittenUserUnigrams.end());
+    }
+
     return allUnigrams;
 }
 
@@ -191,7 +216,6 @@ std::string McBopomofoLM::convertMacro(const std::string& input)
     return input;
 }
 
-
 std::vector<Formosa::Gramambular2::LanguageModel::Unigram> McBopomofoLM::filterAndTransformUnigrams(const std::vector<Formosa::Gramambular2::LanguageModel::Unigram> unigrams, const std::unordered_set<std::string>& excludedValues, std::unordered_set<std::string>& insertedValues)
 {
     std::vector<Formosa::Gramambular2::LanguageModel::Unigram> results;
@@ -236,6 +260,5 @@ bool McBopomofoLM::hasAssociatedPhrasesForKey(const std::string& key)
 {
     return m_associatedPhrases.hasValuesForKey(key);
 }
-
 
 } // namespace McBopomofo
