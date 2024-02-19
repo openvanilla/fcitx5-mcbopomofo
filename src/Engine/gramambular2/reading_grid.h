@@ -268,7 +268,7 @@ class ReadingGrid {
 
   struct NodeInSpan {
     NodePtr node;
-    size_t spanIndex;
+    size_t spanIndex = 0;
   };
 
   // Find all nodes that overlap with the location. The return value is a list
