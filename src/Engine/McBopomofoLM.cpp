@@ -124,13 +124,14 @@ std::vector<Formosa::Gramambular2::LanguageModel::Unigram> McBopomofoLM::getUnig
         allUnigrams = filterAndTransformUnigrams(rawGlobalUnigrams, excludedValues, insertedValues);
     }
 
-    // TODO(#118): Leaky abstraction. This relies on the impl. detail that we always use the default separator.
+    // This relies on the fact that we always use the default separator.
     bool isKeyMultiSyllable = key.find(Formosa::Gramambular2::ReadingGrid::kDefaultSeparator) != std::string::npos;
     if (isKeyMultiSyllable || allUnigrams.empty()) {
         allUnigrams.insert(allUnigrams.begin(), userUnigrams.begin(), userUnigrams.end());
     } else {
         // Score rewrite. To ensure fairness, each user unigram is assigned a
-        // score that is slightly higher than its peer unigrams.
+        // score that is slightly higher than the highest of the current ones
+        // in allUnigrams.
         double topScore = std::numeric_limits<double>::lowest();
         for (const auto& unigram : allUnigrams) {
             if (unigram.score() > topScore) {
