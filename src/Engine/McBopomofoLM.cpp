@@ -126,12 +126,25 @@ std::vector<Formosa::Gramambular2::LanguageModel::Unigram> McBopomofoLM::getUnig
 
     // This relies on the fact that we always use the default separator.
     bool isKeyMultiSyllable = key.find(Formosa::Gramambular2::ReadingGrid::kDefaultSeparator) != std::string::npos;
+
+    // If key is multi-syllabic (for example, ㄉㄨㄥˋ-ㄈㄢˋ), we just
+    // insert all collected userUnigrams on top of the unigrams fetched from
+    // the database. If key is mono-syllabic (for example, ㄉㄨㄥˋ), then
+    // we'll have to rewrite the collected userUnigrams.
+    //
+    // This is because, by default, user unigrams have a score of 0, which
+    // guarantees that grid walks will choose them. This is problematic,
+    // however, when a single-syllabic user phrase is competing with other
+    // multisyllabic phrases that start with the same syllable. For example,
+    // if a user has 丼 for ㄉㄨㄥˋ, and because that unigram has a score
+    // of 0, no other phrases in the database that start with ㄉㄨㄥˋ would
+    // be able to compete with it. Without the rewrite, ㄉㄨㄥˋ-ㄗㄨㄛˋ
+    // would always result in "丼" + "作" instead of "動作" because the
+    // node for "丼" would dominate the walk.
     if (isKeyMultiSyllable || allUnigrams.empty()) {
         allUnigrams.insert(allUnigrams.begin(), userUnigrams.begin(), userUnigrams.end());
-    } else {
-        // Score rewrite. To ensure fairness, each user unigram is assigned a
-        // score that is slightly higher than the highest of the current ones
-        // in allUnigrams.
+    } else if (!userUnigrams.empty()) {
+        // Find the highest score from the existing allUnigrams.
         double topScore = std::numeric_limits<double>::lowest();
         for (const auto& unigram : allUnigrams) {
             if (unigram.score() > topScore) {
@@ -139,12 +152,13 @@ std::vector<Formosa::Gramambular2::LanguageModel::Unigram> McBopomofoLM::getUnig
             }
         }
 
+        // Boost by a very small number. This is the score for user phrases.
         constexpr double epsilon = 0.000000001;
-        topScore += epsilon;
+        double boostedScore = topScore + epsilon;
 
         std::vector<Formosa::Gramambular2::LanguageModel::Unigram> rewrittenUserUnigrams;
         for (const auto& unigram : userUnigrams) {
-            rewrittenUserUnigrams.emplace_back(Formosa::Gramambular2::LanguageModel::Unigram(unigram.value(), topScore));
+            rewrittenUserUnigrams.emplace_back(Formosa::Gramambular2::LanguageModel::Unigram(unigram.value(), boostedScore));
         }
         allUnigrams.insert(allUnigrams.begin(), rewrittenUserUnigrams.begin(), rewrittenUserUnigrams.end());
     }
