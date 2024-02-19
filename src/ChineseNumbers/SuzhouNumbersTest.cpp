@@ -20,10 +20,12 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
+
 #include "SuzhouNumbers.h"
 #include "gtest/gtest.h"
 
 namespace ChineseNumbers {
+
 TEST(SuzhouNumberTest, Test1_1) {
   std::string output = SuzhouNumbers::Generate("0001", "0", "單位", true);
   EXPECT_EQ(output, "〡單位");

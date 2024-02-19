@@ -29,14 +29,14 @@
 
 #include "StringUtils.h"
 
-static const std::string lowerDigits[] = {"〇", "一", "二", "三", "四",
-                                          "五", "六", "七", "八", "九"};
-static const std::string upperDigits[] = {"零", "壹", "貳", "參", "肆",
-                                          "伍", "陸", "柒", "捌", "玖"};
-static const std::string lowerPlaces[] = {"千", "百", "十", ""};
-static const std::string upperPlaces[] = {"仟", "佰", "拾", ""};
-static const std::string higherPlaces[] = {"",   "萬", "億", "兆", "京", "垓",
-                                           "秭", "穰", "溝", "澗", "正", "載"};
+static const char* const kLowerDigits[] = {"〇", "一", "二", "三", "四",
+                                           "五", "六", "七", "八", "九"};
+static const char* const kUpperDigits[] = {"零", "壹", "貳", "參", "肆",
+                                           "伍", "陸", "柒", "捌", "玖"};
+static const char* const kLowerPlaces[] = {"千", "百", "十", ""};
+static const char* const kUpperPlaces[] = {"仟", "佰", "拾", ""};
+static const char* const kHigherPlaces[] = {"",   "萬", "億", "兆", "京", "垓",
+                                            "秭", "穰", "溝", "澗", "正", "載"};
 
 static std::string convert4Digits(const std::string& substring,
                                   ChineseNumbers::ChineseNumberCase digitCase,
@@ -55,21 +55,21 @@ static std::string convert4Digits(const std::string& substring,
     } else {
       if (zeroHappened) {
         if (digitCase == ChineseNumbers::ChineseNumberCase::LOWERCASE) {
-          output << lowerDigits[0];
+          output << kLowerDigits[0];
         } else if (digitCase == ChineseNumbers::ChineseNumberCase::UPPERCASE) {
-          output << upperDigits[0];
+          output << kUpperDigits[0];
         }
       }
       zeroHappened = false;
       if (digitCase == ChineseNumbers::ChineseNumberCase::LOWERCASE) {
-        output << lowerDigits[c - '0'];
+        output << kLowerDigits[c - '0'];
       } else if (digitCase == ChineseNumbers::ChineseNumberCase::UPPERCASE) {
-        output << upperDigits[c - '0'];
+        output << kUpperDigits[c - '0'];
       }
       if (digitCase == ChineseNumbers::ChineseNumberCase::LOWERCASE) {
-        output << lowerPlaces[i];
+        output << kLowerPlaces[i];
       } else if (digitCase == ChineseNumbers::ChineseNumberCase::UPPERCASE) {
-        output << upperPlaces[i];
+        output << kUpperPlaces[i];
       }
     }
   }
@@ -86,7 +86,8 @@ std::string ChineseNumbers::Generate(const std::string& intPart,
   if (intTrimmed.empty()) {
     output << "0";
   } else {
-    auto intSectionCount = (size_t)ceil((double)intTrimmed.length() / 4.0);
+    size_t intSectionCount = static_cast<size_t>(
+        ceil(static_cast<double>(intTrimmed.length()) / 4.0));
     size_t filledLength = intSectionCount * 4;
     std::string filled =
         StringUtils::LeftPadding(intTrimmed, filledLength, ' ');
@@ -104,7 +105,7 @@ std::string ChineseNumbers::Generate(const std::string& intPart,
       zeroEverHappen = false;
       output << converted;
       size_t place = (filledLength - readHead) / 4 - 1;
-      output << higherPlaces[place];
+      output << kHigherPlaces[place];
       readHead += 4;
     }
   }
@@ -113,9 +114,9 @@ std::string ChineseNumbers::Generate(const std::string& intPart,
     output << "點";
     for (char c : decTrimmed) {
       if (digitCase == ChineseNumberCase::LOWERCASE) {
-        output << lowerDigits[c - '0'];
+        output << kLowerDigits[c - '0'];
       } else if (digitCase == ChineseNumberCase::UPPERCASE) {
-        output << upperDigits[c - '0'];
+        output << kUpperDigits[c - '0'];
       }
     }
   }

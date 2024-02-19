@@ -21,16 +21,18 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef FCITX5_MCBOPOMOFO_STRINGUTILS_H
-#define FCITX5_MCBOPOMOFO_STRINGUTILS_H
+#ifndef SRC_CHINESENUMBERS_STRINGUTILS_H_
+#define SRC_CHINESENUMBERS_STRINGUTILS_H_
 
 #include <string>
 
 namespace StringUtils {
+
 std::string TrimZerosAtStart(const std::string& input);
 std::string TrimZerosAtEnd(const std::string& input);
 std::string LeftPadding(const std::string& input, size_t toLength,
                         char character);
+
 }  // namespace StringUtils
 
-#endif  // FCITX5_MCBOPOMOFO_STRINGUTILS_H
+#endif  // SRC_CHINESENUMBERS_STRINGUTILS_H_

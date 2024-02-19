@@ -53,8 +53,8 @@ struct Key {
   const bool shiftPressed;
   const bool ctrlPressed;
 
-  Key(char c = 0, KeyName n = KeyName::UNKNOWN, bool isShift = false,
-      bool isCtrl = false)
+  explicit Key(char c = 0, KeyName n = KeyName::UNKNOWN, bool isShift = false,
+               bool isCtrl = false)
       : ascii(c), name(n), shiftPressed(isShift), ctrlPressed(isCtrl) {}
 
   static Key asciiKey(char c, bool shiftPressed = false,
@@ -65,15 +65,18 @@ struct Key {
   static Key namedKey(KeyName name, bool shiftPressed = false,
                       bool ctrlPressed = false) {
     return Key(0, name, shiftPressed, ctrlPressed);
-  };
+  }
+
   // Regardless of the shift state.
-  bool isCursorKeys() {
+  [[nodiscard]] bool isCursorKeys() const {
     return name == KeyName::LEFT || name == KeyName::RIGHT ||
            name == KeyName::HOME || name == KeyName::END;
   }
 
   // Regardless of the shift state.
-  bool isDeleteKeys() { return ascii == BACKSPACE || ascii == DELETE; }
+  [[nodiscard]] bool isDeleteKeys() const {
+    return ascii == BACKSPACE || ascii == DELETE;
+  }
 };
 
 }  // namespace McBopomofo

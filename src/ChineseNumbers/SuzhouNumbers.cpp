@@ -28,10 +28,10 @@
 
 #include "StringUtils.h"
 
-static std::string verticalDigits[] = {"〇", "〡", "〢", "〣", "〤",
-                                       "〥", "〦", "〧", "〨", "〩"};
-static std::string horizontalDigits[] = {"〇", "一", "二", "三"};
-static std::string placeNames[] = {
+static const char* const kVerticalDigits[] = {"〇", "〡", "〢", "〣", "〤",
+                                              "〥", "〦", "〧", "〨", "〩"};
+static const char* const kHorizontalDigits[] = {"〇", "一", "二", "三"};
+static const char* const kPlaceNames[] = {
     "",   "十",   "百",   "千",   "万", "十万", "百万", "千万",
     "億", "十億", "百億", "千億", "兆", "十兆", "百兆", "千兆",
     "京", "十京", "百京", "千京", "垓", "十垓", "百垓", "千垓",
@@ -61,13 +61,13 @@ std::string SuzhouNumbers::Generate(const std::string& intPart,
   for (char c : joined) {
     if (c == '1' || c == '2' || c == '3') {
       if (isVertical) {
-        output << verticalDigits[c - '0'];
+        output << kVerticalDigits[c - '0'];
       } else {
-        output << horizontalDigits[c - '0'];
+        output << kHorizontalDigits[c - '0'];
       }
       isVertical = !isVertical;
     } else {
-      output << verticalDigits[c - '0'];
+      output << kVerticalDigits[c - '0'];
       isVertical = preferInitialVertical;
     }
   }
@@ -91,6 +91,6 @@ std::string SuzhouNumbers::Generate(const std::string& intPart,
   }
   size_t place = intTrimmed.length() + trimmedZeroCounts - 1;
   output << (joined.length() > 1 ? "\n" : "");
-  output << placeNames[place] << unit;
+  output << kPlaceNames[place] << unit;
   return output.str();
 }
