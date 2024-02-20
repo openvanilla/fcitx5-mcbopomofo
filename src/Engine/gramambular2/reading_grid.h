@@ -163,10 +163,10 @@ class ReadingGrid {
 
   struct WalkResult {
     std::vector<NodePtr> nodes;
-    size_t totalReadings;
-    size_t vertices;
-    size_t edges;
-    uint64_t elapsedMicroseconds;
+    size_t totalReadings = 0;
+    size_t vertices = 0;
+    size_t edges = 0;
+    uint64_t elapsedMicroseconds = 0;
 
     // Convenient method for finding the node at the cursor. Returns
     // nodes.cend() if the value of cursor argument doesn't make sense. An
