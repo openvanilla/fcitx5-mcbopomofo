@@ -35,7 +35,7 @@ TEST(UTF8HelperTest, CountingAndClampingEmptyString) {
   ASSERT_EQ(SubstringToCodePoints(s, 1), s);
 }
 
-TEST(UTF8HelperTest, CountingAndClapmingAsciiStrings) {
+TEST(UTF8HelperTest, CountingAndClampingAsciiStrings) {
   std::string s = "hello, world!";
   ASSERT_EQ(CodePointCount(s), 13);
   ASSERT_EQ(SubstringToCodePoints(s, 0), "");
@@ -44,7 +44,7 @@ TEST(UTF8HelperTest, CountingAndClapmingAsciiStrings) {
 }
 // 🂡
 
-TEST(UTF8HelperTest, CountingAndClapmingStrings) {
+TEST(UTF8HelperTest, CountingAndClampingStrings) {
   std::string s = "café🂡火";
   ASSERT_EQ(CodePointCount(s), 6);
   ASSERT_EQ(SubstringToCodePoints(s, 0), "");
@@ -56,7 +56,7 @@ TEST(UTF8HelperTest, CountingAndClapmingStrings) {
   ASSERT_EQ(SubstringToCodePoints(s, 8), s);
 }
 
-TEST(UTF8HelperTest, CountingAndClapmingInvalidStrings) {
+TEST(UTF8HelperTest, CountingAndClampingInvalidStrings) {
   // Mangled UTF-8 sequence: \xc3\xa9 = é;
   std::string s = "caf🂡\xa9\xc3火";
   ASSERT_EQ(CodePointCount(s), 4);
@@ -69,7 +69,7 @@ TEST(UTF8HelperTest, CountingAndClapmingInvalidStrings) {
   ASSERT_EQ(SubstringToCodePoints(s, 8), "caf🂡");
 }
 
-TEST(UTF8HelperTest, CountingAndClapmingPrematurelyTerminatingSequence) {
+TEST(UTF8HelperTest, CountingAndClampingPrematurelyTerminatingSequence) {
   // \xc3\xa9 = é;
   std::string s = "\xc3";
   ASSERT_EQ(CodePointCount(s), 0);

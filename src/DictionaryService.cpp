@@ -159,7 +159,7 @@ void McBopomofo::DictionaryServices::load() {
   long file_size = ftell(file);
   if (file_size == -1) {
     FCITX_MCBOPOMOFO_ERROR()
-        << "Error ftelling dictionary service file: " << dictionaryServicesPath;
+        << "Error telling dictionary service file: " << dictionaryServicesPath;
     (void)fclose(file);
     return;
   }
