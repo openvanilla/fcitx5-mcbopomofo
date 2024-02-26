@@ -700,9 +700,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       cursor++;
     }
     keyHandler_->setCandidateCursorIndex(cursor);
-    auto inputting = keyHandler_->buildInputtingState();
     auto choosing = keyHandler_->buildChoosingCandidateState(
-        inputting.get(), keyHandler_->candidateCursorIndex());
+        keyHandler_->candidateCursorIndex());
     stateCallback(std::move(choosing));
     return true;
   }

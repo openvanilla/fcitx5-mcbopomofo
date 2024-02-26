@@ -153,7 +153,7 @@ class KeyHandler {
 
   // Build a Choosing Candidate state.
   std::unique_ptr<InputStates::ChoosingCandidate> buildChoosingCandidateState(
-      InputStates::NotEmpty* nonEmptyState, size_t originalCursor);
+      size_t originalCursor);
 
   // Reading joiner for retrieving unigrams from the language model.
   static constexpr char kJoinSeparator[] = "-";
