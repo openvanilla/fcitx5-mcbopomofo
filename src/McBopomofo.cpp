@@ -699,9 +699,11 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
                          fcitx::KeyStates(fcitx::KeyState::Shift))) {
       cursor++;
     }
+
     keyHandler_->setCandidateCursorIndex(cursor);
+    auto inputting = keyHandler_->buildInputtingState();
     auto choosing = keyHandler_->buildChoosingCandidateState(
-        keyHandler_->candidateCursorIndex());
+        inputting.get(), keyHandler_->candidateCursorIndex());
     stateCallback(std::move(choosing));
     return true;
   }

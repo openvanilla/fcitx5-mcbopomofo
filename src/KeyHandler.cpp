@@ -186,7 +186,9 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     }
 
     if (inputMode_ == McBopomofo::InputMode::PlainBopomofo) {
-      auto choosingCandidate = buildChoosingCandidateState(grid_.cursor());
+      auto inputting = this->buildInputtingState();
+      auto choosingCandidate =
+          buildChoosingCandidateState(inputting.get(), grid_.cursor());
       if (choosingCandidate->candidates.size() == 1) {
         reset();
         std::string value = choosingCandidate->candidates[0].value;
@@ -250,8 +252,9 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         selectPhraseAfterCursorAsCandidate_ && moveCursorAfterSelection_) {
       grid_.setCursor(originalCursor - 1);
     }
-    auto candidateState = buildChoosingCandidateState(
-         originalCursor);
+    auto inputting = buildInputtingState();
+    auto candidateState =
+        buildChoosingCandidateState(inputting.get(), originalCursor);
     stateCallback(std::move(candidateState));
     return true;
   }
@@ -439,7 +442,9 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         grid_.setCursor(originalCursor - 1);
       }
 
-      auto choosingCandidateState = buildChoosingCandidateState(originalCursor);
+      auto inputting = buildInputtingState();
+      auto choosingCandidateState =
+          buildChoosingCandidateState(inputting.get(), originalCursor);
       stateCallback(std::move(choosingCandidateState));
     } else {
       // Punctuation ignored if a bopomofo reading is active..
@@ -691,7 +696,7 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
   }
 
   const auto candidates =
-      buildChoosingCandidateState( grid_.cursor())->candidates;
+      buildChoosingCandidateState(inputting, grid_.cursor())->candidates;
   if (candidates.empty()) {
     errorCallback();
     return true;
@@ -868,8 +873,9 @@ bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
   walk();
 
   if (inputMode_ == McBopomofo::InputMode::PlainBopomofo) {
+    auto inputting = buildInputtingState();
     auto choosingCandidate =
-        buildChoosingCandidateState( grid_.cursor());
+        buildChoosingCandidateState(inputting.get(), grid_.cursor());
     if (choosingCandidate->candidates.size() == 1) {
       reset();
       std::string value = choosingCandidate->candidates[0].value;
@@ -1095,8 +1101,9 @@ std::unique_ptr<InputStates::Inputting> KeyHandler::buildInputtingState() {
 }
 
 std::unique_ptr<InputStates::ChoosingCandidate>
-KeyHandler::buildChoosingCandidateState(size_t originalCursor) {
-  auto inputting = buildInputtingState();
+KeyHandler::buildChoosingCandidateState(InputStates::Inputting* inputting,
+                                        size_t originalCursor) {
+  //  auto inputting = buildInputtingState();
   auto candidates = grid_.candidatesAt(actualCandidateCursorIndex());
   std::vector<InputStates::ChoosingCandidate::Candidate> stateCandidates;
   for (const auto& c : candidates) {
