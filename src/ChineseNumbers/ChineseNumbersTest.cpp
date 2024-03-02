@@ -24,6 +24,18 @@
 #include "ChineseNumbers.h"
 #include "gtest/gtest.h"
 
+TEST(ChineseNumberTest, Test0_lower) {
+  std::string output = ChineseNumbers::Generate(
+      "0000", "0", ChineseNumbers::ChineseNumberCase::LOWERCASE);
+  EXPECT_EQ(output, "〇");
+}
+
+TEST(ChineseNumberTest, Test0_uipper) {
+  std::string output = ChineseNumbers::Generate(
+      "0000", "0", ChineseNumbers::ChineseNumberCase::UPPERCASE);
+  EXPECT_EQ(output, "零");
+}
+
 TEST(ChineseNumberTest, Test1) {
   std::string output = ChineseNumbers::Generate(
       "0001", "0", ChineseNumbers::ChineseNumberCase::LOWERCASE);
