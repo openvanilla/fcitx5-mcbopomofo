@@ -66,8 +66,6 @@ find src/ -name *.cpp -o -name *.h | xargs clang-format -i
 - 我們不使用 `snake_case` 變數名稱。變數或參數一律使用 `lowerCamelCase` 風格。
 - 成員函數不使用 `Foo::PascalCaseMethod()`。成員函數一律使用 `Foo::lowerCamelCaseMethod()` 風格。
 
-此外，`src/Engine/` 目錄裡的程式碼，傳統上使用 [WebKit style](https://webkit.org/code-style-guidelines/)，未來繼續使用 WebKit 風格。我們也在該目錄放置了符合該風格的 `.clang-format`。
-
 ### cpplint
 
 我們也推薦使用 [cpplint](https://github.com/cpplint/cpplint) 檢查 C++ 常見問題。
