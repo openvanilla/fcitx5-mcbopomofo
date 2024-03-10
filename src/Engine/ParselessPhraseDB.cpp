@@ -28,6 +28,15 @@
 
 namespace McBopomofo {
 
+bool ParselessPhraseDB::ValidatePragma(const char* buf, size_t length) {
+  if (length < SORTED_PRAGMA_HEADER.length()) {
+    return false;
+  }
+
+  std::string_view header(buf, SORTED_PRAGMA_HEADER.length());
+  return header == SORTED_PRAGMA_HEADER;
+}
+
 ParselessPhraseDB::ParselessPhraseDB(const char* buf, size_t length,
                                      bool validate_pragma)
     : begin_(buf), end_(buf + length) {
@@ -35,12 +44,12 @@ ParselessPhraseDB::ParselessPhraseDB(const char* buf, size_t length,
   assert(length > 0);
 
   if (validate_pragma) {
-    assert(length > SORTED_PRAGMA_HEADER.length());
-
-    std::string_view header(buf, SORTED_PRAGMA_HEADER.length());
-    assert(header == SORTED_PRAGMA_HEADER);
-
-    begin_ += header.length();
+    if (ValidatePragma(buf, length)) {
+      begin_ += SORTED_PRAGMA_HEADER.length();
+    } else {
+      // Header invalid; makes the db no-op.
+      end_ = begin_;
+    }
   }
 }
 
