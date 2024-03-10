@@ -23,7 +23,6 @@ add_subdirectory(ChineseNumbers)
 set(MCBOPOMOFO_LIB_SOURCES
  KeyHandler.cpp
  LanguageModelLoader.cpp
- UTF8Helper.cpp
  InputState.cpp
  InputMacro.cpp
  Log.cpp
@@ -106,8 +105,7 @@ if (ENABLE_TEST)
         endif()
 
         # Test target declarations.
-        add_executable(McBopomofoTest
-                KeyHandlerTest.cpp UTF8HelperTest.cpp)
+        add_executable(McBopomofoTest KeyHandlerTest.cpp)
         target_compile_options(McBopomofoTest PRIVATE -Wno-unknown-pragmas)
         target_link_libraries(McBopomofoTest PRIVATE Fcitx5::Core GTest::gtest_main GTest::gmock_main McBopomofoLib fmt::fmt ${JSONC_LIBRARIES})
         target_include_directories(McBopomofoTest PRIVATE Fcitx5::Core fmt::fmt)

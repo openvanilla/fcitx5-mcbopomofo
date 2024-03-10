@@ -21,8 +21,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef SRC_UTF8HELPER_H_
-#define SRC_UTF8HELPER_H_
+#ifndef SRC_ENGINE_UTF8HELPER_H_
+#define SRC_ENGINE_UTF8HELPER_H_
 
 #include <string>
 #include <vector>
@@ -47,4 +47,4 @@ std::vector<std::string> Split(const std::string& s);
 
 }  // namespace McBopomofo
 
-#endif  // SRC_UTF8HELPER_H_
+#endif  // SRC_ENGINE_UTF8HELPER_H_
