@@ -10,10 +10,14 @@ add_subdirectory(Mandarin)
 add_library(McBopomofoLMLib
         AssociatedPhrases.h
         AssociatedPhrases.cpp
+        AssociatedPhrasesV2.h
+        AssociatedPhrasesV2.cpp
         KeyValueBlobReader.cpp
         KeyValueBlobReader.h
         McBopomofoLM.cpp
         McBopomofoLM.h
+        MemoryMappedFile.h
+        MemoryMappedFile.cpp
         ParselessPhraseDB.cpp
         ParselessPhraseDB.h
         ParselessLM.cpp
@@ -39,7 +43,9 @@ if (ENABLE_TEST)
 
         # Test target declarations.
         add_executable(McBopomofoLMLibTest
+                AssociatedPhrasesV2Test.cpp
                 KeyValueBlobReaderTest.cpp
+                MemoryMappedFileTest.cpp
                 ParselessLMTest.cpp
                 ParselessPhraseDBTest.cpp
                 PhraseReplacementMapTest.cpp
