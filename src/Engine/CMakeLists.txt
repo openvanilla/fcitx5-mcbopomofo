@@ -8,8 +8,6 @@ add_subdirectory(gramambular2)
 add_subdirectory(Mandarin)
 
 add_library(McBopomofoLMLib
-        AssociatedPhrases.h
-        AssociatedPhrases.cpp
         AssociatedPhrasesV2.h
         AssociatedPhrasesV2.cpp
         KeyValueBlobReader.cpp
