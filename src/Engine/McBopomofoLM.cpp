@@ -41,6 +41,7 @@ McBopomofoLM::~McBopomofoLM() {
   m_excludedPhrases.close();
   m_phraseReplacement.close();
   m_associatedPhrases.close();
+  m_associatedPhrasesV2.close();
 }
 
 void McBopomofoLM::loadLanguageModel(const char* languageModelDataPath) {
@@ -282,10 +283,10 @@ bool McBopomofoLM::hasAssociatedPhrasesForKey(const std::string& key) {
   return m_associatedPhrases.hasValuesForKey(key);
 }
 
-std::vector<AssociatedPhrasesV2::Phrase> McBopomofoLM::findAssociatedPhrasesV2(const std::string& prefixValue,
-                                                                       const std::vector<std::string>& prefixReadings) const {
+std::vector<AssociatedPhrasesV2::Phrase> McBopomofoLM::findAssociatedPhrasesV2(
+    const std::string& prefixValue,
+    const std::vector<std::string>& prefixReadings) const {
   return m_associatedPhrasesV2.findPhrases(prefixValue, prefixReadings);
 }
-
 
 }  // namespace McBopomofo

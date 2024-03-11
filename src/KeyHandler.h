@@ -77,7 +77,8 @@ class KeyHandler {
 
   void candidateAssociatedPhraseSelected(
       size_t index, const InputStates::ChoosingCandidate::Candidate& candidate,
-      const std::string& phrase, const StateCallback& stateCallback);
+      const std::string& selectedReading, const std::string& selectedValue,
+      const StateCallback& stateCallback);
 
   void dictionaryServiceSelected(std::string phrase, size_t index,
                                  InputState* currentState,
@@ -161,13 +162,14 @@ class KeyHandler {
   // Build an Associated Phrase state.
   std::unique_ptr<InputStates::AssociatedPhrases> buildAssociatedPhrasesState(
       std::unique_ptr<InputStates::NotEmpty> previousState,
-      const std::string& selectedPhrase, const std::string& selectedReading,
+      std::string prefixCombinedReading, std::string prefixValue,
       size_t selectedCandidateIndex);
 
   // Build an Associated Phrases Plain state by the given key. It could be
   // nullptr when there is no associated phrases.
   std::unique_ptr<InputStates::AssociatedPhrasesPlain>
-  buildAssociatedPhrasesPlainState(const std::string& key);
+  buildAssociatedPhrasesPlainState(const std::string& reading,
+                                   const std::string& value);
 
 #pragma endregion Settings
 
@@ -211,8 +213,24 @@ class KeyHandler {
                const InputStates::ChoosingCandidate::Candidate& candidate,
                bool useMoveCursorAfterSelectionSetting = true);
 
-  void pinNode(size_t cursor, const std::string& candidate,
-               const std::string& associatePhrase);
+  // Pin a node with an associated phrase; an associated phrase has a prefix
+  // that is either the current node at the cursor, or a new "override" phrase
+  // from the choosing-candidate state; the actual associated phrase will also
+  // contain the prefix. This allows the following two scenarios:
+  //
+  // (1) the current walk is 得 and we want to pin the phrase 得到; in this
+  // case,
+  //     the prefixReading is ㄉㄜˊ and prefixValue is 得, and the associated
+  //     phrase's reading and value are ㄉㄜˊ-ㄉㄠˋ and 得到 respectively.
+  // (2) the current walk is 得 but we want to pin the phrase 德性, coming from
+  //     the choosing-candidate state; in this case, the prefix reading and
+  //     value is now ㄉㄜˊ and 德, and the associated phrase is ㄉㄜˊ-ㄒㄧㄥˋ
+  //     and 德性 respectively.
+  void pinNodeWithAssociatedPhrase(size_t cursorIndex,
+                                   const std::string& prefixReading,
+                                   const std::string& prefixValue,
+                                   const std::string& associatedPhraseReading,
+                                   const std::string& associatedPhraseValue);
 
   void walk();
 

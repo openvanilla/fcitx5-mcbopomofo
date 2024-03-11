@@ -121,8 +121,9 @@ class McBopomofoLM : public Formosa::Gramambular2::LanguageModel {
       const std::string& key);
   bool hasAssociatedPhrasesForKey(const std::string& key);
 
-  std::vector<AssociatedPhrasesV2::Phrase> findAssociatedPhrasesV2(const std::string& prefixValue,
-                                                                         const std::vector<std::string>& prefixReadings) const;
+  std::vector<AssociatedPhrasesV2::Phrase> findAssociatedPhrasesV2(
+      const std::string& prefixValue,
+      const std::vector<std::string>& prefixReadings) const;
 
   /// Returns the top-scored reading from the base model, given the value.
   std::string getReading(const std::string& value);

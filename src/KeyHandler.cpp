@@ -191,13 +191,14 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
           buildChoosingCandidateState(inputting.get(), grid_.cursor());
       if (choosingCandidate->candidates.size() == 1) {
         reset();
+        std::string reading = choosingCandidate->candidates[0].reading;
         std::string value = choosingCandidate->candidates[0].value;
         auto committingState = std::make_unique<InputStates::Committing>(value);
         stateCallback(std::move(committingState));
 
         if (associatedPhrasesEnabled_) {
           auto associatedPhrasesPlainState =
-              buildAssociatedPhrasesPlainState(value);
+              buildAssociatedPhrasesPlainState(reading, value);
           if (associatedPhrasesPlainState != nullptr) {
             stateCallback(std::move(associatedPhrasesPlainState));
           }
@@ -314,44 +315,105 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     if (key.shiftPressed && inputMode_ == InputMode::McBopomofo &&
         associatedPhrasesEnabled_) {
       size_t cursor = grid_.cursor();
+
+      // We need to find the node *before* the cursor, so cursor must be >= 1.
       if (cursor < 1) {
         errorCallback();
         return true;
       }
       auto* inputting = dynamic_cast<InputStates::Inputting*>(state);
       if (inputting != nullptr) {
-        std::string composerBuffer = inputting->composingBuffer;
-        std::string characterBeforeCursor =
-            GetCodePoint(composerBuffer, cursor - 1);
-        auto candidates = grid_.candidatesAt(cursor - 1);
-        auto candidateIt =
-            std::find_if(candidates.begin(), candidates.end(),
-                         [characterBeforeCursor](auto candidate) {
-                           return candidate.value == characterBeforeCursor;
-                         });
+        // Find the selected node *before* the cursor.
 
-        if (candidateIt == candidates.end()) {
-          // The character before the cursor is not composed by a single
-          // reading.
+        size_t endCursorIndex = 0;
+        auto nodePtrIt = latestWalk_.findNodeAt(cursor - 1, &endCursorIndex);
+        if (nodePtrIt == latestWalk_.nodes.cend() || endCursorIndex == 0) {
+          // Shouldn't happen.
           errorCallback();
           return true;
         }
 
-        std::optional<Formosa::Gramambular2::ReadingGrid::NodePtr>
-            oneUnitLongSpan = grid_.findInSpan(
-                cursor - 1,
-                [](const Formosa::Gramambular2::ReadingGrid::NodePtr& node) {
-                  return node->spanningLength() == 1;
-                });
-
-        if (!oneUnitLongSpan.has_value()) {
+        // Validate that the value's codepoint count is the same as the number
+        // of readings. This is a strict requirement for the associated phrases.
+        std::vector<std::string> codepoints = Split((*nodePtrIt)->value());
+        std::vector<std::string> readings =
+            AssociatedPhrasesV2::SplitReadings((*nodePtrIt)->reading());
+        if (codepoints.size() != readings.size()) {
           errorCallback();
           return true;
         }
-        std::string reading = (*oneUnitLongSpan)->reading();
-        auto associatedPhrasesState = buildAssociatedPhrasesState(
-            buildInputtingState(), characterBeforeCursor, reading, 0);
-        stateCallback(std::move(associatedPhrasesState));
+
+        if (endCursorIndex < readings.size()) {
+          // Shouldn't happen.
+          errorCallback();
+          return true;
+        }
+
+        // Try to find the longest associated phrase prefix. Suppose we have
+        // a walk A-B-CD-EFGH and the cursor is between EFG and H. Our job is
+        // to try the prefixes EFG, EF, and G to see which one yields a list
+        // of possible associated phrases.
+        //
+        //             grid_->cursor()
+        //                 |
+        //                 v
+        //     A-B-C-D-|EFG|H|
+        //             ^     ^
+        //             |     |
+        //             |    endCursorIndex
+        //           startCursorIndex
+        //
+        // In this case, the max prefix length is 3. This works because our
+        // association phrases mechanism require that the node's codepoint
+        // length and reading length (i.e. the spanning length) must be equal.
+        //
+        // And say if the prefix "FG" has associated phrases FGPQ, FGRST, and
+        // the user later chooses FGRST, we will first override the FG node
+        // again, essentially breaking that from E and H (the vertical bar
+        // represents the cursor):
+        //
+        //     A-B-C-D-E'-FG|-H'
+        //
+        // And then we add the readings for the RST to the grid, and override
+        // the grid at the cursor position with the value FGRST (and its
+        // corresponding reading) again, so that the process is complete:
+        //
+        //     A-B-C-D-E'-FGRST|-H'
+        //
+        // Notice that after breaking FG from EFGH, the values E and H may
+        // change due to a new walk, hence the notation E' and H'.
+        size_t startCursorIndex = endCursorIndex - readings.size();
+        size_t prefixLength = cursor - startCursorIndex;
+        size_t maxPrefixLength = prefixLength;
+        for (; prefixLength > 0; --prefixLength) {
+          size_t startIndex = maxPrefixLength - prefixLength;
+          auto cpBegin = codepoints.cbegin();
+          auto cpEnd = codepoints.cbegin();
+          std::advance(cpBegin, startIndex);
+          std::advance(cpEnd, maxPrefixLength);
+          auto cpSlice = std::vector<std::string>(cpBegin, cpEnd);
+
+          auto rdBegin = readings.cbegin();
+          auto rdEnd = readings.cbegin();
+          std::advance(rdBegin, startIndex);
+          std::advance(rdEnd, maxPrefixLength);
+          auto rdSlice = std::vector<std::string>(rdBegin, rdEnd);
+
+          std::stringstream value;
+          for (const std::string& cp : cpSlice) {
+            value << cp;
+          }
+
+          auto associatedPhrasesState = buildAssociatedPhrasesState(
+              buildInputtingState(),
+              AssociatedPhrasesV2::CombineReadings(rdSlice), value.str(),
+              /*selectedCandidateIndex=*/0);
+          if (associatedPhrasesState != nullptr) {
+            stateCallback(std::move(associatedPhrasesState));
+            return true;
+          }
+        }
+        errorCallback();
       }
       return true;
     }
@@ -538,13 +600,15 @@ void KeyHandler::candidateSelected(
     size_t originalCursor, StateCallback stateCallback) {
   if (inputMode_ == InputMode::PlainBopomofo) {
     reset();
+    std::string reading = candidate.reading;
+    std::string value = candidate.value;
     std::unique_ptr<InputStates::Committing> committingState =
-        std::make_unique<InputStates::Committing>(candidate.value);
+        std::make_unique<InputStates::Committing>(value);
     stateCallback(std::move(committingState));
 
     if (associatedPhrasesEnabled_) {
       auto associatedPhrasesPlainState =
-          buildAssociatedPhrasesPlainState(candidate.value);
+          buildAssociatedPhrasesPlainState(reading, value);
       if (associatedPhrasesPlainState != nullptr) {
         stateCallback(std::move(associatedPhrasesPlainState));
       }
@@ -557,9 +621,12 @@ void KeyHandler::candidateSelected(
 }
 
 void KeyHandler::candidateAssociatedPhraseSelected(
-    size_t index, const InputStates::ChoosingCandidate::Candidate& candidate,
-    const std::string& phrase, const StateCallback& stateCallback) {
-  pinNode(index, phrase, candidate.value);
+    size_t cursorIndex,
+    const InputStates::ChoosingCandidate::Candidate& candidate,
+    const std::string& selectedReading, const std::string& selectedValue,
+    const StateCallback& stateCallback) {
+  pinNodeWithAssociatedPhrase(cursorIndex, selectedReading, selectedValue,
+                              candidate.reading, candidate.value);
   stateCallback(buildInputtingState());
 }
 
@@ -1176,39 +1243,49 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
 std::unique_ptr<InputStates::AssociatedPhrases>
 KeyHandler::buildAssociatedPhrasesState(
     std::unique_ptr<InputStates::NotEmpty> previousState,
-    const std::string& selectedPhrase, const std::string& selectedReading,
+    std::string prefixCombinedReading, std::string prefixValue,
     size_t selectedCandidateIndex) {
   McBopomofoLM* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
-
   if (lm == nullptr) {
     return nullptr;
   }
 
-  if (lm->hasAssociatedPhrasesForKey(selectedPhrase)) {
-    std::vector<std::string> phrases =
-        lm->associatedPhrasesForKey(selectedPhrase);
+  std::vector<std::string> splitReadings =
+      AssociatedPhrasesV2::SplitReadings(prefixCombinedReading);
+  std::vector<AssociatedPhrasesV2::Phrase> phrases =
+      lm->findAssociatedPhrasesV2(prefixValue, splitReadings);
+
+  if (!phrases.empty()) {
     std::vector<InputStates::ChoosingCandidate::Candidate> cs;
     for (const auto& phrase : phrases) {
-      cs.emplace_back(phrase, phrase);
+      // The candidates should contain the prefix.
+      cs.emplace_back(phrase.combinedReading(), phrase.value);
     }
+
     return std::make_unique<InputStates::AssociatedPhrases>(
-        std::move(previousState), selectedPhrase, selectedReading,
+        std::move(previousState), prefixCombinedReading, prefixValue,
         selectedCandidateIndex, cs);
   }
   return nullptr;
 }
 
 std::unique_ptr<InputStates::AssociatedPhrasesPlain>
-KeyHandler::buildAssociatedPhrasesPlainState(const std::string& key) {
+KeyHandler::buildAssociatedPhrasesPlainState(const std::string& reading,
+                                             const std::string& value) {
   McBopomofoLM* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
   if (lm == nullptr) {
     return nullptr;
   }
-  if (lm->hasAssociatedPhrasesForKey(key)) {
-    std::vector<std::string> phrases = lm->associatedPhrasesForKey(key);
+
+  std::vector<McBopomofo::AssociatedPhrasesV2::Phrase> phrases =
+      lm->findAssociatedPhrasesV2(value, {reading});
+  if (!phrases.empty()) {
     std::vector<InputStates::ChoosingCandidate::Candidate> cs;
     for (const auto& phrase : phrases) {
-      cs.emplace_back(phrase, phrase);
+      // AssociatedPhrasesV2::Phrase's value *contains* the prefix, hence this.
+      std::string valueWithoutPrefix = phrase.value.substr(value.length());
+
+      cs.emplace_back(valueWithoutPrefix, valueWithoutPrefix);
     }
     return std::make_unique<InputStates::AssociatedPhrasesPlain>(cs);
   }
@@ -1301,39 +1378,52 @@ void KeyHandler::pinNode(
   }
 }
 
-void KeyHandler::pinNode(size_t cursor, const std::string& candidate,
-                         const std::string& associatePhrase) {
-  if (!grid_.overrideCandidate(cursor, candidate)) {
+void KeyHandler::pinNodeWithAssociatedPhrase(
+    size_t cursorIndex, const std::string& prefixReading,
+    const std::string& prefixValue, const std::string& associatedPhraseReading,
+    const std::string& associatedPhraseValue) {
+  // First, override the current node.
+  grid_.setCursor(cursorIndex);
+  size_t actualCursor = actualCandidateCursorIndex();
+  Formosa::Gramambular2::ReadingGrid::Candidate gridCandidate(prefixReading,
+                                                              prefixValue);
+  if (!grid_.overrideCandidate(actualCursor, gridCandidate)) {
     return;
   }
-  Formosa::Gramambular2::ReadingGrid::WalkResult prevWalk = latestWalk_;
+
   walk();
 
-  // Update the user override model if warranted.
+  // Now we've set ourselves up. Because associated phrases require the strict
+  // one-reading-for-one-value rule, we can comfortably count how many readings
+  // we'll need to insert. First, let's move to the end of the newly overridden
+  // pdrase.
   size_t accumulatedCursor = 0;
-  auto nodeIter = latestWalk_.findNodeAt(cursor, &accumulatedCursor);
-  if (nodeIter == latestWalk_.nodes.cend()) {
+  auto nodeIter = latestWalk_.findNodeAt(actualCursor, &accumulatedCursor);
+  grid_.setCursor(accumulatedCursor);
+
+  // Compute how many more reading do we have to insert.
+  size_t nodeSpanningLength = (*nodeIter)->spanningLength();
+  std::vector<std::string> splitReadings =
+      AssociatedPhrasesV2::SplitReadings(associatedPhraseReading);
+  size_t splitReadingsSize = splitReadings.size();
+  if (nodeSpanningLength >= splitReadingsSize) {
+    // Shouldn't happen
     return;
   }
-  const Formosa::Gramambular2::ReadingGrid::NodePtr& currentNode = *nodeIter;
-  if (currentNode != nullptr &&
-      currentNode->currentUnigram().score() > kNoOverrideThreshold) {
-    userOverrideModel_.observe(prevWalk, latestWalk_, cursor,
-                               GetEpochNowInSeconds());
+
+  for (size_t i = nodeSpanningLength; i < splitReadingsSize; i++) {
+    grid_.insertReading(splitReadings[i]);
+    ++accumulatedCursor;
+    grid_.setCursor(accumulatedCursor);
   }
-  grid_.setCursor(accumulatedCursor);
-  std::vector<std::string> characters = Split(associatePhrase);
-  auto* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
-  size_t index = 0;
-  if (lm != nullptr) {
-    for (const auto& character : characters) {
-      std::string reading = lm->getReading(character);
-      grid_.insertReading(reading);
-      grid_.overrideCandidate(accumulatedCursor + index, character);
-      index++;
-    }
+
+  // Finally, let's override with the full associated phrase's value.
+  if (!grid_.overrideCandidate(actualCursor, associatedPhraseValue)) {
+    // Shouldn't happen
   }
+
   walk();
+  // Cursor is already at acmmulatedCursor, so no more work here.
 }
 
 void KeyHandler::walk() { latestWalk_ = grid_.walk(); }

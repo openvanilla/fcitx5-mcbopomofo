@@ -40,11 +40,14 @@ constexpr char kUserPhraseFilename[] = "data.txt";  // same as macOS version
 constexpr char kExcludedPhraseFilename[] = "exclude-phrases.txt";  // ditto
 constexpr char kAssociatedPhrasesPath[] =
     "data/mcbopomofo-associated-phrases.txt";
+constexpr char kAssociatedPhrasesV2Path[] =
+    "data/mcbopomofo-associated-phrases-v2.txt";
 
 LanguageModelLoader::LanguageModelLoader(
     std::unique_ptr<LocalizedStrings> localizedStrings)
     : localizedStrings_(std::move(localizedStrings)),
       lm_(std::make_shared<McBopomofoLM>()) {
+
   std::string buildInLMPath = fcitx::StandardPath::global().locate(
       fcitx::StandardPath::Type::PkgData, kDataPath);
   FCITX_MCBOPOMOFO_INFO() << "Built-in LM: " << buildInLMPath;
@@ -56,6 +59,12 @@ LanguageModelLoader::LanguageModelLoader(
   std::string associatedPhrasesPath = fcitx::StandardPath::global().locate(
       fcitx::StandardPath::Type::PkgData, kAssociatedPhrasesPath);
   lm_->loadAssociatedPhrases(associatedPhrasesPath.c_str());
+
+  // Load associated phrases v2.
+  std::string associatedPhrasesV2Path = fcitx::StandardPath::global().locate(
+      fcitx::StandardPath::Type::PkgData, kAssociatedPhrasesV2Path);
+  lm_->loadAssociatedPhrasesV2(associatedPhrasesV2Path.c_str());
+
   FCITX_MCBOPOMOFO_INFO() << "load associated phrases."
                           << associatedPhrasesPath;
 
