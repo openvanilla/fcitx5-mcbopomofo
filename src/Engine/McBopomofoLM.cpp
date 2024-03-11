@@ -63,6 +63,13 @@ bool McBopomofoLM::isAssociatedPhrasesLoaded() {
   return m_associatedPhrases.isLoaded();
 }
 
+void McBopomofoLM::loadAssociatedPhrasesV2(const char* associatedPhrasesPath) {
+  if (associatedPhrasesPath) {
+    m_associatedPhrasesV2.close();
+    m_associatedPhrasesV2.open(associatedPhrasesPath);
+  }
+}
+
 void McBopomofoLM::loadUserPhrases(const char* userPhrasesDataPath,
                                    const char* excludedPhrasesDataPath) {
   if (userPhrasesDataPath) {
@@ -274,5 +281,11 @@ const std::vector<std::string> McBopomofoLM::associatedPhrasesForKey(
 bool McBopomofoLM::hasAssociatedPhrasesForKey(const std::string& key) {
   return m_associatedPhrases.hasValuesForKey(key);
 }
+
+std::vector<AssociatedPhrasesV2::Phrase> McBopomofoLM::findAssociatedPhrasesV2(const std::string& prefixValue,
+                                                                       const std::vector<std::string>& prefixReadings) const {
+  return m_associatedPhrasesV2.findPhrases(prefixValue, prefixReadings);
+}
+
 
 }  // namespace McBopomofo
