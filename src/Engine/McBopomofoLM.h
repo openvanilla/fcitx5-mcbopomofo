@@ -30,7 +30,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "AssociatedPhrases.h"
 #include "AssociatedPhrasesV2.h"
 #include "ParselessLM.h"
 #include "PhraseReplacementMap.h"
@@ -117,10 +116,6 @@ class McBopomofoLM : public Formosa::Gramambular2::LanguageModel {
       std::function<std::string(const std::string&)> macroConverter);
   std::string convertMacro(const std::string& input);
 
-  const std::vector<std::string> associatedPhrasesForKey(
-      const std::string& key);
-  bool hasAssociatedPhrasesForKey(const std::string& key);
-
   std::vector<AssociatedPhrasesV2::Phrase> findAssociatedPhrasesV2(
       const std::string& prefixValue,
       const std::vector<std::string>& prefixReadings) const;
@@ -146,7 +141,6 @@ class McBopomofoLM : public Formosa::Gramambular2::LanguageModel {
   UserPhrasesLM m_userPhrases;
   UserPhrasesLM m_excludedPhrases;
   PhraseReplacementMap m_phraseReplacement;
-  AssociatedPhrases m_associatedPhrases;
   AssociatedPhrasesV2 m_associatedPhrasesV2;
 
   std::function<std::string(const std::string&)> m_macroConverter;
