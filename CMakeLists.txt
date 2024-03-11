@@ -63,12 +63,14 @@ configure_file(data/data.txt mcbopomofo-data.txt)
 configure_file(data/data-plain-bpmf.txt mcbopomofo-data-plain-bpmf.txt)
 configure_file(data/add-phrase-hook.sh mcbopomofo-add-phrase-hook.sh)
 configure_file(data/associated-phrases.txt mcbopomofo-associated-phrases.txt)
+configure_file(data/associated-phrases-v2.txt mcbopomofo-associated-phrases-v2.txt)
 configure_file(data/dictionary_service.json mcbopomofo-dictionary-service.json)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-data.txt" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-data-plain-bpmf.txt" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-add-phrase-hook.sh" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-associated-phrases.txt" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-associated-phrases-v2.txt" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcbopomofo-dictionary-service.json" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/data")
 
 fcitx5_translate_desktop_file(org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in
