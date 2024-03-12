@@ -39,11 +39,12 @@ class MemoryMappedFile {
     return static_cast<const char*>(ptr_);
   }
 
+  // Returns the length of the data, which is the length of the file upon open.
   [[nodiscard]] size_t length() const { return length_; }
 
  private:
-  int fd_ = -1;
-  void* ptr_ = nullptr;
+  int fd_ = -1;          // POSIX file descriptor used by the mmap call
+  void* ptr_ = nullptr;  // actual mapped data
   size_t length_ = 0;
 };
 

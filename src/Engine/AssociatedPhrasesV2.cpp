@@ -36,6 +36,10 @@ namespace McBopomofo {
 
 static constexpr char kSeparatorChar = '-';
 
+namespace {
+enum class RowParseState { kParsingValue, kParsingReading };
+}  // namespace
+
 // Find the score in a string of the form /^(.+?)\s((-?)\d+(\.?)\d+)$/.
 static double GetScoreInRow(const std::string_view& v) {
   const auto* it = v.cbegin();
@@ -64,20 +68,21 @@ static AssociatedPhrasesV2::Phrase PhraseFromRow(const std::string_view& v) {
   std::stringstream sst;
   std::vector<std::string> readings;
 
-  bool isValue = true;
+  RowParseState state = RowParseState::kParsingValue;
   const auto* prev = it;
   while (it != end) {
     if (*it == ' ' || *it == kSeparatorChar) {
-      if (isValue) {
-        // Switch to parse readings;
-        isValue = false;
-        std::string currentValue(prev, it);
-        sst << currentValue;
-      } else {
-        // Switch to parse values;
-        isValue = true;
-        std::string currentReading(prev, it);
-        readings.emplace_back(currentReading);
+      switch (state) {
+        case RowParseState::kParsingValue:
+          // Switch to parsing readings.
+          state = RowParseState::kParsingReading;
+          sst << std::string{prev, it};
+          break;
+        case RowParseState::kParsingReading:
+          // Switch to parsing values.
+          state = RowParseState::kParsingValue;
+          readings.emplace_back(std::string{prev, it});
+          break;
       }
 
       if (*it == ' ') {
