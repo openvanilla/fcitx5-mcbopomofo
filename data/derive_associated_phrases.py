@@ -6,6 +6,7 @@ import unicodedata
 
 PRAGMA = "# format org.openvanilla.mcbopomofo.sorted"
 MAX_ENTRIES_PER_PREFIX = 60
+EMOJI_SCORE = -8.0
 
 
 @dataclass
@@ -48,7 +49,7 @@ class Entry:
         if self.reading.startswith("_"):  # No punctuations
             return None
 
-        if self.score == -8.0:  # No emojis
+        if self.score <= EMOJI_SCORE:  # No emojis or other symbols
             return None
 
         if not all(unicodedata.category(c) == "Lo" for c in self.value):
@@ -70,9 +71,9 @@ class Entry:
 
 def main(source_file, target_file):
     with open(source_file, "r") as f:
-        lines = [line.strip() for line in f]
-        if lines[0] != PRAGMA:
+        if f.readline().strip() != PRAGMA:
             raise ValueError("Invalid source file")
+        lines = [line.strip() for line in f]
 
     entries = [Entry.from_line(line) for line in lines[1:]]
 
