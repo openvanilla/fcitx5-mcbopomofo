@@ -1414,21 +1414,48 @@ void KeyHandler::pinNodeWithAssociatedPhrase(
   size_t actualPrefixCursorIndex = (prefixCursorIndex == grid_.length())
                                        ? prefixCursorIndex - 1
                                        : prefixCursorIndex;
+  // First of all, let's find the target node where the prefix is found. The
+  // node may not be exactly the same as the prefix.
+  size_t accumulatedCursor = 0;
+  auto nodeIter =
+      latestWalk_.findNodeAt(actualPrefixCursorIndex, &accumulatedCursor);
 
+  // Should not happen. The end location must be >= the node's spanning length.
+  if (accumulatedCursor < (*nodeIter)->spanningLength()) {
+    return;
+  }
+
+  // Let's do a split override. If a node is now ABCD, let's make four overrides
+  // A-B-C-D, essentially splitting the node. Why? Because we're inserting an
+  // associated phrase. Say the phrase is BCEF with the prefix BC. If we don't
+  // do the override, the nodes that represent A and D may not carry the same
+  // values after the next walk, since the underlying reading is now a-bcef-d
+  // and that does not necessary guarantee that A and D will be there.
+  std::vector<std::string> originalNodeValues = Split((*nodeIter)->value());
+  if (originalNodeValues.size() == (*nodeIter)->spanningLength()) {
+    // Only performs this if the condition is satisfied.
+    size_t overrideIndex = accumulatedCursor - (*nodeIter)->spanningLength();
+    for (const auto& value : originalNodeValues) {
+      grid_.overrideCandidate(overrideIndex, value);
+      ++overrideIndex;
+    }
+  }
+
+  // Now, we override the prefix candidate again. This provides us with
+  // information for how many more we need to fill in to complete the
+  // associated phrase.
   Formosa::Gramambular2::ReadingGrid::Candidate prefixCandidate{prefixReading,
                                                                 prefixValue};
   if (!grid_.overrideCandidate(actualPrefixCursorIndex, prefixCandidate)) {
     return;
   }
-
   walk();
 
   // Now we've set ourselves up. Because associated phrases require the strict
   // one-reading-for-one-value rule, we can comfortably count how many readings
   // we'll need to insert. First, let's move to the end of the newly overridden
-  // pdrase.
-  size_t accumulatedCursor = 0;
-  auto nodeIter =
+  // phrase.
+  nodeIter =
       latestWalk_.findNodeAt(actualPrefixCursorIndex, &accumulatedCursor);
   grid_.setCursor(accumulatedCursor);
 
@@ -1455,7 +1482,7 @@ void KeyHandler::pinNodeWithAssociatedPhrase(
   }
 
   walk();
-  // Cursor is already at acmmulatedCursor, so no more work here.
+  // Cursor is already at accumulatedCursor, so no more work here.
 }
 
 void KeyHandler::walk() { latestWalk_ = grid_.walk(); }
