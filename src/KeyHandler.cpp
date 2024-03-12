@@ -324,9 +324,11 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       auto* inputting = dynamic_cast<InputStates::Inputting*>(state);
       if (inputting != nullptr) {
         // Find the selected node *before* the cursor.
+        size_t prefixCursorIndex = cursor - 1;
 
         size_t endCursorIndex = 0;
-        auto nodePtrIt = latestWalk_.findNodeAt(cursor - 1, &endCursorIndex);
+        auto nodePtrIt =
+            latestWalk_.findNodeAt(prefixCursorIndex, &endCursorIndex);
         if (nodePtrIt == latestWalk_.nodes.cend() || endCursorIndex == 0) {
           // Shouldn't happen.
           errorCallback();
@@ -381,7 +383,9 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         //     A-B-C-D-E'-FGRST|-H'
         //
         // Notice that after breaking FG from EFGH, the values E and H may
-        // change due to a new walk, hence the notation E' and H'.
+        // change due to a new walk, hence the notation E' and H'. We address
+        // issue in pinNodeWithAssociatedPhrase() by making sure that the nodes
+        // will be overridden with the values E and H.
         size_t startCursorIndex = endCursorIndex - readings.size();
         size_t prefixLength = cursor - startCursorIndex;
         size_t maxPrefixLength = prefixLength;
@@ -405,7 +409,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
           }
 
           auto associatedPhrasesState = buildAssociatedPhrasesState(
-              buildInputtingState(),
+              buildInputtingState(), prefixCursorIndex,
               AssociatedPhrasesV2::CombineReadings(rdSlice), value.str(),
               /*selectedCandidateIndex=*/0);
           if (associatedPhrasesState != nullptr) {
@@ -1243,8 +1247,8 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
 std::unique_ptr<InputStates::AssociatedPhrases>
 KeyHandler::buildAssociatedPhrasesState(
     std::unique_ptr<InputStates::NotEmpty> previousState,
-    std::string prefixCombinedReading, std::string prefixValue,
-    size_t selectedCandidateIndex) {
+    size_t prefixCursorIndex, std::string prefixCombinedReading,
+    std::string prefixValue, size_t selectedCandidateIndex) {
   McBopomofoLM* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
   if (lm == nullptr) {
     return nullptr;
@@ -1263,10 +1267,21 @@ KeyHandler::buildAssociatedPhrasesState(
     }
 
     return std::make_unique<InputStates::AssociatedPhrases>(
-        std::move(previousState), prefixCombinedReading, prefixValue,
-        selectedCandidateIndex, cs);
+        std::move(previousState), prefixCursorIndex, prefixCombinedReading,
+        prefixValue, selectedCandidateIndex, cs);
   }
   return nullptr;
+}
+
+std::unique_ptr<InputStates::AssociatedPhrases>
+KeyHandler::buildAssociatedPhrasesStateFromCandidateChoosingState(
+    std::unique_ptr<InputStates::NotEmpty> previousState,
+    size_t candidateCursorIndex, std::string prefixCombinedReading,
+    std::string prefixValue, size_t selectedCandidateIndex) {
+  return buildAssociatedPhrasesState(
+      std::move(previousState),
+      computeActualCandidateCursorIndex(candidateCursorIndex),
+      prefixCombinedReading, prefixValue, selectedCandidateIndex);
 }
 
 std::unique_ptr<InputStates::AssociatedPhrasesPlain>
@@ -1307,25 +1322,31 @@ KeyHandler::buildSelectingDictionaryState(
 }
 
 size_t KeyHandler::actualCandidateCursorIndex() {
-  size_t cursor = grid_.cursor();
+  return computeActualCandidateCursorIndex(grid_.cursor());
+}
 
-  // If the cursor is at the end, always return cursor - 1. Even though
-  // ReadingGrid already handles this edge case, we want to use this value
-  // consistently. UserOverrideModel also requires the cursor to be this
-  // correct value.
-  if (cursor == grid_.length() && cursor > 0) {
-    return cursor - 1;
+size_t KeyHandler::computeActualCandidateCursorIndex(size_t index) {
+  if (index > grid_.length()) {
+    return grid_.length() > 0 ? grid_.length() - 1 : 0;
   }
 
-  // ReadingGrid already makes the assumption that the cursor is always *at*
+  // If the index is at the end, always return index - 1. Even though
+  // ReadingGrid already handles this edge case, we want to use this value
+  // consistently. UserOverrideModel also requires the index to be this
+  // correct value.
+  if (index == grid_.length() && index > 0) {
+    return index - 1;
+  }
+
+  // ReadingGrid already makes the assumption that the index is always *at*
   // the reading location, and when selectPhraseAfterCursorAsCandidate_ is true
   // we don't need to do anything. Rather, it's when the flag is false (the
-  // default value), that we want to decrement the cursor by one.
-  if (!selectPhraseAfterCursorAsCandidate_ && cursor > 0) {
-    return cursor - 1;
+  // default value), that we want to decrement the index by one.
+  if (!selectPhraseAfterCursorAsCandidate_ && index > 0) {
+    return index - 1;
   }
 
-  return cursor;
+  return index;
 }
 
 size_t KeyHandler::candidateCursorIndex() {
@@ -1379,15 +1400,24 @@ void KeyHandler::pinNode(
 }
 
 void KeyHandler::pinNodeWithAssociatedPhrase(
-    size_t cursorIndex, const std::string& prefixReading,
+    size_t prefixCursorIndex, const std::string& prefixReading,
     const std::string& prefixValue, const std::string& associatedPhraseReading,
     const std::string& associatedPhraseValue) {
-  // First, override the current node.
-  grid_.setCursor(cursorIndex);
-  size_t actualCursor = actualCandidateCursorIndex();
-  Formosa::Gramambular2::ReadingGrid::Candidate gridCandidate(prefixReading,
-                                                              prefixValue);
-  if (!grid_.overrideCandidate(actualCursor, gridCandidate)) {
+  if (grid_.length() == 0) {
+    return;
+  }
+
+  // Unlike actualCandidateCursorIndex() which takes the Hanyin/MS IME cursor
+  // modes into consideration, prefixCursorIndex is *already* the actual node
+  // position in the grid. The only boundary condition is when prefixCursorIndex
+  // is at the end. That's when we should decrement by one.
+  size_t actualPrefixCursorIndex = (prefixCursorIndex == grid_.length())
+                                       ? prefixCursorIndex - 1
+                                       : prefixCursorIndex;
+
+  Formosa::Gramambular2::ReadingGrid::Candidate prefixCandidate{prefixReading,
+                                                                prefixValue};
+  if (!grid_.overrideCandidate(actualPrefixCursorIndex, prefixCandidate)) {
     return;
   }
 
@@ -1398,7 +1428,8 @@ void KeyHandler::pinNodeWithAssociatedPhrase(
   // we'll need to insert. First, let's move to the end of the newly overridden
   // pdrase.
   size_t accumulatedCursor = 0;
-  auto nodeIter = latestWalk_.findNodeAt(actualCursor, &accumulatedCursor);
+  auto nodeIter =
+      latestWalk_.findNodeAt(actualPrefixCursorIndex, &accumulatedCursor);
   grid_.setCursor(accumulatedCursor);
 
   // Compute how many more reading do we have to insert.
@@ -1418,7 +1449,8 @@ void KeyHandler::pinNodeWithAssociatedPhrase(
   }
 
   // Finally, let's override with the full associated phrase's value.
-  if (!grid_.overrideCandidate(actualCursor, associatedPhraseValue)) {
+  if (!grid_.overrideCandidate(actualPrefixCursorIndex,
+                               associatedPhraseValue)) {
     // Shouldn't happen
   }
 

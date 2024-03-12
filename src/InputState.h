@@ -218,17 +218,20 @@ struct ShowingCharInfo : NotEmpty {
 };
 
 struct AssociatedPhrases : NotEmpty {
-  AssociatedPhrases(std::unique_ptr<NotEmpty> prevState, std::string pfxReading,
-                    std::string pfxValue, size_t selIndex,
+  AssociatedPhrases(std::unique_ptr<NotEmpty> prevState, size_t pfxCursorIndex,
+                    std::string pfxReading, std::string pfxValue,
+                    size_t selIndex,
                     std::vector<ChoosingCandidate::Candidate> cs)
       : NotEmpty(prevState->composingBuffer, prevState->cursorIndex,
                  prevState->tooltip),
         previousState(std::move(prevState)),
+        prefixCursorIndex(pfxCursorIndex),
         prefixReading(std::move(pfxReading)),
         prefixValue(std::move(pfxValue)),
         selectedCandidateIndex(selIndex),
         candidates(std::move(cs)) {}
   std::unique_ptr<NotEmpty> previousState;
+  size_t prefixCursorIndex;
   std::string prefixReading;
   std::string prefixValue;
   size_t selectedCandidateIndex;

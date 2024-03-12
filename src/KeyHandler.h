@@ -142,8 +142,11 @@ class KeyHandler {
   void setOnAddNewPhrase(
       std::function<void(const std::string&)> onAddNewPhrase);
 
-  // Compute the actual candidate cursor index.
+  // Compute the actual candidate cursor index based on the current index.
   size_t actualCandidateCursorIndex();
+  // Compute the actual candidate cursor index.
+  size_t computeActualCandidateCursorIndex(size_t index);
+
   // Get the current cursor index.
   size_t candidateCursorIndex();
   // Set the current cursor index.
@@ -159,11 +162,24 @@ class KeyHandler {
   // Reading joiner for retrieving unigrams from the language model.
   static constexpr char kJoinSeparator[] = "-";
 
-  // Build an Associated Phrase state.
+  // Build an Associated Phrase state. The prefixCursorIndex is where the
+  // prefix node is actually located in the grid.
   std::unique_ptr<InputStates::AssociatedPhrases> buildAssociatedPhrasesState(
       std::unique_ptr<InputStates::NotEmpty> previousState,
-      std::string prefixCombinedReading, std::string prefixValue,
-      size_t selectedCandidateIndex);
+      size_t prefixCursorIndex, std::string prefixCombinedReading,
+      std::string prefixValue, size_t selectedCandidateIndex);
+
+  // Build an Associated Phrase state. The candidateCursorIndex is where the
+  // user-visible cursor was *before* the ChoosingCandidateState was entered,
+  // which actually means the place where the candidate were collected. You
+  // must call this method if you want to enter the Associated Phrase, since
+  // the candidate cursor position is not always the prefix node position
+  // (consider the Hanyin cursor mode)!
+  std::unique_ptr<InputStates::AssociatedPhrases>
+  buildAssociatedPhrasesStateFromCandidateChoosingState(
+      std::unique_ptr<InputStates::NotEmpty> previousState,
+      size_t candidateCursorIndex, std::string prefixCombinedReading,
+      std::string prefixValue, size_t selectedCandidateIndex);
 
   // Build an Associated Phrases Plain state by the given key. It could be
   // nullptr when there is no associated phrases.
@@ -226,7 +242,7 @@ class KeyHandler {
   //     the choosing-candidate state; in this case, the prefix reading and
   //     value is now ㄉㄜˊ and 德, and the associated phrase is ㄉㄜˊ-ㄒㄧㄥˋ
   //     and 德性 respectively.
-  void pinNodeWithAssociatedPhrase(size_t cursorIndex,
+  void pinNodeWithAssociatedPhrase(size_t prefixCursorIndex,
                                    const std::string& prefixReading,
                                    const std::string& prefixValue,
                                    const std::string& associatedPhraseReading,

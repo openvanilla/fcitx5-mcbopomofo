@@ -769,8 +769,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
             choosingCandidate->candidates[globalIndex].value;
 
         std::unique_ptr<InputStates::AssociatedPhrases> newState =
-            keyHandler_->buildAssociatedPhrasesState(
-                std::move(prevState), prefixReading, prefixValue, globalIndex);
+            keyHandler_->buildAssociatedPhrasesStateFromCandidateChoosingState(
+                std::move(prevState), choosingCandidate->originalCursor,
+                prefixReading, prefixValue, globalIndex);
         if (newState != nullptr) {
           stateCallback(std::move(newState));
         }
@@ -1232,23 +1233,21 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
     std::vector<InputStates::ChoosingCandidate::Candidate> candidates =
         associatedPhrases->candidates;
 
-    size_t cursorIndex = keyHandler_->candidateCursorIndex();
-
     for (const auto& c : candidates) {
 #ifdef USE_LEGACY_FCITX5_API
       fcitx::CandidateWord* candidate =
           new McBopomofoAssociatedPhraseCandidateWord(
               fcitx::Text(c.value), c, associatedPhrases->prefixReading,
-              associatedPhrases->prefixValue, cursorIndex, keyHandler_,
-              callback);
+              associatedPhrases->prefixValue,
+              associatedPhrases->prefixCursorIndex, keyHandler_, callback);
       // ownership of candidate is transferred to candidateList.
       candidateList->append(candidate);
 #else
       std::unique_ptr<fcitx::CandidateWord> candidate =
           std::make_unique<McBopomofoAssociatedPhraseCandidateWord>(
               fcitx::Text(c.value), c, associatedPhrases->prefixReading,
-              associatedPhrases->prefixValue, cursorIndex, keyHandler_,
-              callback);
+              associatedPhrases->prefixValue,
+              associatedPhrases->prefixCursorIndex, keyHandler_, callback);
       candidateList->append(std::move(candidate));
 #endif
     }
