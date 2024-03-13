@@ -32,57 +32,28 @@
 #include <string_view>
 #include <utility>
 
-McBopomofo::ParselessLM::~ParselessLM() { close(); }
+bool McBopomofo::ParselessLM::isLoaded() {
+  return mmapedFile_.data() != nullptr;
+}
 
-bool McBopomofo::ParselessLM::isLoaded() { return data_ != nullptr; }
-
-bool McBopomofo::ParselessLM::open(const std::string_view& path) {
-  if (data_) {
+bool McBopomofo::ParselessLM::open(const char* path) {
+  if (!mmapedFile_.open(path)) {
     return false;
   }
-
-  fd_ = ::open(path.data(), O_RDONLY);
-  if (fd_ == -1) {
-    return false;
-  }
-
-  struct stat sb;
-  if (fstat(fd_, &sb) == -1) {
-    ::close(fd_);
-    fd_ = -1;
-    return false;
-  }
-
-  length_ = static_cast<size_t>(sb.st_size);
-
-  data_ = mmap(NULL, length_, PROT_READ, MAP_SHARED, fd_, 0);
-  if (data_ == nullptr) {
-    ::close(fd_);
-    fd_ = -1;
-    length_ = 0;
-    return false;
-  }
-
   db_ = std::unique_ptr<ParselessPhraseDB>(new ParselessPhraseDB(
-      static_cast<char*>(data_), length_, /*validate_pragma=*/
-      true));
+      mmapedFile_.data(), mmapedFile_.length(), /*validate_pragma=*/true));
   return true;
 }
 
 void McBopomofo::ParselessLM::close() {
-  if (data_ != nullptr) {
-    munmap(data_, length_);
-    ::close(fd_);
-    fd_ = -1;
-    length_ = 0;
-    data_ = nullptr;
-  }
+  mmapedFile_.close();
+  db_ = nullptr;
 }
 
 std::vector<Formosa::Gramambular2::LanguageModel::Unigram>
 McBopomofo::ParselessLM::getUnigrams(const std::string& key) {
   if (db_ == nullptr) {
-    return std::vector<Formosa::Gramambular2::LanguageModel::Unigram>();
+    return {};
   }
 
   std::vector<Formosa::Gramambular2::LanguageModel::Unigram> results;
@@ -139,7 +110,7 @@ bool McBopomofo::ParselessLM::hasUnigrams(const std::string& key) {
 std::vector<McBopomofo::ParselessLM::FoundReading>
 McBopomofo::ParselessLM::getReadings(const std::string& value) {
   if (db_ == nullptr) {
-    return std::vector<McBopomofo::ParselessLM::FoundReading>();
+    return {};
   }
 
   std::vector<McBopomofo::ParselessLM::FoundReading> results;

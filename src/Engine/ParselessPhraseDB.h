@@ -46,9 +46,9 @@ class ParselessPhraseDB {
   // Find the rows that match the key. Note that prefix match is used. If you
   // need exact match, the key will need to have a delimiter (usually a space)
   // at the end.
-  std::vector<std::string_view> findRows(const std::string_view& key);
+  std::vector<std::string_view> findRows(const std::string_view& key) const;
 
-  const char* findFirstMatchingLine(const std::string_view& key);
+  const char* findFirstMatchingLine(const std::string_view& key) const;
 
   // Find the rows whose text past the key column plus the field separator
   // is a prefix match of the given value. For example, if the row is
@@ -56,7 +56,7 @@ class ParselessPhraseDB {
   // valid prefix matches, whereas the value "barr" isn't. This performs linear
   // scan since, unlike lookup-by-key, it cannot take advantage of the fact that
   // the underlying data is sorted by keys.
-  std::vector<std::string> reverseFindRows(const std::string_view& value);
+  std::vector<std::string> reverseFindRows(const std::string_view& value) const;
 
   static bool ValidatePragma(const char* buf, size_t length);
 

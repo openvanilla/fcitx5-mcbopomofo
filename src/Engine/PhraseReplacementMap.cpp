@@ -34,66 +34,31 @@
 
 namespace McBopomofo {
 
-using std::string;
-
-PhraseReplacementMap::PhraseReplacementMap() : fd(-1), data(0), length(0) {}
-
-PhraseReplacementMap::~PhraseReplacementMap() {
-  if (data) {
-    close();
-  }
-}
-
 bool PhraseReplacementMap::open(const char* path) {
-  if (data) {
+  if (!mmapedFile_.open(path)) {
     return false;
   }
 
-  fd = ::open(path, O_RDONLY);
-  if (fd == -1) {
-    printf("open:: file not exist");
-    return false;
-  }
-
-  struct stat sb;
-  if (fstat(fd, &sb) == -1) {
-    printf("open:: cannot open file");
-    return false;
-  }
-
-  length = static_cast<size_t>(sb.st_size);
-
-  data = mmap(NULL, length, PROT_READ, MAP_SHARED, fd, 0);
-  if (!data) {
-    ::close(fd);
-    return false;
-  }
-
-  KeyValueBlobReader reader(static_cast<char*>(data), length);
+  KeyValueBlobReader reader(mmapedFile_.data(), mmapedFile_.length());
   KeyValueBlobReader::KeyValue keyValue;
   while (reader.Next(&keyValue) == KeyValueBlobReader::State::HAS_PAIR) {
-    keyValueMap[keyValue.key] = keyValue.value;
+    keyValueMap_[keyValue.key] = keyValue.value;
   }
   return true;
 }
 
 void PhraseReplacementMap::close() {
-  if (data) {
-    munmap(data, length);
-    ::close(fd);
-    data = 0;
-  }
-
-  keyValueMap.clear();
+  mmapedFile_.close();
+  keyValueMap_.clear();
 }
 
-const std::string PhraseReplacementMap::valueForKey(const std::string& key) {
-  auto iter = keyValueMap.find(key);
-  if (iter != keyValueMap.end()) {
-    const std::string_view v = iter->second;
-    return {v.data(), v.size()};
+std::string PhraseReplacementMap::valueForKey(const std::string& key) const {
+  auto iter = keyValueMap_.find(key);
+  if (iter != keyValueMap_.end()) {
+    const std::string_view& v = iter->second;
+    return {v.cbegin(), v.cend()};
   }
-  return string("");
+  return {};
 }
 
 }  // namespace McBopomofo

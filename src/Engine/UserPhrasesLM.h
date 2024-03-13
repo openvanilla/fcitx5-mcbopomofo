@@ -30,19 +30,15 @@
 #include <utility>
 #include <vector>
 
+#include "MemoryMappedFile.h"
 #include "gramambular2/language_model.h"
 
 namespace McBopomofo {
 
 class UserPhrasesLM : public Formosa::Gramambular2::LanguageModel {
  public:
-  UserPhrasesLM();
-  ~UserPhrasesLM() override;
-
-  bool isLoaded();
   bool open(const char* path);
   void close();
-  void dump();
 
   std::vector<Formosa::Gramambular2::LanguageModel::Unigram> getUnigrams(
       const std::string& key) override;
@@ -50,16 +46,13 @@ class UserPhrasesLM : public Formosa::Gramambular2::LanguageModel {
 
  protected:
   struct Row {
-    Row(std::string_view k, std::string_view v)
-        : key(std::move(k)), value(std::move(v)) {}
+    Row(std::string_view k, std::string_view v) : key(k), value(v) {}
     const std::string_view key;
     const std::string_view value;
   };
 
+  MemoryMappedFile mmapedFile_;
   std::map<std::string_view, std::vector<Row>> keyRowMap;
-  int fd;
-  void* data;
-  size_t length;
 };
 
 }  // namespace McBopomofo
