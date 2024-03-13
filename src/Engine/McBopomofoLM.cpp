@@ -36,45 +36,45 @@ namespace McBopomofo {
 McBopomofoLM::McBopomofoLM() {}
 
 McBopomofoLM::~McBopomofoLM() {
-  m_languageModel.close();
-  m_userPhrases.close();
-  m_excludedPhrases.close();
-  m_phraseReplacement.close();
-  m_associatedPhrasesV2.close();
+  languageModel_.close();
+  userPhrases_.close();
+  excludedPhrases_.close();
+  phraseReplacement_.close();
+  associatedPhrasesV2_.close();
 }
 
 void McBopomofoLM::loadLanguageModel(const char* languageModelDataPath) {
   if (languageModelDataPath) {
-    m_languageModel.close();
-    m_languageModel.open(languageModelDataPath);
+    languageModel_.close();
+    languageModel_.open(languageModelDataPath);
   }
 }
 
-bool McBopomofoLM::isDataModelLoaded() { return m_languageModel.isLoaded(); }
+bool McBopomofoLM::isDataModelLoaded() { return languageModel_.isLoaded(); }
 
 void McBopomofoLM::loadAssociatedPhrasesV2(const char* associatedPhrasesPath) {
   if (associatedPhrasesPath) {
-    m_associatedPhrasesV2.close();
-    m_associatedPhrasesV2.open(associatedPhrasesPath);
+    associatedPhrasesV2_.close();
+    associatedPhrasesV2_.open(associatedPhrasesPath);
   }
 }
 
 void McBopomofoLM::loadUserPhrases(const char* userPhrasesDataPath,
                                    const char* excludedPhrasesDataPath) {
   if (userPhrasesDataPath) {
-    m_userPhrases.close();
-    m_userPhrases.open(userPhrasesDataPath);
+    userPhrases_.close();
+    userPhrases_.open(userPhrasesDataPath);
   }
   if (excludedPhrasesDataPath) {
-    m_excludedPhrases.close();
-    m_excludedPhrases.open(excludedPhrasesDataPath);
+    excludedPhrases_.close();
+    excludedPhrases_.open(excludedPhrasesDataPath);
   }
 }
 
 void McBopomofoLM::loadPhraseReplacementMap(const char* phraseReplacementPath) {
   if (phraseReplacementPath) {
-    m_phraseReplacement.close();
-    m_phraseReplacement.open(phraseReplacementPath);
+    phraseReplacement_.close();
+    phraseReplacement_.open(phraseReplacementPath);
   }
 }
 
@@ -92,9 +92,9 @@ McBopomofoLM::getUnigrams(const std::string& key) {
   std::unordered_set<std::string> excludedValues;
   std::unordered_set<std::string> insertedValues;
 
-  if (m_excludedPhrases.hasUnigrams(key)) {
+  if (excludedPhrases_.hasUnigrams(key)) {
     std::vector<Formosa::Gramambular2::LanguageModel::Unigram>
-        excludedUnigrams = m_excludedPhrases.getUnigrams(key);
+        excludedUnigrams = excludedPhrases_.getUnigrams(key);
     transform(excludedUnigrams.begin(), excludedUnigrams.end(),
               inserter(excludedValues, excludedValues.end()),
               [](const Formosa::Gramambular2::LanguageModel::Unigram& u) {
@@ -102,16 +102,16 @@ McBopomofoLM::getUnigrams(const std::string& key) {
               });
   }
 
-  if (m_userPhrases.hasUnigrams(key)) {
+  if (userPhrases_.hasUnigrams(key)) {
     std::vector<Formosa::Gramambular2::LanguageModel::Unigram> rawUserUnigrams =
-        m_userPhrases.getUnigrams(key);
+        userPhrases_.getUnigrams(key);
     userUnigrams = filterAndTransformUnigrams(rawUserUnigrams, excludedValues,
                                               insertedValues);
   }
 
-  if (m_languageModel.hasUnigrams(key)) {
+  if (languageModel_.hasUnigrams(key)) {
     std::vector<Formosa::Gramambular2::LanguageModel::Unigram>
-        rawGlobalUnigrams = m_languageModel.getUnigrams(key);
+        rawGlobalUnigrams = languageModel_.getUnigrams(key);
     allUnigrams = filterAndTransformUnigrams(rawGlobalUnigrams, excludedValues,
                                              insertedValues);
   }
@@ -170,8 +170,8 @@ bool McBopomofoLM::hasUnigrams(const std::string& key) {
     return true;
   }
 
-  if (!m_excludedPhrases.hasUnigrams(key)) {
-    return m_userPhrases.hasUnigrams(key) || m_languageModel.hasUnigrams(key);
+  if (!excludedPhrases_.hasUnigrams(key)) {
+    return userPhrases_.hasUnigrams(key) || languageModel_.hasUnigrams(key);
   }
 
   return !getUnigrams(key).empty();
@@ -179,7 +179,7 @@ bool McBopomofoLM::hasUnigrams(const std::string& key) {
 
 std::string McBopomofoLM::getReading(const std::string& value) {
   std::vector<ParselessLM::FoundReading> foundReadings =
-      m_languageModel.getReadings(value);
+      languageModel_.getReadings(value);
   double topScore = std::numeric_limits<double>::lowest();
   std::string topValue;
   for (const auto& foundReading : foundReadings) {
@@ -192,34 +192,34 @@ std::string McBopomofoLM::getReading(const std::string& value) {
 }
 
 void McBopomofoLM::setPhraseReplacementEnabled(bool enabled) {
-  m_phraseReplacementEnabled = enabled;
+  phraseReplacementEnabled_ = enabled;
 }
 
 bool McBopomofoLM::phraseReplacementEnabled() const {
-  return m_phraseReplacementEnabled;
+  return phraseReplacementEnabled_;
 }
 
 void McBopomofoLM::setExternalConverterEnabled(bool enabled) {
-  m_externalConverterEnabled = enabled;
+  externalConverterEnabled_ = enabled;
 }
 
 bool McBopomofoLM::externalConverterEnabled() const {
-  return m_externalConverterEnabled;
+  return externalConverterEnabled_;
 }
 
 void McBopomofoLM::setExternalConverter(
     std::function<std::string(const std::string&)> externalConverter) {
-  m_externalConverter = std::move(externalConverter);
+  externalConverter_ = std::move(externalConverter);
 }
 
 void McBopomofoLM::setMacroConverter(
     std::function<std::string(const std::string&)> macroConverter) {
-  m_macroConverter = std::move(macroConverter);
+  macroConverter_ = std::move(macroConverter);
 }
 
 std::string McBopomofoLM::convertMacro(const std::string& input) {
-  if (m_macroConverter != nullptr) {
-    return m_macroConverter(input);
+  if (macroConverter_ != nullptr) {
+    return macroConverter_(input);
   }
   return input;
 }
@@ -240,18 +240,18 @@ McBopomofoLM::filterAndTransformUnigrams(
     }
 
     std::string value = originalValue;
-    if (m_phraseReplacementEnabled) {
-      std::string replacement = m_phraseReplacement.valueForKey(value);
+    if (phraseReplacementEnabled_) {
+      std::string replacement = phraseReplacement_.valueForKey(value);
       if (!replacement.empty()) {
         value = replacement;
       }
     }
-    if (m_macroConverter) {
-      std::string replacement = m_macroConverter(value);
+    if (macroConverter_) {
+      std::string replacement = macroConverter_(value);
       value = replacement;
     }
-    if (m_externalConverterEnabled && m_externalConverter) {
-      std::string replacement = m_externalConverter(value);
+    if (externalConverterEnabled_ && externalConverter_) {
+      std::string replacement = externalConverter_(value);
       value = replacement;
     }
     if (insertedValues.find(value) == insertedValues.end()) {
@@ -265,7 +265,7 @@ McBopomofoLM::filterAndTransformUnigrams(
 std::vector<AssociatedPhrasesV2::Phrase> McBopomofoLM::findAssociatedPhrasesV2(
     const std::string& prefixValue,
     const std::vector<std::string>& prefixReadings) const {
-  return m_associatedPhrasesV2.findPhrases(prefixValue, prefixReadings);
+  return associatedPhrasesV2_.findPhrases(prefixValue, prefixReadings);
 }
 
 }  // namespace McBopomofo

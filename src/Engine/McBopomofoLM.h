@@ -137,16 +137,16 @@ class McBopomofoLM : public Formosa::Gramambular2::LanguageModel {
       const std::unordered_set<std::string>& excludedValues,
       std::unordered_set<std::string>& insertedValues);
 
-  ParselessLM m_languageModel;
-  UserPhrasesLM m_userPhrases;
-  UserPhrasesLM m_excludedPhrases;
-  PhraseReplacementMap m_phraseReplacement;
-  AssociatedPhrasesV2 m_associatedPhrasesV2;
+  ParselessLM languageModel_;
+  UserPhrasesLM userPhrases_;
+  UserPhrasesLM excludedPhrases_;
+  PhraseReplacementMap phraseReplacement_;
+  AssociatedPhrasesV2 associatedPhrasesV2_;
 
-  std::function<std::string(const std::string&)> m_macroConverter;
-  bool m_phraseReplacementEnabled;
-  bool m_externalConverterEnabled;
-  std::function<std::string(const std::string&)> m_externalConverter;
+  std::function<std::string(const std::string&)> macroConverter_;
+  bool phraseReplacementEnabled_;
+  bool externalConverterEnabled_;
+  std::function<std::string(const std::string&)> externalConverter_;
 };
 }  // namespace McBopomofo
 
