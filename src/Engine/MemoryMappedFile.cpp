@@ -33,7 +33,7 @@ namespace McBopomofo {
 MemoryMappedFile::~MemoryMappedFile() { close(); }
 
 bool MemoryMappedFile::open(const char* path) {
-  if (ptr_) {
+  if (data_) {
     return false;
   }
 
@@ -51,8 +51,8 @@ bool MemoryMappedFile::open(const char* path) {
 
   length_ = static_cast<size_t>(sb.st_size);
 
-  ptr_ = mmap(nullptr, length_, PROT_READ, MAP_SHARED, fd_, 0);
-  if (ptr_ == nullptr) {
+  data_ = mmap(nullptr, length_, PROT_READ, MAP_SHARED, fd_, 0);
+  if (data_ == nullptr) {
     ::close(fd_);
     fd_ = -1;
     length_ = 0;
@@ -63,14 +63,14 @@ bool MemoryMappedFile::open(const char* path) {
 }
 
 void MemoryMappedFile::close() {
-  if (ptr_ == nullptr) {
+  if (data_ == nullptr) {
     return;
   }
-  munmap(ptr_, length_);
+  munmap(data_, length_);
   ::close(fd_);
   fd_ = -1;
   length_ = 0;
-  ptr_ = nullptr;
+  data_ = nullptr;
 }
 
 }  // namespace McBopomofo
