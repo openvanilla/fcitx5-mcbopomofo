@@ -8,18 +8,22 @@ add_subdirectory(gramambular2)
 add_subdirectory(Mandarin)
 
 add_library(McBopomofoLMLib
-        AssociatedPhrases.h
-        AssociatedPhrases.cpp
+        AssociatedPhrasesV2.h
+        AssociatedPhrasesV2.cpp
         KeyValueBlobReader.cpp
         KeyValueBlobReader.h
         McBopomofoLM.cpp
         McBopomofoLM.h
+        MemoryMappedFile.h
+        MemoryMappedFile.cpp
         ParselessPhraseDB.cpp
         ParselessPhraseDB.h
         ParselessLM.cpp
         ParselessLM.h
         PhraseReplacementMap.h
         PhraseReplacementMap.cpp
+	UTF8Helper.h
+	UTF8Helper.cpp
         UserOverrideModel.h
         UserOverrideModel.cpp
         UserPhrasesLM.h
@@ -37,10 +41,13 @@ if (ENABLE_TEST)
 
         # Test target declarations.
         add_executable(McBopomofoLMLibTest
+                AssociatedPhrasesV2Test.cpp
                 KeyValueBlobReaderTest.cpp
+                MemoryMappedFileTest.cpp
                 ParselessLMTest.cpp
                 ParselessPhraseDBTest.cpp
                 PhraseReplacementMapTest.cpp
+		UTF8HelperTest.cpp
                 UserOverrideModelTest.cpp
                 UserPhrasesLMTest.cpp)
         target_link_libraries(McBopomofoLMLibTest GTest::gtest_main McBopomofoLMLib gramambular2_lib)

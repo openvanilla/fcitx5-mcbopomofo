@@ -218,21 +218,22 @@ struct ShowingCharInfo : NotEmpty {
 };
 
 struct AssociatedPhrases : NotEmpty {
-  AssociatedPhrases(std::unique_ptr<NotEmpty> previousState,
-                    std::string selectedPhrase, std::string selectedReading,
-                    size_t selectedIndex,
+  AssociatedPhrases(std::unique_ptr<NotEmpty> prevState, size_t pfxCursorIndex,
+                    std::string pfxReading, std::string pfxValue,
+                    size_t selIndex,
                     std::vector<ChoosingCandidate::Candidate> cs)
-      : NotEmpty(previousState->composingBuffer, previousState->cursorIndex,
-                 previousState->tooltip),
-        previousState(std::move(previousState)),
-        selectedPhrase(std::move(selectedPhrase)),
-        selectedReading(std::move(selectedReading)),
-        selectedCandidateIndex(selectedIndex),
+      : NotEmpty(prevState->composingBuffer, prevState->cursorIndex,
+                 prevState->tooltip),
+        previousState(std::move(prevState)),
+        prefixCursorIndex(pfxCursorIndex),
+        prefixReading(std::move(pfxReading)),
+        prefixValue(std::move(pfxValue)),
+        selectedCandidateIndex(selIndex),
         candidates(std::move(cs)) {}
-
   std::unique_ptr<NotEmpty> previousState;
-  std::string selectedPhrase;
-  std::string selectedReading;
+  size_t prefixCursorIndex;
+  std::string prefixReading;
+  std::string prefixValue;
   size_t selectedCandidateIndex;
   const std::vector<ChoosingCandidate::Candidate> candidates;
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 and onwards The McBopomofo Authors.
+// Copyright (c) 2024 and onwards The McBopomofo Authors.
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -21,30 +21,56 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef SRC_UTF8HELPER_H_
-#define SRC_UTF8HELPER_H_
+#include "MemoryMappedFile.h"
 
-#include <string>
-#include <vector>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace McBopomofo {
 
-// Count the number of code points of a string encoded in UTF-8. If it
-// encounters an invalid UTF-8 sequence, the returned value is the number of
-// code points up to before that invalid sequence.
-size_t CodePointCount(const std::string& s);
+MemoryMappedFile::~MemoryMappedFile() { close(); }
 
-// Clamp the string by the cp code points. If the string is shorter, the result
-// is a copy of s. If s contains some invalid UTF-8 sequence, the returned value
-// will be the string clamped up to before that invalid sequence.
-std::string SubstringToCodePoints(const std::string& s, size_t cp);
+bool MemoryMappedFile::open(const char* path) {
+  if (data_) {
+    return false;
+  }
 
-// Gets the code point at the given index.
-std::string GetCodePoint(const std::string& s, size_t cp);
+  fd_ = ::open(path, O_RDONLY);
+  if (fd_ == -1) {
+    return false;
+  }
 
-// Splits the string.
-std::vector<std::string> Split(const std::string& s);
+  struct stat sb;
+  if (fstat(fd_, &sb) == -1) {
+    ::close(fd_);
+    fd_ = -1;
+    return false;
+  }
+
+  length_ = static_cast<size_t>(sb.st_size);
+
+  data_ = mmap(nullptr, length_, PROT_READ, MAP_SHARED, fd_, 0);
+  if (data_ == nullptr) {
+    ::close(fd_);
+    fd_ = -1;
+    length_ = 0;
+    return false;
+  }
+
+  return true;
+}
+
+void MemoryMappedFile::close() {
+  if (data_ == nullptr) {
+    return;
+  }
+  munmap(data_, length_);
+  ::close(fd_);
+  fd_ = -1;
+  length_ = 0;
+  data_ = nullptr;
+}
 
 }  // namespace McBopomofo
-
-#endif  // SRC_UTF8HELPER_H_

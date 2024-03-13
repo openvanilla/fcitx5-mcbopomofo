@@ -38,8 +38,8 @@ constexpr char kDataPath[] = "data/mcbopomofo-data.txt";
 constexpr char kDataPathPlainBPMF[] = "data/mcbopomofo-data-plain-bpmf.txt";
 constexpr char kUserPhraseFilename[] = "data.txt";  // same as macOS version
 constexpr char kExcludedPhraseFilename[] = "exclude-phrases.txt";  // ditto
-constexpr char kAssociatedPhrasesPath[] =
-    "data/mcbopomofo-associated-phrases.txt";
+constexpr char kAssociatedPhrasesV2Path[] =
+    "data/mcbopomofo-associated-phrases-v2.txt";
 
 LanguageModelLoader::LanguageModelLoader(
     std::unique_ptr<LocalizedStrings> localizedStrings)
@@ -52,12 +52,12 @@ LanguageModelLoader::LanguageModelLoader(
   if (!lm_->isDataModelLoaded()) {
     FCITX_MCBOPOMOFO_INFO() << "Failed to open built-in LM";
   }
-  // load associated phrases.
-  std::string associatedPhrasesPath = fcitx::StandardPath::global().locate(
-      fcitx::StandardPath::Type::PkgData, kAssociatedPhrasesPath);
-  lm_->loadAssociatedPhrases(associatedPhrasesPath.c_str());
-  FCITX_MCBOPOMOFO_INFO() << "load associated phrases."
-                          << associatedPhrasesPath;
+
+  // Load associated phrases v2.
+  std::string associatedPhrasesV2Path = fcitx::StandardPath::global().locate(
+      fcitx::StandardPath::Type::PkgData, kAssociatedPhrasesV2Path);
+  FCITX_MCBOPOMOFO_INFO() << "Associated phrases: " << associatedPhrasesV2Path;
+  lm_->loadAssociatedPhrasesV2(associatedPhrasesV2Path.c_str());
 
   FCITX_MCBOPOMOFO_INFO() << "Set macro converter";
   auto converter = [this](const std::string& input) {
@@ -121,13 +121,6 @@ void LanguageModelLoader::loadModelForMode(McBopomofo::InputMode mode) {
     FCITX_MCBOPOMOFO_INFO() << "Failed to open built-in LM";
     return;
   }
-
-  // load associated phrases.
-  std::string associatedPhrasesPath = fcitx::StandardPath::global().locate(
-      fcitx::StandardPath::Type::PkgData, kAssociatedPhrasesPath);
-  lm_->loadAssociatedPhrases(associatedPhrasesPath.c_str());
-  FCITX_MCBOPOMOFO_INFO() << "load associated phrases."
-                          << associatedPhrasesPath;
 }
 
 void LanguageModelLoader::addUserPhrase(const std::string_view& reading,

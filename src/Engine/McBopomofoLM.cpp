@@ -40,7 +40,7 @@ McBopomofoLM::~McBopomofoLM() {
   m_userPhrases.close();
   m_excludedPhrases.close();
   m_phraseReplacement.close();
-  m_associatedPhrases.close();
+  m_associatedPhrasesV2.close();
 }
 
 void McBopomofoLM::loadLanguageModel(const char* languageModelDataPath) {
@@ -52,15 +52,11 @@ void McBopomofoLM::loadLanguageModel(const char* languageModelDataPath) {
 
 bool McBopomofoLM::isDataModelLoaded() { return m_languageModel.isLoaded(); }
 
-void McBopomofoLM::loadAssociatedPhrases(const char* associatedPhrasesPath) {
+void McBopomofoLM::loadAssociatedPhrasesV2(const char* associatedPhrasesPath) {
   if (associatedPhrasesPath) {
-    m_associatedPhrases.close();
-    m_associatedPhrases.open(associatedPhrasesPath);
+    m_associatedPhrasesV2.close();
+    m_associatedPhrasesV2.open(associatedPhrasesPath);
   }
-}
-
-bool McBopomofoLM::isAssociatedPhrasesLoaded() {
-  return m_associatedPhrases.isLoaded();
 }
 
 void McBopomofoLM::loadUserPhrases(const char* userPhrasesDataPath,
@@ -266,13 +262,10 @@ McBopomofoLM::filterAndTransformUnigrams(
   return results;
 }
 
-const std::vector<std::string> McBopomofoLM::associatedPhrasesForKey(
-    const std::string& key) {
-  return m_associatedPhrases.valuesForKey(key);
-}
-
-bool McBopomofoLM::hasAssociatedPhrasesForKey(const std::string& key) {
-  return m_associatedPhrases.hasValuesForKey(key);
+std::vector<AssociatedPhrasesV2::Phrase> McBopomofoLM::findAssociatedPhrasesV2(
+    const std::string& prefixValue,
+    const std::vector<std::string>& prefixReadings) const {
+  return m_associatedPhrasesV2.findPhrases(prefixValue, prefixReadings);
 }
 
 }  // namespace McBopomofo

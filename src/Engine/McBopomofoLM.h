@@ -30,7 +30,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "AssociatedPhrases.h"
+#include "AssociatedPhrasesV2.h"
 #include "ParselessLM.h"
 #include "PhraseReplacementMap.h"
 #include "UserPhrasesLM.h"
@@ -74,8 +74,11 @@ class McBopomofoLM : public Formosa::Gramambular2::LanguageModel {
   /// Asks to load the associated phrases at the given path.
   /// @param associatedPhrasesPath The path of the associated phrases.
   void loadAssociatedPhrases(const char* associatedPhrasesPath);
+
   /// If the associated phrases already loaded.
   bool isAssociatedPhrasesLoaded();
+
+  void loadAssociatedPhrasesV2(const char* associatedPhrasesPath);
 
   /// Asks to load the user phrases and excluded phrases at the given path.
   /// @param userPhrasesPath The path of user phrases.
@@ -113,9 +116,9 @@ class McBopomofoLM : public Formosa::Gramambular2::LanguageModel {
       std::function<std::string(const std::string&)> macroConverter);
   std::string convertMacro(const std::string& input);
 
-  const std::vector<std::string> associatedPhrasesForKey(
-      const std::string& key);
-  bool hasAssociatedPhrasesForKey(const std::string& key);
+  std::vector<AssociatedPhrasesV2::Phrase> findAssociatedPhrasesV2(
+      const std::string& prefixValue,
+      const std::vector<std::string>& prefixReadings) const;
 
   /// Returns the top-scored reading from the base model, given the value.
   std::string getReading(const std::string& value);
@@ -138,7 +141,8 @@ class McBopomofoLM : public Formosa::Gramambular2::LanguageModel {
   UserPhrasesLM m_userPhrases;
   UserPhrasesLM m_excludedPhrases;
   PhraseReplacementMap m_phraseReplacement;
-  AssociatedPhrases m_associatedPhrases;
+  AssociatedPhrasesV2 m_associatedPhrasesV2;
+
   std::function<std::string(const std::string&)> m_macroConverter;
   bool m_phraseReplacementEnabled;
   bool m_externalConverterEnabled;

@@ -150,27 +150,30 @@ class McBopomofoAssociatedPhraseCandidateWord : public fcitx::CandidateWord {
  public:
   McBopomofoAssociatedPhraseCandidateWord(
       fcitx::Text displayText,
-      InputStates::ChoosingCandidate::Candidate candidate,
-      std::string selectedPhrase, size_t cursorIndex,
-      std::shared_ptr<KeyHandler> keyHandler,
+      InputStates::ChoosingCandidate::Candidate associatedPhraseCandidate,
+      std::string overrideReading, std::string overrideValue,
+      size_t cursorIndex, std::shared_ptr<KeyHandler> keyHandler,
       KeyHandler::StateCallback callback)
       : fcitx::CandidateWord(std::move(displayText)),
-        candidate_(std::move(candidate)),
+        associatedPhraseCandidate_(std::move(associatedPhraseCandidate)),
         keyHandler_(std::move(keyHandler)),
         stateCallback_(std::move(callback)),
-        selectedPhrase_(std::move(selectedPhrase)),
+        overrideReading_(std::move(overrideReading)),
+        overrideValue_(std::move(overrideValue)),
         cursorIndex_(cursorIndex) {}
 
   void select(fcitx::InputContext* /*unused*/) const override {
     keyHandler_->candidateAssociatedPhraseSelected(
-        cursorIndex_, candidate_, selectedPhrase_, stateCallback_);
+        cursorIndex_, associatedPhraseCandidate_, overrideReading_,
+        overrideValue_, stateCallback_);
   }
 
  private:
-  InputStates::ChoosingCandidate::Candidate candidate_;
+  InputStates::ChoosingCandidate::Candidate associatedPhraseCandidate_;
   std::shared_ptr<KeyHandler> keyHandler_;
   KeyHandler::StateCallback stateCallback_;
-  std::string selectedPhrase_;
+  std::string overrideReading_;
+  std::string overrideValue_;
   size_t cursorIndex_;
 };
 
@@ -760,12 +763,15 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 #endif
         auto prevState = std::make_unique<InputStates::ChoosingCandidate>(
             *choosingCandidate);
-        auto selectedPhrase = choosingCandidate->candidates[idx].value;
-        auto selectedReading = choosingCandidate->candidates[idx].reading;
+        std::string prefixReading =
+            choosingCandidate->candidates[globalIndex].reading;
+        std::string prefixValue =
+            choosingCandidate->candidates[globalIndex].value;
+
         std::unique_ptr<InputStates::AssociatedPhrases> newState =
-            keyHandler_->buildAssociatedPhrasesState(
-                std::move(prevState), selectedPhrase, selectedReading,
-                globalIndex);
+            keyHandler_->buildAssociatedPhrasesStateFromCandidateChoosingState(
+                std::move(prevState), choosingCandidate->originalCursor,
+                prefixReading, prefixValue, globalIndex);
         if (newState != nullptr) {
           stateCallback(std::move(newState));
         }
@@ -814,6 +820,11 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
             context->inputPanel().candidateList().get());
 #endif
         size_t index = selecting->selectedCandidateIndex;
+        // Make sure fcitx5 shows the candidate page; needed when page > 0.
+#ifndef USE_LEGACY_FCITX5_API
+        maybeCandidateList->setPage(static_cast<int>(index) /
+                                    maybeCandidateList->pageSize());
+#endif
         maybeCandidateList->setGlobalCursorIndex(static_cast<int>(index));
         return true;
       }
@@ -843,6 +854,11 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
             context->inputPanel().candidateList().get());
 #endif
         size_t index = associatedPhrases->selectedCandidateIndex;
+#ifndef USE_LEGACY_FCITX5_API
+        // Make sure fcitx5 shows the candidate page; needed when page > 0.
+        maybeCandidateList->setPage(static_cast<int>(index) /
+                                    maybeCandidateList->pageSize());
+#endif
         maybeCandidateList->setGlobalCursorIndex(static_cast<int>(index));
       } else if (inputting != nullptr) {
         auto copy = std::make_unique<InputStates::Inputting>(*inputting);
@@ -1217,25 +1233,21 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
     std::vector<InputStates::ChoosingCandidate::Candidate> candidates =
         associatedPhrases->candidates;
 
-    size_t cursorIndex = keyHandler_->candidateCursorIndex() - 1;
-    if (dynamic_cast<InputStates::ChoosingCandidate*>(
-            associatedPhrases->previousState.get()) != nullptr) {
-      cursorIndex = keyHandler_->actualCandidateCursorIndex();
-    }
-
     for (const auto& c : candidates) {
 #ifdef USE_LEGACY_FCITX5_API
       fcitx::CandidateWord* candidate =
           new McBopomofoAssociatedPhraseCandidateWord(
-              fcitx::Text(c.value), c, associatedPhrases->selectedPhrase,
-              cursorIndex, keyHandler_, callback);
+              fcitx::Text(c.value), c, associatedPhrases->prefixReading,
+              associatedPhrases->prefixValue,
+              associatedPhrases->prefixCursorIndex, keyHandler_, callback);
       // ownership of candidate is transferred to candidateList.
       candidateList->append(candidate);
 #else
       std::unique_ptr<fcitx::CandidateWord> candidate =
           std::make_unique<McBopomofoAssociatedPhraseCandidateWord>(
-              fcitx::Text(c.value), c, associatedPhrases->selectedPhrase,
-              cursorIndex, keyHandler_, callback);
+              fcitx::Text(c.value), c, associatedPhrases->prefixReading,
+              associatedPhrases->prefixValue,
+              associatedPhrases->prefixCursorIndex, keyHandler_, callback);
       candidateList->append(std::move(candidate));
 #endif
     }
