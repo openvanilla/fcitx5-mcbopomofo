@@ -28,7 +28,23 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <utility>
+
 namespace McBopomofo {
+
+MemoryMappedFile::MemoryMappedFile(MemoryMappedFile&& other) noexcept
+    : fd_(std::exchange(other.fd_, -1)),
+      data_(std::exchange(other.data_, nullptr)),
+      length_(std::exchange(other.length_, -1)) {}
+
+MemoryMappedFile& MemoryMappedFile::operator=(
+    MemoryMappedFile&& other) noexcept {
+  close();
+  fd_ = std::exchange(other.fd_, -1);
+  data_ = std::exchange(other.data_, nullptr);
+  length_ = std::exchange(other.length_, 0);
+  return *this;
+}
 
 MemoryMappedFile::~MemoryMappedFile() { close(); }
 
