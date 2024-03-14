@@ -43,6 +43,7 @@ if (ENABLE_TEST)
         add_executable(McBopomofoLMLibTest
                 AssociatedPhrasesV2Test.cpp
                 KeyValueBlobReaderTest.cpp
+                McBopomofoLMTest.cpp
                 MemoryMappedFileTest.cpp
                 ParselessLMTest.cpp
                 ParselessPhraseDBTest.cpp
