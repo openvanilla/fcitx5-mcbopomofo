@@ -54,9 +54,9 @@ class UserPhrasesLM : public Formosa::Gramambular2::LanguageModel {
       const std::string& key) override;
   bool hasUnigrams(const std::string& key) override;
 
- protected:
   static constexpr double kUserUnigramScore = 0;
 
+ protected:
   MemoryMappedFile mmapedFile_;
   std::map<std::string_view, std::vector<std::string_view>> keyRowMap;
 };

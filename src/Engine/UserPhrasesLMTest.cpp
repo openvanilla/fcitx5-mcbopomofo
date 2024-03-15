@@ -44,6 +44,7 @@ TEST(UserPhrasesLMTest, LenientReading) {
   std::vector<Formosa::Gramambular2::LanguageModel::Unigram> results =
       lm.getUnigrams("reading1");
   EXPECT_EQ(results[0].value(), "value1");
+  EXPECT_EQ(results[0].score(), UserPhrasesLM::kUserUnigramScore);
 }
 
 }  // namespace McBopomofo

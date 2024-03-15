@@ -184,9 +184,10 @@ TEST(McBopomofoLMTest, MonoSyllableUserPhrasesNeedRewrite) {
   auto unigrams = lm.getUnigrams("ㄉㄨㄥˋ");
   ASSERT_FALSE(unigrams.empty());
   EXPECT_EQ(unigrams[0].value(), "丼");
-  EXPECT_LT(unigrams[0].score(), 0);  // note: this is not 0!
+  // This user unigram's score is recomputed and must be < kUserUnigramScore.
+  EXPECT_LT(unigrams[0].score(), UserPhrasesLM::kUserUnigramScore);
   EXPECT_GT(unigrams[0].score(), unigrams[1].score());
-  // The delta between the two should be miniscule.
+  // The delta between the two should be minuscule.
   EXPECT_LT(std::abs(unigrams[0].score() - unigrams[1].score()), 0.000001);
 }
 
@@ -200,7 +201,8 @@ TEST(McBopomofoLMTest, MultipleSyllableUserPhrasesNeedNoRewrite) {
   auto unigrams = lm.getUnigrams("ㄇㄧㄥˊ-ㄘˋ");
   ASSERT_FALSE(unigrams.empty());
   EXPECT_EQ(unigrams[0].value(), "名刺");
-  EXPECT_EQ(unigrams[0].score(), 0);  // note: this is 0!
+  // This user unigram's score is not recomputed, so is still kUserUnigramScore.
+  EXPECT_EQ(unigrams[0].score(), UserPhrasesLM::kUserUnigramScore);
   EXPECT_EQ(unigrams[1].value(), "名次");
   EXPECT_LT(unigrams[1].score(), 0);
 }
