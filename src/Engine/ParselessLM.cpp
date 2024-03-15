@@ -32,11 +32,11 @@
 #include <string_view>
 #include <utility>
 
-bool McBopomofo::ParselessLM::isLoaded() {
-  return mmapedFile_.data() != nullptr;
-}
+namespace McBopomofo {
 
-bool McBopomofo::ParselessLM::open(const char* path) {
+bool ParselessLM::isLoaded() { return mmapedFile_.data() != nullptr; }
+
+bool ParselessLM::open(const char* path) {
   if (!mmapedFile_.open(path)) {
     return false;
   }
@@ -45,13 +45,22 @@ bool McBopomofo::ParselessLM::open(const char* path) {
   return true;
 }
 
-void McBopomofo::ParselessLM::close() {
+void ParselessLM::close() {
   mmapedFile_.close();
   db_ = nullptr;
 }
 
+bool ParselessLM::open(std::unique_ptr<ParselessPhraseDB> db) {
+  if (db_ != nullptr) {
+    return false;
+  }
+
+  db_ = std::move(db);
+  return true;
+}
+
 std::vector<Formosa::Gramambular2::LanguageModel::Unigram>
-McBopomofo::ParselessLM::getUnigrams(const std::string& key) {
+ParselessLM::getUnigrams(const std::string& key) {
   if (db_ == nullptr) {
     return {};
   }
@@ -99,7 +108,7 @@ McBopomofo::ParselessLM::getUnigrams(const std::string& key) {
   return results;
 }
 
-bool McBopomofo::ParselessLM::hasUnigrams(const std::string& key) {
+bool ParselessLM::hasUnigrams(const std::string& key) {
   if (db_ == nullptr) {
     return false;
   }
@@ -107,13 +116,13 @@ bool McBopomofo::ParselessLM::hasUnigrams(const std::string& key) {
   return db_->findFirstMatchingLine(key + " ") != nullptr;
 }
 
-std::vector<McBopomofo::ParselessLM::FoundReading>
-McBopomofo::ParselessLM::getReadings(const std::string& value) {
+std::vector<ParselessLM::FoundReading> ParselessLM::getReadings(
+    const std::string& value) const {
   if (db_ == nullptr) {
     return {};
   }
 
-  std::vector<McBopomofo::ParselessLM::FoundReading> results;
+  std::vector<ParselessLM::FoundReading> results;
 
   // We append a space so that we only find rows with the exact value. We
   // are taking advantage of the fact that a well-form row in this LM must
@@ -153,7 +162,9 @@ McBopomofo::ParselessLM::getReadings(const std::string& value) {
     if (it != row.end()) {
       score = std::stod(std::string(it, row.end()));
     }
-    results.emplace_back(McBopomofo::ParselessLM::FoundReading{key, score});
+    results.emplace_back(ParselessLM::FoundReading{key, score});
   }
   return results;
 }
+
+}  // namespace McBopomofo
