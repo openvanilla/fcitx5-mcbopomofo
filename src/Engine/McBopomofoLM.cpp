@@ -245,7 +245,7 @@ McBopomofoLM::filterAndTransformUnigrams(
         value = replacement;
       }
     }
-    if (macroConverter_) {
+    if (macroConverter_ != nullptr) {
       std::string replacement = macroConverter_(value);
       value = replacement;
     }
@@ -256,7 +256,7 @@ McBopomofoLM::filterAndTransformUnigrams(
       continue;
     }
 
-    if (externalConverterEnabled_ && externalConverter_) {
+    if (externalConverterEnabled_ && externalConverter_ != nullptr) {
       std::string replacement = externalConverter_(value);
       value = replacement;
     }
