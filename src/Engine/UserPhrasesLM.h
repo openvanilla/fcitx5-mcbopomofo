@@ -37,22 +37,28 @@ namespace McBopomofo {
 
 class UserPhrasesLM : public Formosa::Gramambular2::LanguageModel {
  public:
+  UserPhrasesLM() = default;
+  UserPhrasesLM(const UserPhrasesLM&) = delete;
+  UserPhrasesLM(UserPhrasesLM&&) = delete;
+  UserPhrasesLM& operator=(const UserPhrasesLM&) = delete;
+  UserPhrasesLM& operator=(UserPhrasesLM&&) = delete;
+
   bool open(const char* path);
   void close();
+
+  // Allows loading existing in-memory data. It's the caller's responsibility
+  // to make sure that data outlives this instance.
+  bool load(const char* data, size_t length);
 
   std::vector<Formosa::Gramambular2::LanguageModel::Unigram> getUnigrams(
       const std::string& key) override;
   bool hasUnigrams(const std::string& key) override;
 
- protected:
-  struct Row {
-    Row(std::string_view k, std::string_view v) : key(k), value(v) {}
-    const std::string_view key;
-    const std::string_view value;
-  };
+  static constexpr double kUserUnigramScore = 0;
 
+ protected:
   MemoryMappedFile mmapedFile_;
-  std::map<std::string_view, std::vector<Row>> keyRowMap;
+  std::map<std::string_view, std::vector<std::string_view>> keyRowMap;
 };
 
 }  // namespace McBopomofo

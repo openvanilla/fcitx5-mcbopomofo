@@ -36,9 +36,18 @@ namespace McBopomofo {
 
 class ParselessLM : public Formosa::Gramambular2::LanguageModel {
  public:
+  ParselessLM() = default;
+  ParselessLM(const ParselessLM&) = delete;
+  ParselessLM(ParselessLM&&) = delete;
+  ParselessLM& operator=(const ParselessLM&) = delete;
+  ParselessLM& operator=(ParselessLM&&) = delete;
+
   bool isLoaded();
   bool open(const char* path);
   void close();
+
+  // Allows the use of existing in-memory db.
+  bool open(std::unique_ptr<ParselessPhraseDB> db);
 
   std::vector<Formosa::Gramambular2::LanguageModel::Unigram> getUnigrams(
       const std::string& key) override;
@@ -50,7 +59,7 @@ class ParselessLM : public Formosa::Gramambular2::LanguageModel {
   };
 
   // Look up reading by value. This is specific to ParselessLM only.
-  std::vector<FoundReading> getReadings(const std::string& value);
+  std::vector<FoundReading> getReadings(const std::string& value) const;
 
  private:
   MemoryMappedFile mmapedFile_;

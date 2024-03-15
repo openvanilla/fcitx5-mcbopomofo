@@ -69,6 +69,8 @@ TEST(MemoryMappedFileTest, BasicFunctionalities) {
   out.close();
 
   MemoryMappedFile mf;
+  ASSERT_EQ(mf.length(), 0);
+  ASSERT_EQ(mf.data(), nullptr);
   bool open_result = mf.open(tmp_file_path.c_str());
   ASSERT_TRUE(open_result);
 
@@ -76,7 +78,6 @@ TEST(MemoryMappedFileTest, BasicFunctionalities) {
   EXPECT_TRUE(mf.data() != nullptr);
   EXPECT_EQ(memcmp(mf.data(), buf, kBufSize), 0);
 
-  delete[] buf;
   mf.close();
   EXPECT_EQ(mf.length(), 0);
   EXPECT_EQ(mf.data(), nullptr);
@@ -84,14 +85,41 @@ TEST(MemoryMappedFileTest, BasicFunctionalities) {
   // Should be a no-op.
   mf.close();
 
-  std::filesystem::remove(tmp_file_path);
-
-  // Opening a non-existence file.
   MemoryMappedFile mf2;
   open_result = mf2.open(tmp_file_path.c_str());
+  EXPECT_TRUE(open_result);
+  EXPECT_TRUE(mf2.data() != nullptr);
+
+  MemoryMappedFile mf3(std::move(mf2));
+  EXPECT_TRUE(mf2.data() == nullptr);
+  EXPECT_TRUE(mf3.data() != nullptr);
+
+  MemoryMappedFile mf4 = std::move(mf3);
+  EXPECT_TRUE(mf3.data() == nullptr);
+  EXPECT_TRUE(mf4.data() != nullptr);
+
+  // Flip a byte of the underlying file. The map should reflect that.
+  FILE* f = fopen(tmp_file_path.c_str(), "r+b");
+  EXPECT_NE(f, nullptr);
+  EXPECT_NE(fputc(~buf[0], f), EOF);
+  EXPECT_EQ(fclose(f), 0);
+
+  EXPECT_NE(memcmp(mf4.data(), buf, kBufSize), 0);
+  // The rest of the data should be the same.
+  EXPECT_EQ(memcmp(mf4.data() + 1, buf + 1, kBufSize - 1), 0);
+
+  mf4.close();
+  EXPECT_TRUE(mf4.data() == nullptr);
+
+  std::filesystem::remove(tmp_file_path);
+  delete[] buf;
+
+  // Opening a non-existence file.
+  MemoryMappedFile mf5;
+  open_result = mf5.open(tmp_file_path.c_str());
   EXPECT_FALSE(open_result);
-  EXPECT_EQ(mf2.length(), 0);
-  EXPECT_EQ(mf2.data(), nullptr);
+  EXPECT_EQ(mf5.length(), 0);
+  EXPECT_EQ(mf5.data(), nullptr);
 }
 
 }  // namespace McBopomofo

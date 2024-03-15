@@ -39,7 +39,27 @@ bool PhraseReplacementMap::open(const char* path) {
     return false;
   }
 
-  KeyValueBlobReader reader(mmapedFile_.data(), mmapedFile_.length());
+  // MemoryMappedFile self-closes, and so this is fine.
+  return load(mmapedFile_.data(), mmapedFile_.length());
+}
+
+void PhraseReplacementMap::close() {
+  keyValueMap_.clear();
+  mmapedFile_.close();
+}
+
+bool PhraseReplacementMap::load(const char* data, size_t length) {
+  if (mmapedFile_.data() != nullptr) {
+    // Cannot load while mmapedFile_ is already open.
+    return false;
+  }
+
+  if (data == nullptr || length == 0) {
+    return false;
+  }
+  keyValueMap_.clear();
+
+  KeyValueBlobReader reader(data, length);
   KeyValueBlobReader::KeyValue keyValue;
   while (reader.Next(&keyValue) == KeyValueBlobReader::State::HAS_PAIR) {
     keyValueMap_[keyValue.key] = keyValue.value;
@@ -47,16 +67,11 @@ bool PhraseReplacementMap::open(const char* path) {
   return true;
 }
 
-void PhraseReplacementMap::close() {
-  mmapedFile_.close();
-  keyValueMap_.clear();
-}
-
 std::string PhraseReplacementMap::valueForKey(const std::string& key) const {
   auto iter = keyValueMap_.find(key);
   if (iter != keyValueMap_.end()) {
     const std::string_view& v = iter->second;
-    return {v.cbegin(), v.cend()};
+    return std::string(v);
   }
   return {};
 }

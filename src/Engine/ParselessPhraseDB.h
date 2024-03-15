@@ -43,6 +43,11 @@ class ParselessPhraseDB {
   ParselessPhraseDB(const char* buf, size_t length,
                     bool validate_pragma = false);
 
+  ParselessPhraseDB(const ParselessPhraseDB&) = delete;
+  ParselessPhraseDB(ParselessPhraseDB&&) = delete;
+  ParselessPhraseDB& operator=(const ParselessPhraseDB&) = delete;
+  ParselessPhraseDB& operator=(ParselessPhraseDB&&) = delete;
+
   // Find the rows that match the key. Note that prefix match is used. If you
   // need exact match, the key will need to have a delimiter (usually a space)
   // at the end.

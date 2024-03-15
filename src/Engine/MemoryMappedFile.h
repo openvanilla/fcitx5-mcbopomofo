@@ -28,9 +28,22 @@
 
 namespace McBopomofo {
 
-// A wrapper for managing a memory-mapped file. Access is read-only.
+// A wrapper for managing a memory-mapped file.
+//
+// On POSIX systems, we obtain a readable (PROT_READ) shared page (MAP_SHARED),
+// and *file content* changes are reflected in the mapped memory. This class
+// does not track the underlying file: it is up to the user of this class to
+// decide what to do when the underlying file gets updated, resized, or removed.
 class MemoryMappedFile {
  public:
+  MemoryMappedFile() = default;
+  MemoryMappedFile(MemoryMappedFile&& other) noexcept;
+  MemoryMappedFile& operator=(MemoryMappedFile&& other) noexcept;
+
+  // Forbids copying.
+  MemoryMappedFile& operator=(const MemoryMappedFile&) = delete;
+  MemoryMappedFile(const MemoryMappedFile&) = delete;
+
   ~MemoryMappedFile();
   bool open(const char* path);
   void close();
