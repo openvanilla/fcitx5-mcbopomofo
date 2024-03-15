@@ -54,7 +54,7 @@ ParselessPhraseDB::ParselessPhraseDB(const char* buf, size_t length,
 }
 
 std::vector<std::string_view> ParselessPhraseDB::findRows(
-    const std::string_view& key) {
+    const std::string_view& key) const {
   std::vector<std::string_view> rows;
 
   const char* ptr = findFirstMatchingLine(key);
@@ -88,7 +88,7 @@ std::vector<std::string_view> ParselessPhraseDB::findRows(
 // less to the key and the current line starts exactly with the key, then
 // the current line is the first matching line.
 const char* ParselessPhraseDB::findFirstMatchingLine(
-    const std::string_view& key) {
+    const std::string_view& key) const {
   if (key.empty()) {
     return begin_;
   }
@@ -162,7 +162,7 @@ const char* ParselessPhraseDB::findFirstMatchingLine(
 }
 
 std::vector<std::string> ParselessPhraseDB::reverseFindRows(
-    const std::string_view& value) {
+    const std::string_view& value) const {
   std::vector<std::string> rows;
 
   const char* recordBegin = begin_;
