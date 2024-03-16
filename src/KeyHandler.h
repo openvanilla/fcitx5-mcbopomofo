@@ -235,9 +235,9 @@ class KeyHandler {
   // contain the prefix. This allows the following two scenarios:
   //
   // (1) the current walk is 得 and we want to pin the phrase 得到; in this
-  // case,
-  //     the prefixReading is ㄉㄜˊ and prefixValue is 得, and the associated
-  //     phrase's reading and value are ㄉㄜˊ-ㄉㄠˋ and 得到 respectively.
+  //     case, the prefixReading is ㄉㄜˊ and prefixValue is 得, and the
+  //     associated phrase's reading and value are ㄉㄜˊ-ㄉㄠˋ and 得到
+  //     respectively.
   // (2) the current walk is 得 but we want to pin the phrase 德性, coming from
   //     the choosing-candidate state; in this case, the prefix reading and
   //     value is now ㄉㄜˊ and 德, and the associated phrase is ㄉㄜˊ-ㄒㄧㄥˋ
