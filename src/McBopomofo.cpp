@@ -780,7 +780,10 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  if (key.check(FcitxKey_Return)) {
+  bool isAssociatedPhrasesPlainState =
+      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
+      nullptr;
+  if (key.check(FcitxKey_Return) && !isAssociatedPhrasesPlainState) {
     int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
