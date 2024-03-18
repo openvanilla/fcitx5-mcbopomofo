@@ -6,8 +6,12 @@
   <project_license>MIT</project_license>
   <name>McBopomofo for Fcitx 5</name>
   <summary>A Bopomofo input method that picks phrases intelligently</summary>
+  <developer id="org.openvanilla.mcbopomofo">
+    <name>The McBopomofo Authors</name>
+  </developer>
   <url type="homepage">https://mcbopomofo.openvanilla.org/</url>
   <url type="bugtracker">https://github.com/openvanilla/fcitx5-mcbopomofo/issues</url>
+  <url type="vcs-browser">https://github.com/openvanilla/fcitx5-mcbopomofo</url>
   <project_group>Fcitx</project_group>
   <releases>
     <release version="2.5.2" date="2023-05-15"/>
