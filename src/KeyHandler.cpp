@@ -1292,16 +1292,40 @@ KeyHandler::buildAssociatedPhrasesPlainState(const std::string& reading,
     return nullptr;
   }
 
+  std::vector<std::string> splitReadings =
+      AssociatedPhrasesV2::SplitReadings(reading);
   std::vector<McBopomofo::AssociatedPhrasesV2::Phrase> phrases =
-      lm->findAssociatedPhrasesV2(value, {reading});
-  if (!phrases.empty()) {
-    std::vector<InputStates::ChoosingCandidate::Candidate> cs;
-    for (const auto& phrase : phrases) {
-      // AssociatedPhrasesV2::Phrase's value *contains* the prefix, hence this.
-      std::string valueWithoutPrefix = phrase.value.substr(value.length());
+      lm->findAssociatedPhrasesV2(value, splitReadings);
+  if (phrases.empty()) {
+    return nullptr;
+  }
 
-      cs.emplace_back(valueWithoutPrefix, valueWithoutPrefix);
+  std::vector<InputStates::ChoosingCandidate::Candidate> cs;
+  for (const auto& phrase : phrases) {
+    // Chop the prefix of AssociatedPhrasesV2::Phrase's readings.
+    auto pri = phrase.readings.cbegin();
+    auto pre = phrase.readings.cend();
+    for (auto sri = splitReadings.cbegin(), sre = splitReadings.cend();
+         sri != sre; ++sri) {
+      if (pri != pre) {
+        ++pri;
+      }
     }
+    if (pri == pre) {
+      // Shouldn't happen.
+      continue;
+    }
+    std::string combinedReadingWithoutPrefix =
+        AssociatedPhrasesV2::CombineReadings(
+            std::vector<std::string>(pri, pre));
+
+    // Ditto for the value.
+    std::string valueWithoutPrefix = phrase.value.substr(value.length());
+
+    cs.emplace_back(combinedReadingWithoutPrefix, valueWithoutPrefix);
+  }
+
+  if (!cs.empty()) {
     return std::make_unique<InputStates::AssociatedPhrasesPlain>(cs);
   }
   return nullptr;

@@ -656,6 +656,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
       nullptr) {
     int code = origKey.code();
+    // Shift-[1-9] keys can only be checked via raw key codes. The Key objects
+    // in the selectionKeys_ do not carry such information.
     if ((origKey.states() & fcitx::KeyState::Shift) &&
         code >= kFcitxRawKeycode_1 && code <= kFcitxRawKeycode_9) {
       int idx = code - kFcitxRawKeycode_1;
@@ -780,7 +782,10 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  if (key.check(FcitxKey_Return)) {
+  bool isAssociatedPhrasesPlainState =
+      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
+      nullptr;
+  if (key.check(FcitxKey_Return) && !isAssociatedPhrasesPlainState) {
     int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
@@ -1098,36 +1103,23 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   auto keysConfig = config_.selectionKeys.value();
   selectionKeys_.clear();
 
-  constexpr size_t keys = 9;
-  _FcitxKeySym key_123456789[keys] = {FcitxKey_1, FcitxKey_2, FcitxKey_3,
-                                      FcitxKey_4, FcitxKey_5, FcitxKey_6,
-                                      FcitxKey_7, FcitxKey_8, FcitxKey_9};
-  _FcitxKeySym key_asdfghjkl[keys] = {FcitxKey_a, FcitxKey_s, FcitxKey_d,
-                                      FcitxKey_f, FcitxKey_g, FcitxKey_h,
-                                      FcitxKey_j, FcitxKey_k, FcitxKey_l};
-  _FcitxKeySym key_asdfzxcvb[keys] = {FcitxKey_a, FcitxKey_s, FcitxKey_d,
-                                      FcitxKey_f, FcitxKey_z, FcitxKey_x,
-                                      FcitxKey_c, FcitxKey_v, FcitxKey_b};
-
-  _FcitxKeySym* selKeys;
   if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-      nullptr) {  // NOLINT(bugprone-branch-clone)
-    // Associated phrases in Plain Bopomofo only takes Shift-[1-9]; we push
-    // these keys and will detect the shift mask later.
-    selKeys = key_123456789;
-  } else if (keysConfig == SelectionKeys::Key_asdfghjkl) {
-    selKeys = key_asdfghjkl;
-  } else if (keysConfig == SelectionKeys::Key_asdfzxcvb) {
-    selKeys = key_asdfzxcvb;
+      nullptr) {
+    // This is for label appearance only. Shift+[1-9] keys can only be checked
+    // via a raw key's key code, but Keys constructed with "Shift-" names does
+    // not carry proper key codes.
+    selectionKeys_ = fcitx::Key::keyListFromString(
+        "Shift+1 Shift+2 Shift+3 Shift+4 Shift+5 Shift+6 Shift+7 Shift+8 "
+        "Shift+9");
   } else {
-    selKeys = key_123456789;
+    if (keysConfig == SelectionKeys::Key_asdfghjkl) {
+      selectionKeys_ = fcitx::Key::keyListFromString("a s d f g h j k l");
+    } else if (keysConfig == SelectionKeys::Key_asdfzxcvb) {
+      selectionKeys_ = fcitx::Key::keyListFromString("a s d f z x c v b");
+    } else {
+      selectionKeys_ = fcitx::Key::keyListFromString("1 2 3 4 5 6 7 8 9");
+    }
   }
-  for (size_t i = 0,
-              s = static_cast<size_t>(config_.selectionKeysCount.value());
-       i < s; ++i) {
-    selectionKeys_.emplace_back(selKeys[i]);
-  }
-
   candidateList->setSelectionKey(selectionKeys_);
   candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
 
