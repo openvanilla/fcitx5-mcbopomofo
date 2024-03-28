@@ -76,6 +76,8 @@ class LanguageModelLoader : public UserPhraseAdder {
   std::filesystem::file_time_type userPhrasesTimestamp_;
   std::string excludedPhrasesPath_;
   std::filesystem::file_time_type excludedPhrasesTimestamp_;
+  std::string phrasesReplacementPath_;
+  std::filesystem::file_time_type phrasesReplacementTimestamp_;
   McBopomofo::InputMacroController inputMacroController_;
 
  public:

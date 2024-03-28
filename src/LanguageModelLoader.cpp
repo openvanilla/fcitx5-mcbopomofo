@@ -40,6 +40,7 @@ constexpr char kUserPhraseFilename[] = "data.txt";  // same as macOS version
 constexpr char kExcludedPhraseFilename[] = "exclude-phrases.txt";  // ditto
 constexpr char kAssociatedPhrasesV2Path[] =
     "data/mcbopomofo-associated-phrases-v2.txt";
+constexpr char kPhrasesReplacementFilename[] = "phrases-replacement.txt";
 
 LanguageModelLoader::LanguageModelLoader(
     std::unique_ptr<LocalizedStrings> localizedStrings)
@@ -103,6 +104,7 @@ LanguageModelLoader::LanguageModelLoader(
   userDataPath_ = userDataPath;
   userPhrasesPath_ = userDataPath + "/" + kUserPhraseFilename;
   excludedPhrasesPath_ = userDataPath + "/" + kExcludedPhraseFilename;
+  phrasesReplacementPath_ = userDataPath + "/" + kPhrasesReplacementFilename;
   populateUserDataFilesIfNeeded();
   reloadUserModelsIfNeeded();
 }
@@ -142,19 +144,17 @@ void LanguageModelLoader::addUserPhrase(const std::string_view& reading,
 }
 
 void LanguageModelLoader::reloadUserModelsIfNeeded() {
-  bool shouldReload = false;
-  const char* userPhrasesPathPtr = nullptr;
-  const char* excludedPhrasesPathPtr = nullptr;
+  bool shouldReloadUserPhrases = false;
+  bool shouldReloadPhrasesReplacement = false;
 
   if (!userPhrasesPath_.empty() && std::filesystem::exists(userPhrasesPath_)) {
     std::filesystem::file_time_type t =
         std::filesystem::last_write_time(userPhrasesPath_);
     if (t != userPhrasesTimestamp_) {
-      shouldReload = true;
+      shouldReloadUserPhrases = true;
       userPhrasesTimestamp_ = t;
       FCITX_MCBOPOMOFO_INFO() << "Will load: " << userPhrasesPath_;
     }
-    userPhrasesPathPtr = userPhrasesPath_.c_str();
   }
 
   if (!excludedPhrasesPath_.empty() &&
@@ -162,15 +162,58 @@ void LanguageModelLoader::reloadUserModelsIfNeeded() {
     std::filesystem::file_time_type t =
         std::filesystem::last_write_time(excludedPhrasesPath_);
     if (t != excludedPhrasesTimestamp_) {
-      shouldReload = true;
+      shouldReloadUserPhrases = true;
       excludedPhrasesTimestamp_ = t;
       FCITX_MCBOPOMOFO_INFO() << "Will load: " << excludedPhrasesPath_;
     }
-    excludedPhrasesPathPtr = excludedPhrasesPath_.c_str();
   }
 
-  if (shouldReload) {
-    lm_->loadUserPhrases(userPhrasesPathPtr, excludedPhrasesPathPtr);
+  // Phrases replacement is considered an advanced feature. We only enable
+  // it and check for updates if the file exists. If the file disappears,
+  // disable it.
+  if (!phrasesReplacementPath_.empty()) {
+    bool isEnabled = lm_->phraseReplacementEnabled();
+    bool fileExists = std::filesystem::exists(phrasesReplacementPath_);
+
+    if (isEnabled && !fileExists) {
+      // Disable phrases replacement now that the file is gone.
+      lm_->setPhraseReplacementEnabled(false);
+      // Reset the timestamp.
+      phrasesReplacementTimestamp_ = {};
+      FCITX_MCBOPOMOFO_INFO() << "Phrases replacement disabled, file gone: "
+                              << phrasesReplacementPath_;
+    } else if (fileExists) {
+      std::filesystem::file_time_type t =
+          std::filesystem::last_write_time(phrasesReplacementPath_);
+
+      // phrasesReplacementTimestamp_ default-inits to 0, so the reload flag
+      // is guaranteed to be set to true for the first time, assuming the file
+      // does not have a POSIX timestamp of 0, of course.
+      if (t != phrasesReplacementTimestamp_) {
+        shouldReloadPhrasesReplacement = true;
+        phrasesReplacementTimestamp_ = t;
+      }
+
+      if (shouldReloadPhrasesReplacement) {
+        if (isEnabled) {
+          FCITX_MCBOPOMOFO_INFO() << "Will reload phrases replacement file: "
+                                  << phrasesReplacementPath_;
+        } else {
+          lm_->setPhraseReplacementEnabled(true);
+          FCITX_MCBOPOMOFO_INFO() << "Phrases replacement enabled, file: "
+                                  << phrasesReplacementPath_;
+        }
+      }
+    }
+  }
+
+  if (shouldReloadUserPhrases) {
+    lm_->loadUserPhrases(userPhrasesPath_.c_str(),
+                         excludedPhrasesPath_.c_str());
+  }
+
+  if (shouldReloadPhrasesReplacement) {
+    lm_->loadPhraseReplacementMap(phrasesReplacementPath_.c_str());
   }
 }
 
