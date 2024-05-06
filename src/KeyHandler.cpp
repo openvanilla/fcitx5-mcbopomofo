@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <sstream>
 #include <utility>
 
 #include "ChineseNumbers/ChineseNumbers.h"
