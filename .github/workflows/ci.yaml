@@ -3,6 +3,37 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  build_ubuntu_24:
+    runs-on: ubuntu-latest
+    container: ubuntu:24.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt install -y pkg-config
+          apt install -y clang
+          apt install -y cmake extra-cmake-modules gettext libfmt-dev
+          apt install -y fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev fcitx5-modules-dev
+          apt install -y libjson-c-dev
+      - name: Build
+        run: |
+          mkdir -p build
+          cd build
+          cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug
+          make -j
+          cd ../
+          mkdir -p src/Engine/build
+          cd src/Engine/build
+          cmake ../
+          make -j
+      - name: Test
+        run: |
+          cd build
+          ctest --output-on-failure
+
   build_ubuntu_22:
     runs-on: ubuntu-latest
     container: ubuntu:22.04
