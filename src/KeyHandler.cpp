@@ -129,6 +129,12 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                                errorCallback);
   }
 
+  auto* enclosingNumber = dynamic_cast<InputStates::EnclosingNumber*>(state);
+  if (enclosingNumber != nullptr) {
+    return handleEnclosingNumber(key, enclosingNumber, stateCallback,
+                                 errorCallback);
+  }
+
   // From Key's definition, if shiftPressed is true, it can't be a simple key
   // that can be represented by ASCII.
   char simpleAscii = (key.ctrlPressed || key.shiftPressed) ? '\0' : key.ascii;
@@ -1053,6 +1059,71 @@ bool KeyHandler::handleChineseNumber(
     errorCallback();
   }
 
+  return true;
+}
+
+bool KeyHandler::handleEnclosingNumber(
+    Key key, McBopomofo::InputStates::EnclosingNumber* state,
+    StateCallback stateCallback, KeyHandler::ErrorCallback errorCallback) {
+  if (key.ascii == Key::ESC) {
+    stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+    return true;
+  }
+  if (key.isDeleteKeys()) {
+    std::string number = state->number;
+    if (!number.empty()) {
+      number = number.substr(0, number.length() - 1);
+    } else {
+      errorCallback();
+      return true;
+    }
+    auto newState = std::make_unique<InputStates::EnclosingNumber>(number);
+    stateCallback(std::move(newState));
+    return true;
+  }
+  if (key.ascii == Key::RETURN || key.ascii == Key::SPACE) {
+    if (state->number.empty()) {
+      stateCallback(std::make_unique<InputStates::Empty>());
+      return true;
+    }
+    std::string unigramKey = "_number_" + state->number;
+    if (!lm_->hasUnigrams(unigramKey)) {
+      stateCallback(std::make_unique<InputStates::Empty>());
+      return true;
+    }
+    auto unigrams = lm_->getUnigrams(unigramKey);
+    if (unigrams.size() == 1) {
+      auto firstUnigram = unigrams[0];
+      std::string value = firstUnigram.value();
+      stateCallback(std::make_unique<InputStates::Committing>(value));
+      stateCallback(std::make_unique<InputStates::Empty>());
+      return true;
+    }
+
+    grid_.insertReading(unigramKey);
+    walk();
+    size_t originalCursor = grid_.cursor();
+    if (selectPhraseAfterCursorAsCandidate_) {
+      grid_.setCursor(originalCursor - 1);
+    }
+    auto inputtingState = buildInputtingState();
+    auto choosingCandidateState =
+        buildChoosingCandidateState(inputtingState.get(), originalCursor);
+    stateCallback(std::move(inputtingState));
+    stateCallback(std::move(choosingCandidateState));
+    return true;
+  }
+  if (key.ascii >= '0' && key.ascii <= '9') {
+    if (state->number.length() > 2) {
+      errorCallback();
+      return true;
+    }
+    std::string newNumber = state->number + key.ascii;
+    auto newState = std::make_unique<InputStates::EnclosingNumber>(newNumber);
+    stateCallback(std::move(newState));
+  } else {
+    errorCallback();
+  }
   return true;
 }
 

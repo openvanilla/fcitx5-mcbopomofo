@@ -194,6 +194,11 @@ class KeyHandler {
                            McBopomofo::InputStates::ChineseNumber* state,
                            StateCallback stateCallback,
                            ErrorCallback errorCallback);
+  bool handleEnclosingNumber(Key key,
+                           McBopomofo::InputStates::EnclosingNumber* state,
+                           StateCallback stateCallback,
+                           ErrorCallback errorCallback);
+
   bool handleTabKey(Key key, McBopomofo::InputState* state,
                     const StateCallback& stateCallback,
                     const ErrorCallback& errorCallback);
