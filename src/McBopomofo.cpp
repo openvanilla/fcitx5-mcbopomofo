@@ -92,39 +92,85 @@ static Key MapFcitxKey(const fcitx::Key& key) {
     case FcitxKey_BackSpace:
       return Key::asciiKey(Key::BACKSPACE, shiftPressed, ctrlPressed);
     case FcitxKey_Return:
-    case FcitxKey_KP_Enter:
       return Key::asciiKey(Key::RETURN, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_Enter:
+      return Key::asciiKey(Key::RETURN, shiftPressed, ctrlPressed, true);
     case FcitxKey_Escape:
       return Key::asciiKey(Key::ESC, shiftPressed, ctrlPressed);
     case FcitxKey_space:
       // This path is taken when Shift is pressed--no longer a "simple" key.
       return Key::asciiKey(Key::SPACE, shiftPressed, ctrlPressed);
     case FcitxKey_Delete:
+      return Key::asciiKey(Key::DELETE, shiftPressed, ctrlPressed, true);
     case FcitxKey_KP_Delete:
       return Key::asciiKey(Key::DELETE, shiftPressed, ctrlPressed);
     case FcitxKey_Tab:
       return Key::asciiKey(Key::TAB, shiftPressed, ctrlPressed);
     case FcitxKey_Left:
-    case FcitxKey_KP_Left:
       return Key::namedKey(Key::KeyName::LEFT, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_Left:
+      return Key::namedKey(Key::KeyName::LEFT, shiftPressed, ctrlPressed, true);
     case FcitxKey_Right:
-    case FcitxKey_KP_Right:
       return Key::namedKey(Key::KeyName::RIGHT, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_Right:
+      return Key::namedKey(Key::KeyName::RIGHT, shiftPressed, ctrlPressed,
+                           true);
     case FcitxKey_Home:
-    case FcitxKey_KP_Home:
       return Key::namedKey(Key::KeyName::HOME, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_Home:
+      return Key::namedKey(Key::KeyName::HOME, shiftPressed, ctrlPressed, true);
     case FcitxKey_End:
-    case FcitxKey_KP_End:
       return Key::namedKey(Key::KeyName::END, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_End:
+      return Key::namedKey(Key::KeyName::END, shiftPressed, ctrlPressed, true);
     case FcitxKey_Up:
+      return Key::namedKey(Key::KeyName::UP, shiftPressed, ctrlPressed, true);
     case FcitxKey_KP_Up:
       return Key::namedKey(Key::KeyName::UP, shiftPressed, ctrlPressed);
     case FcitxKey_Down:
-    case FcitxKey_KP_Down:
       return Key::namedKey(Key::KeyName::DOWN, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_Down:
+      return Key::namedKey(Key::KeyName::DOWN, shiftPressed, ctrlPressed, true);
     default:
       break;
   }
+
+  switch (key.sym()) {
+    case FcitxKey_KP_0:
+      return Key::asciiKey('0', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_1:
+      return Key::asciiKey('1', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_2:
+      return Key::asciiKey('2', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_3:
+      return Key::asciiKey('3', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_4:
+      return Key::asciiKey('4', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_5:
+      return Key::asciiKey('5', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_6:
+      return Key::asciiKey('6', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_7:
+      return Key::asciiKey('7', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_8:
+      return Key::asciiKey('8', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_9:
+      return Key::asciiKey('4', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Decimal:
+      return Key::asciiKey('.', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Add:
+      return Key::asciiKey('+', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Subtract:
+      return Key::asciiKey('-', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Multiply:
+      return Key::asciiKey('*', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Divide:
+      return Key::asciiKey('/', shiftPressed, ctrlPressed, true);
+
+    default:
+      break;
+  }
+
   return Key{};
 }
 
@@ -925,6 +971,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
     if ((key.check(fcitx::Key(FcitxKey_Right)) ||
          key.check(fcitx::Key(FcitxKey_Page_Down)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Right)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Page_Down)) ||
          key.checkKeyList(instance_->globalConfig().defaultNextPage())) &&
         candidateList->hasNext()) {
       candidateList->next();
@@ -934,6 +982,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
     if ((key.check(fcitx::Key(FcitxKey_Left)) ||
          key.check(fcitx::Key(FcitxKey_Page_Up)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Left)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Page_Up)) ||
          key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
         candidateList->hasPrev()) {
       candidateList->prev();
@@ -942,18 +992,22 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       return true;
     }
   } else {
-    if (key.check(fcitx::Key(FcitxKey_Right))) {
+    if (key.check(fcitx::Key(FcitxKey_Right)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Right))) {
       candidateList->toCursorMovable()->nextCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       return true;
     }
-    if (key.check(fcitx::Key(FcitxKey_Left))) {
+    if (key.check(fcitx::Key(FcitxKey_Left)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Left))) {
       candidateList->toCursorMovable()->prevCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       return true;
     }
     if ((key.check(fcitx::Key(FcitxKey_Down)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Down)) ||
          key.check(fcitx::Key(FcitxKey_Page_Down)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Page_Down)) ||
          key.checkKeyList(instance_->globalConfig().defaultNextPage())) &&
         candidateList->hasNext()) {
       candidateList->next();
@@ -962,7 +1016,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       return true;
     }
     if ((key.check(fcitx::Key(FcitxKey_Up)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Up)) ||
          key.check(fcitx::Key(FcitxKey_Page_Up)) ||
+         key.check(fcitx::Key(FcitxKey_KP_  Page_Up)) ||
          key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
         candidateList->hasPrev()) {
       candidateList->prev();

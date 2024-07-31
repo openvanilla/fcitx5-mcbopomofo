@@ -137,7 +137,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
   // From Key's definition, if shiftPressed is true, it can't be a simple key
   // that can be represented by ASCII.
-  char simpleAscii = (key.ctrlPressed || key.shiftPressed) ? '\0' : key.ascii;
+  char simpleAscii = (key.ctrlPressed || key.shiftPressed || key.isFromNumberPad) ? '\0' : key.ascii;
 
   // See if it's valid BPMF reading.
   bool keyConsumedByReading = false;
