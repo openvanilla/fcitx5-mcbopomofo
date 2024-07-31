@@ -137,7 +137,9 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
   // From Key's definition, if shiftPressed is true, it can't be a simple key
   // that can be represented by ASCII.
-  char simpleAscii = (key.ctrlPressed || key.shiftPressed || key.isFromNumberPad) ? '\0' : key.ascii;
+  char simpleAscii =
+      (key.ctrlPressed || key.shiftPressed || key.isFromNumberPad) ? '\0'
+                                                                   : key.ascii;
 
   // See if it's valid BPMF reading.
   bool keyConsumedByReading = false;
@@ -1088,7 +1090,7 @@ bool KeyHandler::handleEnclosingNumber(
     }
     std::string unigramKey = "_number_" + state->number;
     if (!lm_->hasUnigrams(unigramKey)) {
-      stateCallback(std::make_unique<InputStates::Empty>());
+      errorCallback();
       return true;
     }
     auto unigrams = lm_->getUnigrams(unigramKey);

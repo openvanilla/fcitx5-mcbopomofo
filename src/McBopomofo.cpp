@@ -1018,7 +1018,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     if ((key.check(fcitx::Key(FcitxKey_Up)) ||
          key.check(fcitx::Key(FcitxKey_KP_Up)) ||
          key.check(fcitx::Key(FcitxKey_Page_Up)) ||
-         key.check(fcitx::Key(FcitxKey_KP_  Page_Up)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Page_Up)) ||
          key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
         candidateList->hasPrev()) {
       candidateList->prev();
