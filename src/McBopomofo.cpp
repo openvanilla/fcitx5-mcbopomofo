@@ -92,6 +92,7 @@ static Key MapFcitxKey(const fcitx::Key& key) {
     case FcitxKey_BackSpace:
       return Key::asciiKey(Key::BACKSPACE, shiftPressed, ctrlPressed);
     case FcitxKey_Return:
+    case FcitxKey_KP_Enter:
       return Key::asciiKey(Key::RETURN, shiftPressed, ctrlPressed);
     case FcitxKey_Escape:
       return Key::asciiKey(Key::ESC, shiftPressed, ctrlPressed);
@@ -99,20 +100,27 @@ static Key MapFcitxKey(const fcitx::Key& key) {
       // This path is taken when Shift is pressed--no longer a "simple" key.
       return Key::asciiKey(Key::SPACE, shiftPressed, ctrlPressed);
     case FcitxKey_Delete:
+    case FcitxKey_KP_Delete:
       return Key::asciiKey(Key::DELETE, shiftPressed, ctrlPressed);
     case FcitxKey_Tab:
       return Key::asciiKey(Key::TAB, shiftPressed, ctrlPressed);
     case FcitxKey_Left:
+    case FcitxKey_KP_Left:
       return Key::namedKey(Key::KeyName::LEFT, shiftPressed, ctrlPressed);
     case FcitxKey_Right:
+    case FcitxKey_KP_Right:
       return Key::namedKey(Key::KeyName::RIGHT, shiftPressed, ctrlPressed);
     case FcitxKey_Home:
+    case FcitxKey_KP_Home:
       return Key::namedKey(Key::KeyName::HOME, shiftPressed, ctrlPressed);
     case FcitxKey_End:
+    case FcitxKey_KP_End:
       return Key::namedKey(Key::KeyName::END, shiftPressed, ctrlPressed);
     case FcitxKey_Up:
+    case FcitxKey_KP_Up:
       return Key::namedKey(Key::KeyName::UP, shiftPressed, ctrlPressed);
     case FcitxKey_Down:
+    case FcitxKey_KP_Down:
       return Key::namedKey(Key::KeyName::DOWN, shiftPressed, ctrlPressed);
     default:
       break;
