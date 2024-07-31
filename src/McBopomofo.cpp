@@ -725,9 +725,14 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       }
       return true;
     }
-
   } else {
+    // handle num pad.
+
     int idx = key.keyListIndex(selectionKeys_);
+    if (idx == -1) {
+      idx = key.keyListIndex(numpadSelectionKeys_);
+    }
+
     if (idx != -1 && idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
       candidateList->candidate(idx)->select(context);
@@ -1182,10 +1187,22 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   } else {
     if (keysConfig == SelectionKeys::Key_asdfghjkl) {
       selectionKeys_ = fcitx::Key::keyListFromString("a s d f g h j k l");
+      numpadSelectionKeys_ = fcitx::KeyList();
     } else if (keysConfig == SelectionKeys::Key_asdfzxcvb) {
       selectionKeys_ = fcitx::Key::keyListFromString("a s d f z x c v b");
+      numpadSelectionKeys_ = fcitx::KeyList();
     } else {
       selectionKeys_ = fcitx::Key::keyListFromString("1 2 3 4 5 6 7 8 9");
+      numpadSelectionKeys_ = fcitx::KeyList();
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_1);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_2);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_3);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_4);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_5);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_6);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_7);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_8);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_9);
     }
   }
   candidateList->setSelectionKey(selectionKeys_);
