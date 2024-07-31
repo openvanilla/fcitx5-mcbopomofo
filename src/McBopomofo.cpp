@@ -592,7 +592,8 @@ void McBopomofoEngine::reset(const fcitx::InputMethodEntry& /*unused*/,
                              fcitx::InputContextEvent& event) {
   keyHandler_->reset();
 
-  if (dynamic_cast<fcitx::FocusOutEvent*>(&event) != nullptr) {
+  if (event.type() == fcitx::EventType::InputContextFocusOut ||
+      event.type() == fcitx::EventType::InputContextReset) {
     // If this is a FocusOutEvent, we let fcitx5 do its own clean up, and so we
     // just force the state machine to go back to the empty state. The
     // FocusOutEvent will cause the preedit buffer to be force-committed anyway.
