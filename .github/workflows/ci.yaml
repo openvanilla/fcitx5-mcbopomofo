@@ -3,10 +3,19 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  build_ubuntu:
+  build_debian_based:
     strategy:
+      fail-fast: false
       matrix:
-        os: ["ubuntu:22.04", "ubuntu:24.04"]
+        os:
+          [
+            "ubuntu:22.04",
+            "ubuntu:24.04",
+            "ubuntu:24.10",
+            "debian:12",
+            "linuxmintd/mint22-amd64",
+            "linuxmintd/mint21-amd64",
+          ]
     runs-on: ubuntu-latest
     container: ${{ matrix.os }}
     steps:
@@ -20,6 +29,10 @@ jobs:
           apt install -y cmake extra-cmake-modules gettext libfmt-dev
           apt install -y fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev fcitx5-modules-dev
           apt install -y libjson-c-dev
+      - name: Install Build Essential
+        if: matrix.os == 'ubuntu:24.10'
+        run: |
+          apt install -y build-essential
       - name: Build
         run: |
           mkdir -p build
@@ -36,10 +49,13 @@ jobs:
           cd build
           ctest --output-on-failure
 
-  build_ubuntu_20:
+  build_debian_based_legacy:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu:20.04", "linuxmintd/mint20-amd64"]
     runs-on: ubuntu-latest
-    container: ubuntu:20.04
-
+    container: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
