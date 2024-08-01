@@ -244,6 +244,13 @@ struct AssociatedPhrasesPlain : InputState {
   const std::vector<ChoosingCandidate::Candidate> candidates;
 };
 
+struct EnclosingNumber : InputState {
+  EnclosingNumber(std::string number = "") : number(std::move(number)) {}
+  EnclosingNumber(EnclosingNumber const& number) : number(number.number) {}
+  std::string composingBuffer() const { return "[標題數字] " + number; }
+  std::string number;
+};
+
 struct ChineseNumber : InputState {
   ChineseNumber(std::string number, ChineseNumberStyle style)
       : number(std::move(number)), style(style) {}
@@ -285,6 +292,9 @@ struct SelectingFeature : InputState {
       : converter(std::move(converter)) {
     features.emplace_back("日期與時間", [this]() {
       return std::make_unique<SelectingDateMacro>(this->converter);
+    });
+    features.emplace_back("標題數字", []() {
+      return std::make_unique<EnclosingNumber>();
     });
     features.emplace_back("中文數字", []() {
       return std::make_unique<ChineseNumber>("", ChineseNumberStyle::LOWER);

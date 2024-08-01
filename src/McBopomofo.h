@@ -215,6 +215,8 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
                           InputStates::Marking* current);
   void handleChineseNumberState(fcitx::InputContext* context, InputState*,
                                 InputStates::ChineseNumber* current);
+  void handleEnclosingNumberState(fcitx::InputContext* context, InputState*,
+                                  InputStates::EnclosingNumber* current);
 
   // Helpers.
 
@@ -230,6 +232,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;
   fcitx::KeyList selectionKeys_;
+  fcitx::KeyList numpadSelectionKeys_;
 
   std::unique_ptr<fcitx::SimpleAction> halfWidthPunctuationAction_;
   std::unique_ptr<fcitx::SimpleAction> associatedPhrasesAction_;

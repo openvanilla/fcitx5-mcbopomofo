@@ -52,19 +52,24 @@ struct Key {
   // set, since `ascii` alone is not sufficient to represent the key.
   const bool shiftPressed;
   const bool ctrlPressed;
+  const bool isFromNumberPad;
 
   explicit Key(char c = 0, KeyName n = KeyName::UNKNOWN, bool isShift = false,
-               bool isCtrl = false)
-      : ascii(c), name(n), shiftPressed(isShift), ctrlPressed(isCtrl) {}
+               bool isCtrl = false, bool isFromNumberPad = false)
+      : ascii(c),
+        name(n),
+        shiftPressed(isShift),
+        ctrlPressed(isCtrl),
+        isFromNumberPad(isFromNumberPad) {}
 
   static Key asciiKey(char c, bool shiftPressed = false,
-                      bool ctrlPressed = false) {
-    return Key(c, KeyName::ASCII, shiftPressed, ctrlPressed);
+                      bool ctrlPressed = false, bool isFromNumberPad = false) {
+    return Key(c, KeyName::ASCII, shiftPressed, ctrlPressed, isFromNumberPad);
   }
 
   static Key namedKey(KeyName name, bool shiftPressed = false,
-                      bool ctrlPressed = false) {
-    return Key(0, name, shiftPressed, ctrlPressed);
+                      bool ctrlPressed = false, bool isFromNumberPad = false) {
+    return Key(0, name, shiftPressed, ctrlPressed, isFromNumberPad);
   }
 
   // Regardless of the shift state.

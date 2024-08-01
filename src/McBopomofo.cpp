@@ -93,30 +93,84 @@ static Key MapFcitxKey(const fcitx::Key& key) {
       return Key::asciiKey(Key::BACKSPACE, shiftPressed, ctrlPressed);
     case FcitxKey_Return:
       return Key::asciiKey(Key::RETURN, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_Enter:
+      return Key::asciiKey(Key::RETURN, shiftPressed, ctrlPressed, true);
     case FcitxKey_Escape:
       return Key::asciiKey(Key::ESC, shiftPressed, ctrlPressed);
     case FcitxKey_space:
       // This path is taken when Shift is pressed--no longer a "simple" key.
       return Key::asciiKey(Key::SPACE, shiftPressed, ctrlPressed);
     case FcitxKey_Delete:
+      return Key::asciiKey(Key::DELETE, shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Delete:
       return Key::asciiKey(Key::DELETE, shiftPressed, ctrlPressed);
     case FcitxKey_Tab:
       return Key::asciiKey(Key::TAB, shiftPressed, ctrlPressed);
     case FcitxKey_Left:
       return Key::namedKey(Key::KeyName::LEFT, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_Left:
+      return Key::namedKey(Key::KeyName::LEFT, shiftPressed, ctrlPressed, true);
     case FcitxKey_Right:
       return Key::namedKey(Key::KeyName::RIGHT, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_Right:
+      return Key::namedKey(Key::KeyName::RIGHT, shiftPressed, ctrlPressed,
+                           true);
     case FcitxKey_Home:
       return Key::namedKey(Key::KeyName::HOME, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_Home:
+      return Key::namedKey(Key::KeyName::HOME, shiftPressed, ctrlPressed, true);
     case FcitxKey_End:
       return Key::namedKey(Key::KeyName::END, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_End:
+      return Key::namedKey(Key::KeyName::END, shiftPressed, ctrlPressed, true);
     case FcitxKey_Up:
+      return Key::namedKey(Key::KeyName::UP, shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Up:
       return Key::namedKey(Key::KeyName::UP, shiftPressed, ctrlPressed);
     case FcitxKey_Down:
       return Key::namedKey(Key::KeyName::DOWN, shiftPressed, ctrlPressed);
+    case FcitxKey_KP_Down:
+      return Key::namedKey(Key::KeyName::DOWN, shiftPressed, ctrlPressed, true);
     default:
       break;
   }
+
+  switch (key.sym()) {
+    case FcitxKey_KP_0:
+      return Key::asciiKey('0', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_1:
+      return Key::asciiKey('1', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_2:
+      return Key::asciiKey('2', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_3:
+      return Key::asciiKey('3', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_4:
+      return Key::asciiKey('4', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_5:
+      return Key::asciiKey('5', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_6:
+      return Key::asciiKey('6', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_7:
+      return Key::asciiKey('7', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_8:
+      return Key::asciiKey('8', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_9:
+      return Key::asciiKey('4', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Decimal:
+      return Key::asciiKey('.', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Add:
+      return Key::asciiKey('+', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Subtract:
+      return Key::asciiKey('-', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Multiply:
+      return Key::asciiKey('*', shiftPressed, ctrlPressed, true);
+    case FcitxKey_KP_Divide:
+      return Key::asciiKey('/', shiftPressed, ctrlPressed, true);
+
+    default:
+      break;
+  }
+
   return Key{};
 }
 
@@ -538,7 +592,8 @@ void McBopomofoEngine::reset(const fcitx::InputMethodEntry& /*unused*/,
                              fcitx::InputContextEvent& event) {
   keyHandler_->reset();
 
-  if (dynamic_cast<fcitx::FocusOutEvent*>(&event) != nullptr) {
+  if (event.type() == fcitx::EventType::InputContextFocusOut ||
+      event.type() == fcitx::EventType::InputContextReset) {
     // If this is a FocusOutEvent, we let fcitx5 do its own clean up, and so we
     // just force the state machine to go back to the empty state. The
     // FocusOutEvent will cause the preedit buffer to be force-committed anyway.
@@ -670,9 +725,14 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       }
       return true;
     }
-
   } else {
+    // handle num pad.
+
     int idx = key.keyListIndex(selectionKeys_);
+    if (idx == -1) {
+      idx = key.keyListIndex(numpadSelectionKeys_);
+    }
+
     if (idx != -1 && idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
       candidateList->candidate(idx)->select(context);
@@ -917,6 +977,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
     if ((key.check(fcitx::Key(FcitxKey_Right)) ||
          key.check(fcitx::Key(FcitxKey_Page_Down)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Right)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Page_Down)) ||
          key.checkKeyList(instance_->globalConfig().defaultNextPage())) &&
         candidateList->hasNext()) {
       candidateList->next();
@@ -926,6 +988,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
     if ((key.check(fcitx::Key(FcitxKey_Left)) ||
          key.check(fcitx::Key(FcitxKey_Page_Up)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Left)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Page_Up)) ||
          key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
         candidateList->hasPrev()) {
       candidateList->prev();
@@ -934,18 +998,22 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       return true;
     }
   } else {
-    if (key.check(fcitx::Key(FcitxKey_Right))) {
+    if (key.check(fcitx::Key(FcitxKey_Right)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Right))) {
       candidateList->toCursorMovable()->nextCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       return true;
     }
-    if (key.check(fcitx::Key(FcitxKey_Left))) {
+    if (key.check(fcitx::Key(FcitxKey_Left)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Left))) {
       candidateList->toCursorMovable()->prevCandidate();
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       return true;
     }
     if ((key.check(fcitx::Key(FcitxKey_Down)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Down)) ||
          key.check(fcitx::Key(FcitxKey_Page_Down)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Page_Down)) ||
          key.checkKeyList(instance_->globalConfig().defaultNextPage())) &&
         candidateList->hasNext()) {
       candidateList->next();
@@ -954,7 +1022,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       return true;
     }
     if ((key.check(fcitx::Key(FcitxKey_Up)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Up)) ||
          key.check(fcitx::Key(FcitxKey_Page_Up)) ||
+         key.check(fcitx::Key(FcitxKey_KP_Page_Up)) ||
          key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
         candidateList->hasPrev()) {
       candidateList->prev();
@@ -1053,6 +1123,9 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
   } else if (auto* chineseNumber =
                  dynamic_cast<InputStates::ChineseNumber*>(currentPtr)) {
     handleChineseNumberState(context, prevPtr, chineseNumber);
+  } else if (auto* enclosingNumber =
+                 dynamic_cast<InputStates::EnclosingNumber*>(currentPtr)) {
+    handleEnclosingNumberState(context, prevPtr, enclosingNumber);
   }
 }
 
@@ -1114,10 +1187,22 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   } else {
     if (keysConfig == SelectionKeys::Key_asdfghjkl) {
       selectionKeys_ = fcitx::Key::keyListFromString("a s d f g h j k l");
+      numpadSelectionKeys_ = fcitx::KeyList();
     } else if (keysConfig == SelectionKeys::Key_asdfzxcvb) {
       selectionKeys_ = fcitx::Key::keyListFromString("a s d f z x c v b");
+      numpadSelectionKeys_ = fcitx::KeyList();
     } else {
       selectionKeys_ = fcitx::Key::keyListFromString("1 2 3 4 5 6 7 8 9");
+      numpadSelectionKeys_ = fcitx::KeyList();
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_1);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_2);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_3);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_4);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_5);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_6);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_7);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_8);
+      numpadSelectionKeys_.emplace_back(FcitxKey_KP_9);
     }
   }
   candidateList->setSelectionKey(selectionKeys_);
@@ -1315,6 +1400,35 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
 void McBopomofoEngine::handleChineseNumberState(
     fcitx::InputContext* context, InputState* /*unused*/,
     InputStates::ChineseNumber* current) {
+  context->inputPanel().reset();
+  context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+
+  bool useClientPreedit =
+      context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
+#ifdef USE_LEGACY_FCITX5_API
+  fcitx::TextFormatFlags normalFormat{useClientPreedit
+                                          ? fcitx::TextFormatFlag::Underline
+                                          : fcitx::TextFormatFlag::None};
+#else
+  fcitx::TextFormatFlags normalFormat{useClientPreedit
+                                          ? fcitx::TextFormatFlag::Underline
+                                          : fcitx::TextFormatFlag::NoFlag};
+#endif
+  fcitx::Text preedit;
+  preedit.append(current->composingBuffer(), normalFormat);
+  preedit.setCursor(static_cast<int>(current->composingBuffer().length()));
+
+  if (useClientPreedit) {
+    context->inputPanel().setClientPreedit(preedit);
+  } else {
+    context->inputPanel().setPreedit(preedit);
+  }
+  context->updatePreedit();
+}
+
+void McBopomofoEngine::handleEnclosingNumberState(
+    fcitx::InputContext* context, InputState* /*unused*/,
+    InputStates::EnclosingNumber* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
 
