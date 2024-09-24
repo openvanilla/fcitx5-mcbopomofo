@@ -28,6 +28,7 @@
 #include <fcitx-config/enum.h>
 #include <fcitx-config/iniparser.h>
 #include <fcitx-utils/i18n.h>
+#include <fcitx-utils/standardpath.h>
 #include <fcitx/action.h>
 #include <fcitx/addonfactory.h>
 #include <fcitx/addonmanager.h>
@@ -171,9 +172,12 @@ FCITX_CONFIGURATION(
         this, "AssociatedPhrasesEnabled", _("Enable Associated Phrases"),
         false};
 
-// Helps to open the user data directory.
-#ifdef USE_LEGACY_FCITX5_API
-#else
+    // Helps to open the user data directory.
+    //
+    // We have menu items in FCITX's input method to let the users to edit the
+    // user phrases, however, the input menu is not visiable on some desktop
+    // environments, so we provide another button in the preferenace dialog to
+    // open the user data directory.
     fcitx::ExternalOption userDataDir{
         this, "UserDataDir", _("User Data"),
         fcitx::stringutils::concat(
@@ -184,9 +188,7 @@ FCITX_CONFIGURATION(
                         fcitx::StandardPath::Type::PkgData),
                     "mcbopomofo"),
                 "\"", "\"\"\""),
-            "\"")};
-#endif
-);
+            "\"")};);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
