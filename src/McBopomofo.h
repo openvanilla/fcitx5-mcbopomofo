@@ -28,6 +28,7 @@
 #include <fcitx-config/enum.h>
 #include <fcitx-config/iniparser.h>
 #include <fcitx-utils/i18n.h>
+#include <fcitx-utils/standardpath.h>
 #include <fcitx/action.h>
 #include <fcitx/addonfactory.h>
 #include <fcitx/addonmanager.h>
@@ -156,17 +157,38 @@ FCITX_CONFIGURATION(
                                                  _("Add Phrase Hook Path"),
                                                  kDefaultAddPhraseHookPath};
 
+    // If a script should be triggered when a new phrase is added.
     fcitx::Option<bool> addScriptHookEnabled{
         this, "AddScriptHookEnabled",
         _("Run the hook script after adding a phrase"), false};
 
+    // If half-width punctuation is enabled or not.
     fcitx::HiddenOption<bool> halfWidthPunctuationEnable{
         this, "HalfWidthPunctuationEnable", _("Enable Half Width Punctuation"),
         false};
 
+    // If associated phrase is enabled or not.
     fcitx::HiddenOption<bool> associatedPhrasesEnabled{
         this, "AssociatedPhrasesEnabled", _("Enable Associated Phrases"),
-        false};);
+        false};
+
+    // Helps to open the user data directory.
+    //
+    // We have menu items in FCITX's input method to let the users to edit the
+    // user phrases, however, the input menu is not visiable on some desktop
+    // environments, so we provide another button in the preferenace dialog to
+    // open the user data directory.
+    fcitx::ExternalOption userDataDir{
+        this, "UserDataDir", _("User Data"),
+        fcitx::stringutils::concat(
+            "xdg-open \"",
+            fcitx::stringutils::replaceAll(
+                fcitx::stringutils::joinPath(
+                    fcitx::StandardPath::global().userDirectory(
+                        fcitx::StandardPath::Type::PkgData),
+                    "mcbopomofo"),
+                "\"", "\"\"\""),
+            "\"")};);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
