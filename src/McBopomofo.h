@@ -171,7 +171,9 @@ FCITX_CONFIGURATION(
         this, "AssociatedPhrasesEnabled", _("Enable Associated Phrases"),
         false};
 
-    // Helps to open the user data directory.
+// Helps to open the user data directory.
+#ifdef USE_LEGACY_FCITX5_API
+#else
     fcitx::ExternalOption userDataDir{
         this, "UserDataDir", _("User Data"),
         fcitx::stringutils::concat(
@@ -182,7 +184,9 @@ FCITX_CONFIGURATION(
                         fcitx::StandardPath::Type::PkgData),
                     "mcbopomofo"),
                 "\"", "\"\"\""),
-            "\"")};);
+            "\"")};
+#endif
+);
 
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
