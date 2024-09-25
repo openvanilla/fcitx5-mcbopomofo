@@ -108,9 +108,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          dnf install gcc g++
-          dnf install 
-          dnf install fcitx5 fcitx5-configtool fcitx5-devel \
+          dnf -y install gcc g++
+          dnf -y install fcitx5 fcitx5-configtool fcitx5-devel \
                  cmake extra-cmake-modules gettext fmt-devel \
                  libicu-devel json-c-devel
       - name: Build
