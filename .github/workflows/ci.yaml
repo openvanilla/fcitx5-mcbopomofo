@@ -102,8 +102,12 @@ jobs:
           makepkg -s --noconfirm
 
   build_fedora:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["fedora:42", "fedora:41", "fedora:40", "fedora:39"]
     runs-on: ubuntu-latest
-    container: fedora:latest
+    container: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
