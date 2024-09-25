@@ -9,9 +9,9 @@ jobs:
       matrix:
         os:
           [
-            "ubuntu:22.04",
-            "ubuntu:24.04",
             "ubuntu:24.10",
+            "ubuntu:24.04",
+            "ubuntu:22.04",
             "debian:12",
             "linuxmintd/mint22-amd64",
             "linuxmintd/mint21-amd64",
@@ -100,3 +100,29 @@ jobs:
           cd /home/xatier/fcitx5-mcbopomofo/distro/archlinux/
           sudo pacman -Syy
           makepkg -s --noconfirm
+
+  build_fedora:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["fedora:42", "fedora:41", "fedora:40", "fedora:39"]
+    runs-on: ubuntu-latest
+    container: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          dnf -y install gcc g++
+          dnf -y install fcitx5 fcitx5-configtool fcitx5-devel \
+                 cmake extra-cmake-modules gettext fmt-devel \
+                 libicu-devel json-c-devel
+      - name: Build
+        run: |
+          mkdir -p build
+          cd build
+          cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug
+          make
+      - name: Test
+        run: |
+          cd build
+          ctest --output-on-failure
