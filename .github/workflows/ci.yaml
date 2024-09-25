@@ -100,3 +100,26 @@ jobs:
           cd /home/xatier/fcitx5-mcbopomofo/distro/archlinux/
           sudo pacman -Syy
           makepkg -s --noconfirm
+
+  build_fedora:
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          dnf install gcc g++
+          dnf install 
+          dnf install fcitx5 fcitx5-configtool fcitx5-devel \
+                 cmake extra-cmake-modules gettext fmt-devel \
+                 libicu-devel json-c-devel
+      - name: Build
+        run: |
+          mkdir -p build
+          cd build
+          cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug
+          make
+      - name: Test
+        run: |
+          cd build
+          ctest --output-on-failure
