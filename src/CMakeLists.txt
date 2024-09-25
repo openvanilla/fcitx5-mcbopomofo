@@ -21,12 +21,20 @@ add_subdirectory(Engine)
 add_subdirectory(ChineseNumbers)
 
 set(MCBOPOMOFO_LIB_SOURCES
- KeyHandler.cpp
- LanguageModelLoader.cpp
- InputState.cpp
- InputMacro.cpp
- Log.cpp
- DictionaryService.cpp
+    DictionaryService.cpp
+    DictionaryService.h
+    InputMacro.cpp
+    InputMacro.h
+    InputState.cpp
+    InputState.h
+    KeyHandler.cpp
+    KeyHandler.h
+    LanguageModelLoader.cpp
+    LanguageModelLoader.h
+    Log.cpp
+    Log.h
+    TimestampedPath.h
+    TimestampedPath.cpp
 )
 
 # https://stackoverflow.com/questions/26549137/shared-library-on-linux-and-fpic-error
@@ -105,7 +113,7 @@ if (ENABLE_TEST)
         endif()
 
         # Test target declarations.
-        add_executable(McBopomofoTest KeyHandlerTest.cpp)
+        add_executable(McBopomofoTest KeyHandlerTest.cpp TimestampedPathTest.cpp)
         target_compile_options(McBopomofoTest PRIVATE -Wno-unknown-pragmas)
         target_link_libraries(McBopomofoTest PRIVATE Fcitx5::Core GTest::gtest_main GTest::gmock_main McBopomofoLib fmt::fmt ${JSONC_LIBRARIES})
         target_include_directories(McBopomofoTest PRIVATE Fcitx5::Core fmt::fmt)
