@@ -707,9 +707,16 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     fcitx::CommonCandidateList* candidateList,
     const McBopomofo::KeyHandler::StateCallback& stateCallback,
     const McBopomofo::KeyHandler::ErrorCallback& errorCallback) {
+  InputStates::AssociatedPhrases* associatedPhrases =
+      dynamic_cast<InputStates::AssociatedPhrases*>(state_.get());
+  InputStates::AssociatedPhrasesPlain* associatedPhrasesPlain =
+      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get());
+  bool shouldUseShiftKey =
+      associatedPhrasesPlain != nullptr ||
+      (associatedPhrases != nullptr && associatedPhrases->useShiftKey);
+
   // Plain Bopomofo and Associated Phrases.
-  if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-      nullptr) {
+  if (shouldUseShiftKey) {
     int code = origKey.code();
     // Shift-[1-9] keys can only be checked via raw key codes. The Key objects
     // in the selectionKeys_ do not carry such information.
@@ -809,8 +816,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   }
 
   if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
-      config_.associatedPhrasesEnabled.value() &&
-      origKey.code() == kFcitxRawKeycode_Enter &&
+      // config_.associatedPhrasesEnabled.value() &&
+      !shouldUseShiftKey && origKey.code() == kFcitxRawKeycode_Enter &&
       (origKey.states() & fcitx::KeyState::Shift)) {
     int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
@@ -842,10 +849,10 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  bool isAssociatedPhrasesPlainState =
-      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-      nullptr;
-  if (key.check(FcitxKey_Return) && !isAssociatedPhrasesPlainState) {
+  if (key.check(FcitxKey_Return)) {
+    if (!shouldUseShiftKey) {
+      return false;
+    }
     int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
@@ -901,9 +908,12 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       return true;
     }
 
-    auto* associatedPhrases =
-        dynamic_cast<InputStates::AssociatedPhrases*>(state_.get());
+    // auto* associatedPhrases =
+    //     dynamic_cast<InputStates::AssociatedPhrases*>(state_.get());
     if (associatedPhrases != nullptr) {
+      if (associatedPhrases->useShiftKey) {
+        return false;
+      }
       auto* previous = associatedPhrases->previousState.get();
       auto* choosing = dynamic_cast<InputStates::ChoosingCandidate*>(previous);
       auto* inputting = dynamic_cast<InputStates::Inputting*>(previous);

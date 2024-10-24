@@ -194,7 +194,11 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       }
     }
 
-    if (inputMode_ == McBopomofo::InputMode::PlainBopomofo) {
+    if (inputMode_ == McBopomofo::InputMode::McBopomofo &&
+        associatedPhrasesEnabled_) {
+      handleAssociatedPhrases(dynamic_cast<InputStates::Inputting*>(state),
+                              stateCallback, errorCallback, true);
+    } else if (inputMode_ == McBopomofo::InputMode::PlainBopomofo) {
       auto inputting = buildInputtingState();
       auto choosingCandidate =
           buildChoosingCandidateState(inputting.get(), grid_.cursor());
@@ -321,113 +325,9 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     }
 
     // Shift + Enter
-    if (key.shiftPressed && inputMode_ == InputMode::McBopomofo &&
-        associatedPhrasesEnabled_) {
-      size_t cursor = grid_.cursor();
-
-      // We need to find the node *before* the cursor, so cursor must be >= 1.
-      if (cursor < 1) {
-        errorCallback();
-        return true;
-      }
-      auto* inputting = dynamic_cast<InputStates::Inputting*>(state);
-      if (inputting != nullptr) {
-        // Find the selected node *before* the cursor.
-        size_t prefixCursorIndex = cursor - 1;
-
-        size_t endCursorIndex = 0;
-        auto nodePtrIt =
-            latestWalk_.findNodeAt(prefixCursorIndex, &endCursorIndex);
-        if (nodePtrIt == latestWalk_.nodes.cend() || endCursorIndex == 0) {
-          // Shouldn't happen.
-          errorCallback();
-          return true;
-        }
-
-        // Validate that the value's codepoint count is the same as the number
-        // of readings. This is a strict requirement for the associated phrases.
-        std::vector<std::string> codepoints = Split((*nodePtrIt)->value());
-        std::vector<std::string> readings =
-            AssociatedPhrasesV2::SplitReadings((*nodePtrIt)->reading());
-        if (codepoints.size() != readings.size()) {
-          errorCallback();
-          return true;
-        }
-
-        if (endCursorIndex < readings.size()) {
-          // Shouldn't happen.
-          errorCallback();
-          return true;
-        }
-
-        // Try to find the longest associated phrase prefix. Suppose we have
-        // a walk A-B-CD-EFGH and the cursor is between EFG and H. Our job is
-        // to try the prefixes EFG, EF, and G to see which one yields a list
-        // of possible associated phrases.
-        //
-        //             grid_->cursor()
-        //                 |
-        //                 v
-        //     A-B-C-D-|EFG|H|
-        //             ^     ^
-        //             |     |
-        //             |    endCursorIndex
-        //           startCursorIndex
-        //
-        // In this case, the max prefix length is 3. This works because our
-        // association phrases mechanism require that the node's codepoint
-        // length and reading length (i.e. the spanning length) must be equal.
-        //
-        // And say if the prefix "FG" has associated phrases FGPQ, FGRST, and
-        // the user later chooses FGRST, we will first override the FG node
-        // again, essentially breaking that from E and H (the vertical bar
-        // represents the cursor):
-        //
-        //     A-B-C-D-E'-FG|-H'
-        //
-        // And then we add the readings for the RST to the grid, and override
-        // the grid at the cursor position with the value FGRST (and its
-        // corresponding reading) again, so that the process is complete:
-        //
-        //     A-B-C-D-E'-FGRST|-H'
-        //
-        // Notice that after breaking FG from EFGH, the values E and H may
-        // change due to a new walk, hence the notation E' and H'. We address
-        // issue in pinNodeWithAssociatedPhrase() by making sure that the nodes
-        // will be overridden with the values E and H.
-        size_t startCursorIndex = endCursorIndex - readings.size();
-        size_t prefixLength = cursor - startCursorIndex;
-        size_t maxPrefixLength = prefixLength;
-        for (; prefixLength > 0; --prefixLength) {
-          size_t startIndex = maxPrefixLength - prefixLength;
-          auto cpBegin = codepoints.cbegin();
-          auto cpEnd = codepoints.cbegin();
-          std::advance(cpBegin, startIndex);
-          std::advance(cpEnd, maxPrefixLength);
-          auto cpSlice = std::vector<std::string>(cpBegin, cpEnd);
-
-          auto rdBegin = readings.cbegin();
-          auto rdEnd = readings.cbegin();
-          std::advance(rdBegin, startIndex);
-          std::advance(rdEnd, maxPrefixLength);
-          auto rdSlice = std::vector<std::string>(rdBegin, rdEnd);
-
-          std::stringstream value;
-          for (const std::string& cp : cpSlice) {
-            value << cp;
-          }
-
-          auto associatedPhrasesState = buildAssociatedPhrasesState(
-              buildInputtingState(), prefixCursorIndex,
-              AssociatedPhrasesV2::CombineReadings(rdSlice), value.str(),
-              /*selectedCandidateIndex=*/0);
-          if (associatedPhrasesState != nullptr) {
-            stateCallback(std::move(associatedPhrasesState));
-            return true;
-          }
-        }
-        errorCallback();
-      }
+    if (key.shiftPressed && inputMode_ == InputMode::McBopomofo) {
+      handleAssociatedPhrases(dynamic_cast<InputStates::Inputting*>(state),
+                              stateCallback, errorCallback, false);
       return true;
     }
 
@@ -754,6 +654,122 @@ void KeyHandler::setOnAddNewPhrase(
 #pragma endregion Settings
 
 #pragma region Key_Handling
+
+bool KeyHandler::handleAssociatedPhrases(InputStates::Inputting* state,
+                                         StateCallback stateCallback,
+                                         ErrorCallback errorCallback,
+                                         bool useShiftKey) {
+  size_t cursor = grid_.cursor();
+
+  // We need to find the node *before* the cursor, so cursor must be >= 1.
+  if (cursor < 1) {
+    errorCallback();
+    return true;
+  }
+  auto* inputting = dynamic_cast<InputStates::Inputting*>(state);
+  if (inputting != nullptr) {
+    // Find the selected node *before* the cursor.
+    size_t prefixCursorIndex = cursor - 1;
+
+    size_t endCursorIndex = 0;
+    auto nodePtrIt = latestWalk_.findNodeAt(prefixCursorIndex, &endCursorIndex);
+    if (nodePtrIt == latestWalk_.nodes.cend() || endCursorIndex == 0) {
+      // Shouldn't happen.
+      errorCallback();
+      return true;
+    }
+
+    // Validate that the value's codepoint count is the same as the number
+    // of readings. This is a strict requirement for the associated phrases.
+    std::vector<std::string> codepoints = Split((*nodePtrIt)->value());
+    std::vector<std::string> readings =
+        AssociatedPhrasesV2::SplitReadings((*nodePtrIt)->reading());
+    if (codepoints.size() != readings.size()) {
+      errorCallback();
+      return true;
+    }
+
+    if (endCursorIndex < readings.size()) {
+      // Shouldn't happen.
+      errorCallback();
+      return true;
+    }
+
+    // Try to find the longest associated phrase prefix. Suppose we have
+    // a walk A-B-CD-EFGH and the cursor is between EFG and H. Our job is
+    // to try the prefixes EFG, EF, and G to see which one yields a list
+    // of possible associated phrases.
+    //
+    //             grid_->cursor()
+    //                 |
+    //                 v
+    //     A-B-C-D-|EFG|H|
+    //             ^     ^
+    //             |     |
+    //             |    endCursorIndex
+    //           startCursorIndex
+    //
+    // In this case, the max prefix length is 3. This works because our
+    // association phrases mechanism require that the node's codepoint
+    // length and reading length (i.e. the spanning length) must be equal.
+    //
+    // And say if the prefix "FG" has associated phrases FGPQ, FGRST, and
+    // the user later chooses FGRST, we will first override the FG node
+    // again, essentially breaking that from E and H (the vertical bar
+    // represents the cursor):
+    //
+    //     A-B-C-D-E'-FG|-H'
+    //
+    // And then we add the readings for the RST to the grid, and override
+    // the grid at the cursor position with the value FGRST (and its
+    // corresponding reading) again, so that the process is complete:
+    //
+    //     A-B-C-D-E'-FGRST|-H'
+    //
+    // Notice that after breaking FG from EFGH, the values E and H may
+    // change due to a new walk, hence the notation E' and H'. We address
+    // issue in pinNodeWithAssociatedPhrase() by making sure that the nodes
+    // will be overridden with the values E and H.
+    size_t startCursorIndex = endCursorIndex - readings.size();
+    size_t prefixLength = cursor - startCursorIndex;
+    size_t maxPrefixLength = prefixLength;
+    for (; prefixLength > 0; --prefixLength) {
+      size_t startIndex = maxPrefixLength - prefixLength;
+      auto cpBegin = codepoints.cbegin();
+      auto cpEnd = codepoints.cbegin();
+      std::advance(cpBegin, startIndex);
+      std::advance(cpEnd, maxPrefixLength);
+      auto cpSlice = std::vector<std::string>(cpBegin, cpEnd);
+
+      auto rdBegin = readings.cbegin();
+      auto rdEnd = readings.cbegin();
+      std::advance(rdBegin, startIndex);
+      std::advance(rdEnd, maxPrefixLength);
+      auto rdSlice = std::vector<std::string>(rdBegin, rdEnd);
+
+      std::stringstream value;
+      for (const std::string& cp : cpSlice) {
+        value << cp;
+      }
+
+      auto associatedPhrasesState = buildAssociatedPhrasesState(
+          buildInputtingState(), prefixCursorIndex,
+          AssociatedPhrasesV2::CombineReadings(rdSlice), value.str(),
+          /*selectedCandidateIndex=*/0, useShiftKey);
+      if (associatedPhrasesState != nullptr) {
+        stateCallback(std::move(associatedPhrasesState));
+        return true;
+      }
+    }
+    errorCallback();
+  }
+
+  if (!useShiftKey) {
+    errorCallback();
+  }
+
+  return true;
+}
 
 bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
                               const StateCallback& stateCallback,
@@ -1322,7 +1338,7 @@ std::unique_ptr<InputStates::AssociatedPhrases>
 KeyHandler::buildAssociatedPhrasesState(
     std::unique_ptr<InputStates::NotEmpty> previousState,
     size_t prefixCursorIndex, std::string prefixCombinedReading,
-    std::string prefixValue, size_t selectedCandidateIndex) {
+    std::string prefixValue, size_t selectedCandidateIndex, bool useShiftKey) {
   McBopomofoLM* lm = dynamic_cast<McBopomofoLM*>(lm_.get());
   if (lm == nullptr) {
     return nullptr;
@@ -1342,7 +1358,7 @@ KeyHandler::buildAssociatedPhrasesState(
 
     return std::make_unique<InputStates::AssociatedPhrases>(
         std::move(previousState), prefixCursorIndex, prefixCombinedReading,
-        prefixValue, selectedCandidateIndex, cs);
+        prefixValue, selectedCandidateIndex, cs, useShiftKey);
   }
   return nullptr;
 }
@@ -1355,7 +1371,7 @@ KeyHandler::buildAssociatedPhrasesStateFromCandidateChoosingState(
   return buildAssociatedPhrasesState(
       std::move(previousState),
       computeActualCandidateCursorIndex(candidateCursorIndex),
-      prefixCombinedReading, prefixValue, selectedCandidateIndex);
+      prefixCombinedReading, prefixValue, selectedCandidateIndex, false);
 }
 
 std::unique_ptr<InputStates::AssociatedPhrasesPlain>

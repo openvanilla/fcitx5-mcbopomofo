@@ -70,6 +70,10 @@ class KeyHandler {
   bool handle(Key key, McBopomofo::InputState* state,
               StateCallback stateCallback, ErrorCallback errorCallback);
 
+  bool handleAssociatedPhrases(InputStates::Inputting* state,
+                               StateCallback stateCallback,
+                               ErrorCallback errorCallback, bool useShiftKey);
+
   // Candidate selected. Can assume the context is in a candidate state.
   void candidateSelected(
       const InputStates::ChoosingCandidate::Candidate& candidate,
@@ -167,7 +171,8 @@ class KeyHandler {
   std::unique_ptr<InputStates::AssociatedPhrases> buildAssociatedPhrasesState(
       std::unique_ptr<InputStates::NotEmpty> previousState,
       size_t prefixCursorIndex, std::string prefixCombinedReading,
-      std::string prefixValue, size_t selectedCandidateIndex);
+      std::string prefixValue, size_t selectedCandidateIndex,
+      bool useShiftKey);
 
   // Build an Associated Phrase state. The candidateCursorIndex is where the
   // user-visible cursor was *before* the ChoosingCandidateState was entered,
@@ -195,9 +200,9 @@ class KeyHandler {
                            StateCallback stateCallback,
                            ErrorCallback errorCallback);
   bool handleEnclosingNumber(Key key,
-                           McBopomofo::InputStates::EnclosingNumber* state,
-                           StateCallback stateCallback,
-                           ErrorCallback errorCallback);
+                             McBopomofo::InputStates::EnclosingNumber* state,
+                             StateCallback stateCallback,
+                             ErrorCallback errorCallback);
 
   bool handleTabKey(Key key, McBopomofo::InputState* state,
                     const StateCallback& stateCallback,
