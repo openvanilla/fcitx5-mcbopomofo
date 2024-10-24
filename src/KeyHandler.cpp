@@ -196,8 +196,10 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     if (inputMode_ == McBopomofo::InputMode::McBopomofo &&
         associatedPhrasesEnabled_) {
-      handleAssociatedPhrases(dynamic_cast<InputStates::Inputting*>(state),
-                              stateCallback, errorCallback, true);
+      auto inputting = buildInputtingState();
+      auto copy = std::make_unique<InputStates::Inputting>(*inputting);
+      stateCallback(std::move(inputting));
+      handleAssociatedPhrases(copy.get(), stateCallback, errorCallback, true);
     } else if (inputMode_ == McBopomofo::InputMode::PlainBopomofo) {
       auto inputting = buildInputtingState();
       auto choosingCandidate =

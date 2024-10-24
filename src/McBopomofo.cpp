@@ -1044,8 +1044,13 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-      nullptr) {
+  if (associatedPhrases != nullptr) {
+    if (!origKey.isModifier()) {
+      return false;
+    }
+  }
+
+  if (associatedPhrasesPlain != nullptr) {
     if (!origKey.isModifier()) {
       std::unique_ptr<InputStates::Empty> empty =
           std::make_unique<InputStates::Empty>();
@@ -1186,14 +1191,26 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   auto keysConfig = config_.selectionKeys.value();
   selectionKeys_.clear();
 
-  if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-      nullptr) {
+  InputStates::AssociatedPhrases* associatedPhrases =
+      dynamic_cast<InputStates::AssociatedPhrases*>(state_.get());
+  InputStates::AssociatedPhrasesPlain* associatedPhrasesPlain =
+      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get());
+  bool useShiftKey =
+      associatedPhrasesPlain != nullptr ||
+      (associatedPhrases != nullptr && associatedPhrases->useShiftKey);
+
+  if (useShiftKey) {
     // This is for label appearance only. Shift+[1-9] keys can only be checked
     // via a raw key's key code, but Keys constructed with "Shift-" names does
     // not carry proper key codes.
     selectionKeys_ = fcitx::Key::keyListFromString(
         "Shift+1 Shift+2 Shift+3 Shift+4 Shift+5 Shift+6 Shift+7 Shift+8 "
         "Shift+9");
+    std::vector<std::string> labels = {
+        "⇧1. ", "⇧2. ", "⇧3. ", "⇧4. ", "⇧5. ", "⇧6. ", "⇧7. ", "⇧8. ", "⇧9. ",
+    };
+    candidateList->setLabels(labels);
+    candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
   } else {
     if (keysConfig == SelectionKeys::Key_asdfghjkl) {
       selectionKeys_ = fcitx::Key::keyListFromString("a s d f g h j k l");
@@ -1214,9 +1231,11 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       numpadSelectionKeys_.emplace_back(FcitxKey_KP_8);
       numpadSelectionKeys_.emplace_back(FcitxKey_KP_9);
     }
+    candidateList->setSelectionKey(selectionKeys_);
+    candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
   }
-  candidateList->setSelectionKey(selectionKeys_);
-  candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
+  // candidateList->setSelectionKey(selectionKeys_);
+  // candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
 
   fcitx::CandidateLayoutHint layoutHint = getCandidateLayoutHint();
   candidateList->setLayoutHint(layoutHint);
@@ -1230,10 +1249,6 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   auto* selectingDictionary =
       dynamic_cast<InputStates::SelectingDictionary*>(current);
   auto* showingCharInfo = dynamic_cast<InputStates::ShowingCharInfo*>(current);
-  auto* associatedPhrases =
-      dynamic_cast<InputStates::AssociatedPhrases*>(current);
-  auto* associatedPhrasesPlain =
-      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(current);
   auto* selectingFeature =
       dynamic_cast<InputStates::SelectingFeature*>(current);
   auto* selectingDateMacro =
