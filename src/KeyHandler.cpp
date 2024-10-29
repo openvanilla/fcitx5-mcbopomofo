@@ -532,7 +532,15 @@ void KeyHandler::candidateSelected(
   }
 
   pinNode(originalCursor, candidate);
-  stateCallback(buildInputtingState());
+  auto inputting = buildInputtingState();
+  auto copy = std::make_unique<InputStates::Inputting>(*inputting);
+  stateCallback(std::move(inputting));
+
+  if (associatedPhrasesEnabled_) {
+    handleAssociatedPhrases(
+        dynamic_cast<InputStates::Inputting*>(copy.get()), stateCallback,
+        []() {}, true);
+  }
 }
 
 void KeyHandler::candidateAssociatedPhraseSelected(

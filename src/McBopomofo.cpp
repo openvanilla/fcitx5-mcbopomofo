@@ -816,7 +816,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   }
 
   if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
-      // config_.associatedPhrasesEnabled.value() &&
+
       !shouldUseShiftKey && origKey.code() == kFcitxRawKeycode_Enter &&
       (origKey.states() & fcitx::KeyState::Shift)) {
     int idx = candidateList->cursorIndex();
@@ -850,7 +850,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   }
 
   if (key.check(FcitxKey_Return)) {
-    if (!shouldUseShiftKey) {
+    if (shouldUseShiftKey) {
       return false;
     }
     int idx = candidateList->cursorIndex();
@@ -961,6 +961,12 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 
   // Space goes to next page or wraps to the first if at the end.
   if (key.check(FcitxKey_space)) {
+    if (associatedPhrases != nullptr) {
+      if (associatedPhrases->useShiftKey) {
+        return false;
+      }
+    }
+
     if (candidateList->hasNext()) {
       candidateList->next();
       candidateList->toCursorMovable()->nextCandidate();
