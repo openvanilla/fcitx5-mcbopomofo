@@ -816,7 +816,6 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   }
 
   if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
-
       !shouldUseShiftKey && origKey.code() == kFcitxRawKeycode_Enter &&
       (origKey.states() & fcitx::KeyState::Shift)) {
     int idx = candidateList->cursorIndex();
@@ -849,10 +848,18 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  if (key.check(FcitxKey_Return)) {
-    if (shouldUseShiftKey) {
-      return false;
-    }
+  bool returnPressed = false;
+  if (shouldUseShiftKey) {
+    // If it is the associated phrases mode, we need to check if the shift key
+    // is pressed.
+    returnPressed =
+        key.check(FcitxKey_Return, fcitx::KeyStates(fcitx::KeyState::Shift));
+  } else {
+    // Otherwise, we just check if the return key is pressed.
+    returnPressed = key.check(FcitxKey_Return);
+  }
+
+  if (returnPressed) {
     int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
@@ -1240,8 +1247,6 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
     candidateList->setSelectionKey(selectionKeys_);
     candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
   }
-  // candidateList->setSelectionKey(selectionKeys_);
-  // candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
 
   fcitx::CandidateLayoutHint layoutHint = getCandidateLayoutHint();
   candidateList->setLayoutHint(layoutHint);

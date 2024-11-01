@@ -991,7 +991,11 @@ bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
     }
   } else {
     auto inputting = buildInputtingState();
+    auto copy = std::make_unique<InputStates::Inputting>(*inputting);
     stateCallback(std::move(inputting));
+    if (associatedPhrasesEnabled_) {
+      handleAssociatedPhrases(copy.get(), stateCallback, errorCallback, true);
+    }
   }
 
   return true;
@@ -1584,6 +1588,9 @@ void KeyHandler::pinNodeWithAssociatedPhrase(
   grid_.setCursor(accumulatedCursor);
 
   // Compute how many more reading do we have to insert.
+  std::vector<std::string> associatedPhraseValues =
+      McBopomofo::Split(associatedPhraseValue);
+
   size_t nodeSpanningLength = (*nodeIter)->spanningLength();
   std::vector<std::string> splitReadings =
       AssociatedPhrasesV2::SplitReadings(associatedPhraseReading);
@@ -1596,6 +1603,12 @@ void KeyHandler::pinNodeWithAssociatedPhrase(
   for (size_t i = nodeSpanningLength; i < splitReadingsSize; i++) {
     grid_.insertReading(splitReadings[i]);
     ++accumulatedCursor;
+    // For each node, we assign the value of the corresponding phrase.
+    // If the phrase is not found in the phrase database, we perform a fallback
+    // instead.
+    if (i < associatedPhraseValues.size()) {
+      grid_.overrideCandidate(accumulatedCursor, associatedPhraseValues[i]);
+    }
     grid_.setCursor(accumulatedCursor);
   }
 
