@@ -1239,10 +1239,13 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
     selectionKeys_ = fcitx::Key::keyListFromString(
         "Shift+1 Shift+2 Shift+3 Shift+4 Shift+5 Shift+6 Shift+7 Shift+8 "
         "Shift+9");
+#ifdef USE_LEGACY_FCITX5_API
+#else
     std::vector<std::string> labels = {
         "⇧1. ", "⇧2. ", "⇧3. ", "⇧4. ", "⇧5. ", "⇧6. ", "⇧7. ", "⇧8. ", "⇧9. ",
     };
     candidateList->setLabels(labels);
+#endif
     candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
   } else {
     if (keysConfig == SelectionKeys::Key_asdfghjkl) {
