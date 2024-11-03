@@ -707,9 +707,16 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     fcitx::CommonCandidateList* candidateList,
     const McBopomofo::KeyHandler::StateCallback& stateCallback,
     const McBopomofo::KeyHandler::ErrorCallback& errorCallback) {
+  InputStates::AssociatedPhrases* associatedPhrases =
+      dynamic_cast<InputStates::AssociatedPhrases*>(state_.get());
+  InputStates::AssociatedPhrasesPlain* associatedPhrasesPlain =
+      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get());
+  bool shouldUseShiftKey =
+      associatedPhrasesPlain != nullptr ||
+      (associatedPhrases != nullptr && associatedPhrases->useShiftKey);
+
   // Plain Bopomofo and Associated Phrases.
-  if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-      nullptr) {
+  if (shouldUseShiftKey) {
     int code = origKey.code();
     // Shift-[1-9] keys can only be checked via raw key codes. The Key objects
     // in the selectionKeys_ do not carry such information.
@@ -809,8 +816,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   }
 
   if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
-      config_.associatedPhrasesEnabled.value() &&
-      origKey.code() == kFcitxRawKeycode_Enter &&
+      !shouldUseShiftKey && origKey.code() == kFcitxRawKeycode_Enter &&
       (origKey.states() & fcitx::KeyState::Shift)) {
     int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
@@ -842,10 +848,18 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  bool isAssociatedPhrasesPlainState =
-      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-      nullptr;
-  if (key.check(FcitxKey_Return) && !isAssociatedPhrasesPlainState) {
+  bool returnPressed = false;
+  if (shouldUseShiftKey) {
+    // If it is the associated phrases mode, we need to check if the shift key
+    // is pressed.
+    returnPressed =
+        key.check(FcitxKey_Return, fcitx::KeyStates(fcitx::KeyState::Shift));
+  } else {
+    // Otherwise, we just check if the return key is pressed.
+    returnPressed = key.check(FcitxKey_Return);
+  }
+
+  if (returnPressed) {
     int idx = candidateList->cursorIndex();
     if (idx < candidateList->size()) {
 #ifdef USE_LEGACY_FCITX5_API
@@ -901,9 +915,10 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       return true;
     }
 
-    auto* associatedPhrases =
-        dynamic_cast<InputStates::AssociatedPhrases*>(state_.get());
     if (associatedPhrases != nullptr) {
+      if (associatedPhrases->useShiftKey) {
+        return false;
+      }
       auto* previous = associatedPhrases->previousState.get();
       auto* choosing = dynamic_cast<InputStates::ChoosingCandidate*>(previous);
       auto* inputting = dynamic_cast<InputStates::Inputting*>(previous);
@@ -951,6 +966,12 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 
   // Space goes to next page or wraps to the first if at the end.
   if (key.check(FcitxKey_space)) {
+    if (associatedPhrases != nullptr) {
+      if (associatedPhrases->useShiftKey) {
+        return false;
+      }
+    }
+
     if (candidateList->hasNext()) {
       candidateList->next();
       candidateList->toCursorMovable()->nextCandidate();
@@ -975,25 +996,36 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       return true;
     }
-    if ((key.check(fcitx::Key(FcitxKey_Right)) ||
-         key.check(fcitx::Key(FcitxKey_Page_Down)) ||
-         key.check(fcitx::Key(FcitxKey_KP_Right)) ||
-         key.check(fcitx::Key(FcitxKey_KP_Page_Down)) ||
-         key.checkKeyList(instance_->globalConfig().defaultNextPage())) &&
-        candidateList->hasNext()) {
-      candidateList->next();
-      candidateList->toCursorMovable()->nextCandidate();
+    if (key.check(fcitx::Key(FcitxKey_Right)) ||
+        key.check(fcitx::Key(FcitxKey_Page_Down)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Right)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Page_Down)) ||
+        key.checkKeyList(instance_->globalConfig().defaultNextPage())) {
+      if (candidateList->hasNext()) {
+        candidateList->next();
+        candidateList->toCursorMovable()->nextCandidate();
+      } else if (candidateList->currentPage() > 0) {
+        candidateList->setPage(0);
+        candidateList->toCursorMovable()->nextCandidate();
+      }
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       return true;
     }
-    if ((key.check(fcitx::Key(FcitxKey_Left)) ||
-         key.check(fcitx::Key(FcitxKey_Page_Up)) ||
-         key.check(fcitx::Key(FcitxKey_KP_Left)) ||
-         key.check(fcitx::Key(FcitxKey_KP_Page_Up)) ||
-         key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
-        candidateList->hasPrev()) {
-      candidateList->prev();
-      candidateList->toCursorMovable()->nextCandidate();
+    if (key.check(fcitx::Key(FcitxKey_Left)) ||
+        key.check(fcitx::Key(FcitxKey_Page_Up)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Left)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Page_Up)) ||
+        key.checkKeyList(instance_->globalConfig().defaultPrevPage())) {
+      if (candidateList->hasPrev()) {
+        candidateList->prev();
+        candidateList->toCursorMovable()->nextCandidate();
+      } else {
+        int totalPages = candidateList->totalPages();
+        if (totalPages > 0) {
+          candidateList->setPage(totalPages - 1);
+        }
+        candidateList->toCursorMovable()->nextCandidate();
+      }
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       return true;
     }
@@ -1010,32 +1042,48 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       return true;
     }
-    if ((key.check(fcitx::Key(FcitxKey_Down)) ||
-         key.check(fcitx::Key(FcitxKey_KP_Down)) ||
-         key.check(fcitx::Key(FcitxKey_Page_Down)) ||
-         key.check(fcitx::Key(FcitxKey_KP_Page_Down)) ||
-         key.checkKeyList(instance_->globalConfig().defaultNextPage())) &&
-        candidateList->hasNext()) {
-      candidateList->next();
-      candidateList->toCursorMovable()->nextCandidate();
+    if (key.check(fcitx::Key(FcitxKey_Down)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Down)) ||
+        key.check(fcitx::Key(FcitxKey_Page_Down)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Page_Down)) ||
+        key.checkKeyList(instance_->globalConfig().defaultNextPage())) {
+      if (candidateList->hasNext()) {
+        candidateList->next();
+        candidateList->toCursorMovable()->nextCandidate();
+      } else if (candidateList->currentPage() > 0) {
+        candidateList->setPage(0);
+        candidateList->toCursorMovable()->nextCandidate();
+      }
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       return true;
     }
-    if ((key.check(fcitx::Key(FcitxKey_Up)) ||
-         key.check(fcitx::Key(FcitxKey_KP_Up)) ||
-         key.check(fcitx::Key(FcitxKey_Page_Up)) ||
-         key.check(fcitx::Key(FcitxKey_KP_Page_Up)) ||
-         key.checkKeyList(instance_->globalConfig().defaultPrevPage())) &&
-        candidateList->hasPrev()) {
-      candidateList->prev();
-      candidateList->toCursorMovable()->nextCandidate();
+    if (key.check(fcitx::Key(FcitxKey_Up)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Up)) ||
+        key.check(fcitx::Key(FcitxKey_Page_Up)) ||
+        key.check(fcitx::Key(FcitxKey_KP_Page_Up)) ||
+        key.checkKeyList(instance_->globalConfig().defaultPrevPage())) {
+      if (candidateList->hasPrev()) {
+        candidateList->prev();
+        candidateList->toCursorMovable()->nextCandidate();
+      } else {
+        int totalPages = candidateList->totalPages();
+        if (totalPages > 0) {
+          candidateList->setPage(totalPages - 1);
+        }
+        candidateList->toCursorMovable()->nextCandidate();
+      }
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       return true;
     }
   }
 
-  if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-      nullptr) {
+  if (associatedPhrases != nullptr) {
+    if (!origKey.isModifier()) {
+      return false;
+    }
+  }
+
+  if (associatedPhrasesPlain != nullptr) {
     if (!origKey.isModifier()) {
       std::unique_ptr<InputStates::Empty> empty =
           std::make_unique<InputStates::Empty>();
@@ -1176,14 +1224,29 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   auto keysConfig = config_.selectionKeys.value();
   selectionKeys_.clear();
 
-  if (dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
-      nullptr) {
+  InputStates::AssociatedPhrases* associatedPhrases =
+      dynamic_cast<InputStates::AssociatedPhrases*>(state_.get());
+  InputStates::AssociatedPhrasesPlain* associatedPhrasesPlain =
+      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get());
+  bool useShiftKey =
+      associatedPhrasesPlain != nullptr ||
+      (associatedPhrases != nullptr && associatedPhrases->useShiftKey);
+
+  if (useShiftKey) {
     // This is for label appearance only. Shift+[1-9] keys can only be checked
     // via a raw key's key code, but Keys constructed with "Shift-" names does
     // not carry proper key codes.
     selectionKeys_ = fcitx::Key::keyListFromString(
         "Shift+1 Shift+2 Shift+3 Shift+4 Shift+5 Shift+6 Shift+7 Shift+8 "
         "Shift+9");
+#ifdef USE_LEGACY_FCITX5_API
+#else
+    std::vector<std::string> labels = {
+        "⇧1. ", "⇧2. ", "⇧3. ", "⇧4. ", "⇧5. ", "⇧6. ", "⇧7. ", "⇧8. ", "⇧9. ",
+    };
+    candidateList->setLabels(labels);
+#endif
+    candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
   } else {
     if (keysConfig == SelectionKeys::Key_asdfghjkl) {
       selectionKeys_ = fcitx::Key::keyListFromString("a s d f g h j k l");
@@ -1204,9 +1267,9 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       numpadSelectionKeys_.emplace_back(FcitxKey_KP_8);
       numpadSelectionKeys_.emplace_back(FcitxKey_KP_9);
     }
+    candidateList->setSelectionKey(selectionKeys_);
+    candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
   }
-  candidateList->setSelectionKey(selectionKeys_);
-  candidateList->setPageSize(static_cast<int>(selectionKeys_.size()));
 
   fcitx::CandidateLayoutHint layoutHint = getCandidateLayoutHint();
   candidateList->setLayoutHint(layoutHint);
@@ -1220,10 +1283,6 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   auto* selectingDictionary =
       dynamic_cast<InputStates::SelectingDictionary*>(current);
   auto* showingCharInfo = dynamic_cast<InputStates::ShowingCharInfo*>(current);
-  auto* associatedPhrases =
-      dynamic_cast<InputStates::AssociatedPhrases*>(current);
-  auto* associatedPhrasesPlain =
-      dynamic_cast<InputStates::AssociatedPhrasesPlain*>(current);
   auto* selectingFeature =
       dynamic_cast<InputStates::SelectingFeature*>(current);
   auto* selectingDateMacro =

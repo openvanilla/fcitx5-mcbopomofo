@@ -221,7 +221,8 @@ struct AssociatedPhrases : NotEmpty {
   AssociatedPhrases(std::unique_ptr<NotEmpty> prevState, size_t pfxCursorIndex,
                     std::string pfxReading, std::string pfxValue,
                     size_t selIndex,
-                    std::vector<ChoosingCandidate::Candidate> cs)
+                    std::vector<ChoosingCandidate::Candidate> cs,
+                    bool useShiftKey = false)
       : NotEmpty(prevState->composingBuffer, prevState->cursorIndex,
                  prevState->tooltip),
         previousState(std::move(prevState)),
@@ -229,13 +230,15 @@ struct AssociatedPhrases : NotEmpty {
         prefixReading(std::move(pfxReading)),
         prefixValue(std::move(pfxValue)),
         selectedCandidateIndex(selIndex),
-        candidates(std::move(cs)) {}
+        candidates(std::move(cs)),
+        useShiftKey(useShiftKey) {}
   std::unique_ptr<NotEmpty> previousState;
   size_t prefixCursorIndex;
   std::string prefixReading;
   std::string prefixValue;
   size_t selectedCandidateIndex;
   const std::vector<ChoosingCandidate::Candidate> candidates;
+  bool useShiftKey;
 };
 
 struct AssociatedPhrasesPlain : InputState {
@@ -293,9 +296,8 @@ struct SelectingFeature : InputState {
     features.emplace_back("日期與時間", [this]() {
       return std::make_unique<SelectingDateMacro>(this->converter);
     });
-    features.emplace_back("標題數字", []() {
-      return std::make_unique<EnclosingNumber>();
-    });
+    features.emplace_back("標題數字",
+                          []() { return std::make_unique<EnclosingNumber>(); });
     features.emplace_back("中文數字", []() {
       return std::make_unique<ChineseNumber>("", ChineseNumberStyle::LOWER);
     });
