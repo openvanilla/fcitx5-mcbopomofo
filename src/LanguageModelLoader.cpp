@@ -74,8 +74,9 @@ LanguageModelLoader::LanguageModelLoader(
     return;
   }
 
-  if (!std::filesystem::exists(userDataPath)) {
-    bool result = std::filesystem::create_directory(userDataPath);
+  [[maybe_unused]] std::error_code err;
+  if (!std::filesystem::exists(userDataPath, err)) {
+    bool result = std::filesystem::create_directory(userDataPath, err);
     if (result) {
       FCITX_MCBOPOMOFO_INFO()
           << "Created fcitx5 user data directory: " << userDataPath;
@@ -87,8 +88,8 @@ LanguageModelLoader::LanguageModelLoader(
   }
 
   userDataPath += "/mcbopomofo";
-  if (!std::filesystem::exists(userDataPath)) {
-    bool result = std::filesystem::create_directory(userDataPath);
+  if (!std::filesystem::exists(userDataPath), err) {
+    bool result = std::filesystem::create_directory(userDataPath, err);
     if (result) {
       FCITX_MCBOPOMOFO_INFO()
           << "Created mcbopomofo user data directory: " << userDataPath;
@@ -102,9 +103,11 @@ LanguageModelLoader::LanguageModelLoader(
 
   // We just use very simple file handling routines.
   userDataPath_ = userDataPath;
-  userPhrasesPath_ = userDataPath + "/" + kUserPhraseFilename;
-  excludedPhrasesPath_ = userDataPath + "/" + kExcludedPhraseFilename;
-  phrasesReplacementPath_ = userDataPath + "/" + kPhrasesReplacementFilename;
+  userPhrasesPath_ = TimestampedPath(userDataPath + "/" + kUserPhraseFilename);
+  excludedPhrasesPath_ =
+      TimestampedPath(userDataPath + "/" + kExcludedPhraseFilename);
+  phrasesReplacementPath_ =
+      TimestampedPath(userDataPath + "/" + kPhrasesReplacementFilename);
   populateUserDataFilesIfNeeded();
   reloadUserModelsIfNeeded();
 }
@@ -127,14 +130,14 @@ void LanguageModelLoader::loadModelForMode(McBopomofo::InputMode mode) {
 
 void LanguageModelLoader::addUserPhrase(const std::string_view& reading,
                                         const std::string_view& phrase) {
-  if (userPhrasesPath_.empty() || !std::filesystem::exists(userPhrasesPath_)) {
+  if (!userPhrasesPath_.pathExists()) {
     FCITX_MCBOPOMOFO_INFO()
         << "Not writing user phrases: data file does not exist";
     return;
   }
 
   // TODO(unassigned): Guard against the case where the last byte is not "\n"?
-  std::ofstream ofs(userPhrasesPath_, std::ios_base::app);
+  std::ofstream ofs(userPhrasesPath_.path(), std::ios_base::app);
   ofs << phrase << " " << reading << "\n";
   ofs.close();
 
@@ -147,91 +150,78 @@ void LanguageModelLoader::reloadUserModelsIfNeeded() {
   bool shouldReloadUserPhrases = false;
   bool shouldReloadPhrasesReplacement = false;
 
-  if (!userPhrasesPath_.empty() && std::filesystem::exists(userPhrasesPath_)) {
-    std::filesystem::file_time_type t =
-        std::filesystem::last_write_time(userPhrasesPath_);
-    if (t != userPhrasesTimestamp_) {
-      shouldReloadUserPhrases = true;
-      userPhrasesTimestamp_ = t;
-      FCITX_MCBOPOMOFO_INFO() << "Will load: " << userPhrasesPath_;
-    }
+  if (userPhrasesPath_.pathExists() &&
+      userPhrasesPath_.timestampDifferentFromLastCheck()) {
+    shouldReloadUserPhrases = true;
+    userPhrasesPath_.checkTimestamp();
+    FCITX_MCBOPOMOFO_INFO() << "Will load: " << userPhrasesPath_.path();
   }
 
-  if (!excludedPhrasesPath_.empty() &&
-      std::filesystem::exists(excludedPhrasesPath_)) {
-    std::filesystem::file_time_type t =
-        std::filesystem::last_write_time(excludedPhrasesPath_);
-    if (t != excludedPhrasesTimestamp_) {
-      shouldReloadUserPhrases = true;
-      excludedPhrasesTimestamp_ = t;
-      FCITX_MCBOPOMOFO_INFO() << "Will load: " << excludedPhrasesPath_;
-    }
+  if (excludedPhrasesPath_.pathExists() &&
+      excludedPhrasesPath_.timestampDifferentFromLastCheck()) {
+    shouldReloadUserPhrases = true;
+    excludedPhrasesPath_.checkTimestamp();
+    FCITX_MCBOPOMOFO_INFO() << "Will load: " << excludedPhrasesPath_.path();
   }
 
   // Phrases replacement is considered an advanced feature. We only enable
   // it and check for updates if the file exists. If the file disappears,
   // disable it.
-  if (!phrasesReplacementPath_.empty()) {
+  if (!phrasesReplacementPath_.path().empty()) {
     bool isEnabled = lm_->phraseReplacementEnabled();
-    bool fileExists = std::filesystem::exists(phrasesReplacementPath_);
+    bool fileExists = phrasesReplacementPath_.pathExists();
 
     if (isEnabled && !fileExists) {
       // Disable phrases replacement now that the file is gone.
       lm_->setPhraseReplacementEnabled(false);
       // Reset the timestamp.
-      phrasesReplacementTimestamp_ = {};
+      phrasesReplacementPath_.checkTimestamp();
       FCITX_MCBOPOMOFO_INFO() << "Phrases replacement disabled, file gone: "
-                              << phrasesReplacementPath_;
+                              << phrasesReplacementPath_.path();
     } else if (fileExists) {
-      std::filesystem::file_time_type t =
-          std::filesystem::last_write_time(phrasesReplacementPath_);
-
-      // phrasesReplacementTimestamp_ default-inits to 0, so the reload flag
-      // is guaranteed to be set to true for the first time, assuming the file
-      // does not have a POSIX timestamp of 0, of course.
-      if (t != phrasesReplacementTimestamp_) {
+      if (phrasesReplacementPath_.timestampDifferentFromLastCheck()) {
         shouldReloadPhrasesReplacement = true;
-        phrasesReplacementTimestamp_ = t;
+        phrasesReplacementPath_.checkTimestamp();
       }
 
       if (shouldReloadPhrasesReplacement) {
         if (isEnabled) {
           FCITX_MCBOPOMOFO_INFO() << "Will reload phrases replacement file: "
-                                  << phrasesReplacementPath_;
+                                  << phrasesReplacementPath_.path();
         } else {
           lm_->setPhraseReplacementEnabled(true);
           FCITX_MCBOPOMOFO_INFO() << "Phrases replacement enabled, file: "
-                                  << phrasesReplacementPath_;
+                                  << phrasesReplacementPath_.path();
         }
       }
     }
   }
 
   if (shouldReloadUserPhrases) {
-    lm_->loadUserPhrases(userPhrasesPath_.c_str(),
-                         excludedPhrasesPath_.c_str());
+    lm_->loadUserPhrases(userPhrasesPath_.path().c_str(),
+                         excludedPhrasesPath_.path().c_str());
   }
 
   if (shouldReloadPhrasesReplacement) {
-    lm_->loadPhraseReplacementMap(phrasesReplacementPath_.c_str());
+    lm_->loadPhraseReplacementMap(phrasesReplacementPath_.path().c_str());
   }
 }
 
 void LanguageModelLoader::populateUserDataFilesIfNeeded() {
-  if (!userPhrasesPath_.empty() && !std::filesystem::exists(userPhrasesPath_)) {
-    std::ofstream ofs(userPhrasesPath_);
+  if (!userPhrasesPath_.path().empty() && !userPhrasesPath_.pathExists()) {
+    std::ofstream ofs(userPhrasesPath_.path());
     if (ofs) {
-      FCITX_MCBOPOMOFO_INFO() << "Creating: " << userPhrasesPath_;
+      FCITX_MCBOPOMOFO_INFO() << "Creating: " << userPhrasesPath_.path();
       ofs << localizedStrings_->userPhraseFileHeader();
       ofs.close();
     }
   }
 
-  if (!excludedPhrasesPath_.empty() &&
-      !std::filesystem::exists(excludedPhrasesPath_)) {
-    std::ofstream ofs(excludedPhrasesPath_);
+  if (!excludedPhrasesPath_.path().empty() &&
+      !excludedPhrasesPath_.pathExists()) {
+    std::ofstream ofs(excludedPhrasesPath_.path());
     if (ofs) {
-      FCITX_MCBOPOMOFO_INFO() << "Creating: " << excludedPhrasesPath_;
+      FCITX_MCBOPOMOFO_INFO() << "Creating: " << excludedPhrasesPath_.path();
       ofs << localizedStrings_->excludedPhraseFileHeader();
       ofs.close();
     }

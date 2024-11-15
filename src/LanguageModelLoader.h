@@ -24,7 +24,6 @@
 #ifndef SRC_LANGUAGEMODELLOADER_H_
 #define SRC_LANGUAGEMODELLOADER_H_
 
-#include <filesystem>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -32,6 +31,7 @@
 #include "Engine/McBopomofoLM.h"
 #include "InputMacro.h"
 #include "InputMode.h"
+#include "TimestampedPath.h"
 
 namespace McBopomofo {
 
@@ -58,11 +58,13 @@ class LanguageModelLoader : public UserPhraseAdder {
 
   void reloadUserModelsIfNeeded();
 
-  std::string userDataPath() { return userDataPath_; }
+  std::string userDataPath() const { return userDataPath_; }
 
-  std::string userPhrasesPath() { return userPhrasesPath_; }
+  std::string userPhrasesPath() const { return userPhrasesPath_.path(); }
 
-  std::string excludedPhrasesPath() { return excludedPhrasesPath_; }
+  std::string excludedPhrasesPath() const {
+    return excludedPhrasesPath_.path();
+  }
 
  private:
   void populateUserDataFilesIfNeeded();
@@ -72,13 +74,10 @@ class LanguageModelLoader : public UserPhraseAdder {
   std::shared_ptr<McBopomofoLM> lm_;
 
   std::string userDataPath_;
-  std::string userPhrasesPath_;
-  std::filesystem::file_time_type userPhrasesTimestamp_;
-  std::string excludedPhrasesPath_;
-  std::filesystem::file_time_type excludedPhrasesTimestamp_;
-  std::string phrasesReplacementPath_;
-  std::filesystem::file_time_type phrasesReplacementTimestamp_;
-  McBopomofo::InputMacroController inputMacroController_;
+  TimestampedPath userPhrasesPath_;
+  TimestampedPath excludedPhrasesPath_;
+  TimestampedPath phrasesReplacementPath_;
+  InputMacroController inputMacroController_;
 
  public:
   class LocalizedStrings {
