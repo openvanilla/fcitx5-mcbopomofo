@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-24 13:07+0800\n"
+"POT-Creation-Date: 2024-12-07 02:17+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,284 +17,294 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/McBopomofo.cpp:309
+#: src/McBopomofo.cpp:327
+#, c++-format
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
-#: src/McBopomofo.cpp:314
+#: src/McBopomofo.cpp:332
+#, c++-format
 msgid "{0} syllables required"
 msgstr ""
 
-#: src/McBopomofo.cpp:318
+#: src/McBopomofo.cpp:336
+#, c++-format
 msgid "{0} syllables maximum"
 msgstr ""
 
-#: src/McBopomofo.cpp:322
+#: src/McBopomofo.cpp:340
 msgid "phrase already exists"
 msgstr ""
 
-#: src/McBopomofo.cpp:326
+#: src/McBopomofo.cpp:344
 msgid "press Enter to add the phrase"
 msgstr ""
 
-#: src/McBopomofo.cpp:332
+#: src/McBopomofo.cpp:350
+#, c++-format
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
-#: src/McBopomofo.cpp:344
+#: src/McBopomofo.cpp:362
 msgid "# Custom Phrases or Characters."
 msgstr ""
 
-#: src/McBopomofo.cpp:346
+#: src/McBopomofo.cpp:364
 msgid ""
 "# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動加詞 for "
 "usage."
 msgstr ""
 
-#: src/McBopomofo.cpp:348
+#: src/McBopomofo.cpp:366
 msgid ""
 "# Add your phrases and their respective Bopomofo reading below. Use hyphen "
 "(\"-\")"
 msgstr ""
 
-#: src/McBopomofo.cpp:349
+#: src/McBopomofo.cpp:367
 msgid "# to connect the Bopomofo syllables."
 msgstr ""
 
-#: src/McBopomofo.cpp:353 src/McBopomofo.cpp:372
+#: src/McBopomofo.cpp:371 src/McBopomofo.cpp:390
 msgid "# Any line that starts with \"#\" is treated as comment."
 msgstr ""
 
-#: src/McBopomofo.cpp:362
+#: src/McBopomofo.cpp:380
 msgid "# Custom Excluded Phrases or Characters."
 msgstr ""
 
-#: src/McBopomofo.cpp:364
+#: src/McBopomofo.cpp:382
 msgid ""
 "# See https://github.com/openvanilla/McBopomofo/wiki/使用手冊#手動刪詞 for "
 "usage."
 msgstr ""
 
-#: src/McBopomofo.cpp:366
+#: src/McBopomofo.cpp:384
 msgid ""
 "# For example, the line below will prevent the phrase \"家祠\" from showing "
 "up anywhere:"
 msgstr ""
 
-#: src/McBopomofo.cpp:370
+#: src/McBopomofo.cpp:388
 msgid ""
 "# Note that you need to use a hyphen (\"-\") between Bopomofo syllables."
 msgstr ""
 
-#: src/McBopomofo.cpp:420 src/McBopomofo.cpp:428
+#: src/McBopomofo.cpp:438 src/McBopomofo.cpp:446
 msgid "Half Width Punctuation"
 msgstr ""
 
-#: src/McBopomofo.cpp:421 src/McBopomofo.cpp:429 src/McBopomofo.cpp:529
+#: src/McBopomofo.cpp:439 src/McBopomofo.cpp:447 src/McBopomofo.cpp:547
 msgid "Full Width Punctuation"
 msgstr ""
 
-#: src/McBopomofo.cpp:426
+#: src/McBopomofo.cpp:444
 msgid "Punctuation"
 msgstr ""
 
-#: src/McBopomofo.cpp:430
+#: src/McBopomofo.cpp:448
 msgid "Now using half width punctuation"
 msgstr ""
 
-#: src/McBopomofo.cpp:431
+#: src/McBopomofo.cpp:449
 msgid "Now using full width punctuation"
 msgstr ""
 
-#: src/McBopomofo.cpp:448 src/McBopomofo.cpp:535
+#: src/McBopomofo.cpp:466 src/McBopomofo.cpp:553
 msgid "Associated Phrases - On"
 msgstr ""
 
-#: src/McBopomofo.cpp:449 src/McBopomofo.cpp:536
+#: src/McBopomofo.cpp:467 src/McBopomofo.cpp:554
 msgid "Associated Phrases - Off"
 msgstr ""
 
-#: src/McBopomofo.cpp:455
+#: src/McBopomofo.cpp:473
 msgid "Associated Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:457
+#: src/McBopomofo.cpp:475
 msgid "Associated Phrases On"
 msgstr ""
 
-#: src/McBopomofo.cpp:458
+#: src/McBopomofo.cpp:476
 msgid "Associated Phrases Off"
 msgstr ""
 
-#: src/McBopomofo.cpp:460
+#: src/McBopomofo.cpp:478
 msgid "Now you can use Shift + Enter to insert associated phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:462
+#: src/McBopomofo.cpp:480
 msgid "Associated Phrases is now enabled."
 msgstr ""
 
-#: src/McBopomofo.cpp:463
+#: src/McBopomofo.cpp:481
 msgid "Associated Phrases is now disabled."
 msgstr ""
 
-#: src/McBopomofo.cpp:471
+#: src/McBopomofo.cpp:489
 msgid "Edit User Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:481
+#: src/McBopomofo.cpp:499
 msgid "Edit Excluded Phrases"
 msgstr ""
 
-#: src/McBopomofo.cpp:528
+#: src/McBopomofo.cpp:546
 msgid "Half width Punctuation"
 msgstr ""
 
-#: src/McBopomofo.cpp:1290
+#: src/McBopomofo.cpp:1376
+#, c++-format
 msgid "UTF8 String Length: {0}"
 msgstr ""
 
-#: src/McBopomofo.cpp:1293
+#: src/McBopomofo.cpp:1379
+#, c++-format
 msgid "Code Point Count: {0}"
 msgstr ""
 
-#: src/McBopomofo.h:59
+#: src/McBopomofo.h:60
 msgid "standard"
 msgstr ""
 
-#: src/McBopomofo.h:60
+#: src/McBopomofo.h:61
 msgid "eten"
 msgstr ""
 
-#: src/McBopomofo.h:60
+#: src/McBopomofo.h:61
 msgid "hsu"
 msgstr ""
 
-#: src/McBopomofo.h:60
+#: src/McBopomofo.h:61
 msgid "et26"
 msgstr ""
 
-#: src/McBopomofo.h:61
+#: src/McBopomofo.h:62
 msgid "hanyupinyin"
 msgstr ""
 
-#: src/McBopomofo.h:61
+#: src/McBopomofo.h:62
 msgid "ibm"
 msgstr ""
 
-#: src/McBopomofo.h:68
+#: src/McBopomofo.h:69
 msgid "123456789"
 msgstr ""
 
-#: src/McBopomofo.h:69
+#: src/McBopomofo.h:70
 msgid "asdfghjkl"
 msgstr ""
 
-#: src/McBopomofo.h:69
+#: src/McBopomofo.h:70
 msgid "asdfzxcvb"
 msgstr ""
 
-#: src/McBopomofo.h:72
+#: src/McBopomofo.h:73
 msgid "Not Set"
 msgstr ""
 
-#: src/McBopomofo.h:73
+#: src/McBopomofo.h:74
 msgid "Vertical"
 msgstr ""
 
-#: src/McBopomofo.h:73
+#: src/McBopomofo.h:74
 msgid "Horizontal"
 msgstr ""
 
-#: src/McBopomofo.h:76
+#: src/McBopomofo.h:77
 msgid "before_cursor"
 msgstr ""
 
-#: src/McBopomofo.h:77
+#: src/McBopomofo.h:78
 msgid "after_cursor"
 msgstr ""
 
-#: src/McBopomofo.h:81
+#: src/McBopomofo.h:82
 msgid "directly_output_uppercase"
 msgstr ""
 
-#: src/McBopomofo.h:82
+#: src/McBopomofo.h:83
 msgid "put_lowercase_to_buffer"
 msgstr ""
 
-#: src/McBopomofo.h:88
+#: src/McBopomofo.h:89
 msgid "disabled"
 msgstr ""
 
-#: src/McBopomofo.h:89
+#: src/McBopomofo.h:90
 msgid "output_bpmf_reading"
 msgstr ""
 
-#: src/McBopomofo.h:90
+#: src/McBopomofo.h:91
 msgid "output_html_ruby_text"
 msgstr ""
 
-#: src/McBopomofo.h:98
+#: src/McBopomofo.h:99
 msgid "Bopomofo Keyboard Layout"
 msgstr ""
 
-#: src/McBopomofo.h:104
+#: src/McBopomofo.h:105
 msgid "Candidate List Layout"
 msgstr ""
 
-#: src/McBopomofo.h:109
+#: src/McBopomofo.h:110
 msgid "Selection Keys"
 msgstr ""
 
-#: src/McBopomofo.h:114
+#: src/McBopomofo.h:115
 msgid "Selection Keys Count"
 msgstr ""
 
-#: src/McBopomofo.h:119
+#: src/McBopomofo.h:120
 msgid "Show Candidate Phrase"
 msgstr ""
 
-#: src/McBopomofo.h:124
+#: src/McBopomofo.h:125
 msgid "Move cursor after selection"
 msgstr ""
 
-#: src/McBopomofo.h:129
+#: src/McBopomofo.h:130
 msgid "Allow using J and K key to move the cursor when choosing candidates"
 msgstr ""
 
-#: src/McBopomofo.h:136
+#: src/McBopomofo.h:137
 msgid "ESC key clears entire composing buffer"
 msgstr ""
 
-#: src/McBopomofo.h:140
+#: src/McBopomofo.h:142
+msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
+msgstr ""
+
+#: src/McBopomofo.h:147
 msgid "Shift + Letter Keys"
 msgstr ""
 
-#: src/McBopomofo.h:146
+#: src/McBopomofo.h:153
 msgid "Control + Enter Key"
 msgstr ""
 
-#: src/McBopomofo.h:151
+#: src/McBopomofo.h:158
 msgid "Open User Phrase Files With"
 msgstr ""
 
-#: src/McBopomofo.h:156
+#: src/McBopomofo.h:163
 msgid "Add Phrase Hook Path"
 msgstr ""
 
-#: src/McBopomofo.h:161
+#: src/McBopomofo.h:169
 msgid "Run the hook script after adding a phrase"
 msgstr ""
 
-#: src/McBopomofo.h:164
+#: src/McBopomofo.h:173
 msgid "Enable Half Width Punctuation"
 msgstr ""
 
-#: src/McBopomofo.h:168
+#: src/McBopomofo.h:178
 msgid "Enable Associated Phrases"
 msgstr ""
 
-#: src/McBopomofo.h:172
+#: src/McBopomofo.h:188
 msgid "User Data"
 msgstr ""
 
@@ -303,6 +313,7 @@ msgid "Character Information"
 msgstr ""
 
 #: src/DictionaryService.cpp:105
+#, c++-format
 msgid "Look up \"{0}\" in {1}"
 msgstr ""
 
@@ -324,8 +335,4 @@ msgstr ""
 
 #: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:8
 msgid "A Bopomofo input method that picks phrases intelligently"
-msgstr ""
-
-#: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:10
-msgid "The McBopomofo Authors"
 msgstr ""
