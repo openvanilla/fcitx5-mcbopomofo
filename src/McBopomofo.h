@@ -136,6 +136,12 @@ FCITX_CONFIGURATION(
         this, "EscKeyClearsEntireComposingBuffer",
         _("ESC key clears entire composing buffer"), false};
 
+    // Allow inputting Chinese when Caps Lock is on.
+    fcitx::Option<bool> capsLockAllowChineseInput{
+        this, "capsLockAllowChineseInput",
+        _("Allow typing in Chinese while Caps Lock is on (like MS IME)"),
+        false};
+
     // Shift + letter keys.
     fcitx::OptionWithAnnotation<ShiftLetterKeys, ShiftLetterKeysI18NAnnotation>
         shiftLetterKeys{this, "ShiftLetterKeys", _("Shift + Letter Keys"),
@@ -174,10 +180,10 @@ FCITX_CONFIGURATION(
 
     // Helps to open the user data directory.
     //
-    // We have menu items in FCITX's input method to let the users to edit the
-    // user phrases, however, the input menu is not visiable on some desktop
-    // environments, so we provide another button in the preferenace dialog to
-    // open the user data directory.
+    // We have menu items in FCITX's input method to let the users to edit
+    // the user phrases, however, the input menu is not visiable on some
+    // desktop environments, so we provide another button in the preferenace
+    // dialog to open the user data directory.
     fcitx::ExternalOption userDataDir{
         this, "UserDataDir", _("User Data"),
         fcitx::stringutils::concat(
