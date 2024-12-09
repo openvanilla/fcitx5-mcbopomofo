@@ -59,13 +59,31 @@ constexpr int32_t kFcitx5NotificationTimeoutInMs = 1000;
 // the panel will be changed to a vertical panel.
 constexpr size_t kForceVerticalCandidateThreshold = 8;
 
-static Key MapFcitxKey(const fcitx::Key& key) {
+static Key MapFcitxKey(const fcitx::Key& key, const fcitx::Key& origKey) {
+  bool shiftPressed = key.states() & fcitx::KeyState::Shift;
+  bool ctrlPressed = key.states() & fcitx::KeyState::Ctrl;
+
+  // CapsLock state only exists in the original key, so we have to use the
+  // origKey variable to check for the state.
+  if (origKey.states() & fcitx::KeyState::CapsLock) {
+    // When we enter the branch, it means the user want to input Chinese using
+    // Bopomofo even when Caps Lock is on, so we swap the uppercase and
+    // lowercase letters here.
+    fcitx::KeySym sym = key.sym();
+    if (sym >= 'A' && sym <= 'Z') {
+      return Key::asciiKey(sym + 'a' - 'A',
+                           key.states() & fcitx::KeyState::Shift,
+                           key.states() & fcitx::KeyState::Ctrl);
+    } else if (sym >= 'a' && sym <= 'z') {
+      return Key::asciiKey(sym + 'A' - 'a',
+                           key.states() & fcitx::KeyState::Shift,
+                           key.states() & fcitx::KeyState::Ctrl);
+    }
+  }
+
   if (key.isSimple()) {
     return Key::asciiKey(key.sym(), false);
   }
-
-  bool shiftPressed = key.states() & fcitx::KeyState::Shift;
-  bool ctrlPressed = key.states() & fcitx::KeyState::Ctrl;
 
   if (ctrlPressed && !shiftPressed) {
     switch (key.sym()) {
@@ -623,11 +641,21 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
 
   fcitx::InputContext* context = keyEvent.inputContext();
   fcitx::Key key = keyEvent.key();
+  fcitx::Key origKey = keyEvent.rawKey();
 
   if (key.states() & fcitx::KeyState::Alt ||
-      key.states() & fcitx::KeyState::Super ||
-      key.states() & fcitx::KeyState::CapsLock) {
+      key.states() & fcitx::KeyState::Super) {
     return;
+  }
+
+  // CapsLock is a special case. The state only exists in the raw key, not in
+  // the key.
+  if (origKey.states() & fcitx::KeyState::CapsLock) {
+    if (!config_.capsLockAllowChineseInput.value()) {
+      keyHandler_->reset();
+      enterNewState(context, std::make_unique<InputStates::Empty>());
+      return;
+    }
   }
 
   if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr ||
@@ -658,7 +686,6 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       return;
     }
 
-    fcitx::Key origKey = keyEvent.rawKey();
     bool handled = handleCandidateKeyEvent(
         context, key, origKey, maybeCandidateList,
         [this, context](std::unique_ptr<InputState> next) {
@@ -688,7 +715,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
   }
 
   bool accepted = keyHandler_->handle(
-      MapFcitxKey(key), state_.get(),
+      MapFcitxKey(key, origKey), state_.get(),
       [this, context](std::unique_ptr<InputState> next) {
         enterNewState(context, std::move(next));
       },
@@ -1095,7 +1122,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr) {
     bool result =
         keyHandler_->handleCandidateKeyForTraditionalBopomofoIfRequired(
-            MapFcitxKey(key),
+            MapFcitxKey(key, origKey),
             [candidateList, context] {
               auto idx = candidateList->cursorIndex();
               if (idx < candidateList->size()) {
