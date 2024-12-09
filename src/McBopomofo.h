@@ -181,8 +181,8 @@ FCITX_CONFIGURATION(
     // Helps to open the user data directory.
     //
     // We have menu items in FCITX's input method to let the users to edit
-    // the user phrases, however, the input menu is not visiable on some
-    // desktop environments, so we provide another button in the preferenace
+    // the user phrases, however, the input menu is not visible on some
+    // desktop environments, so we provide another button in the preference
     // dialog to open the user data directory.
     fcitx::ExternalOption userDataDir{
         this, "UserDataDir", _("User Data"),
