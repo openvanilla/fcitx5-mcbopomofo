@@ -128,17 +128,14 @@ jobs:
           ctest --output-on-failure
 
   build_manjaro:
-    # strategy:
-    #   fail-fast: false
-    #   matrix:
-    #     os: ["fedora:42", "fedora:41", "fedora:40", "fedora:39"]
     runs-on: ubuntu-latest
     container: manjarolinux/base:latest
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          pacman -S --noconfirm gcc cmake make pkg-config extra-cmake-modules fmt fcitx5 fcitx5-chinese-addons fcitx5-gtk fcitx5-qt
+          pacman -Sy
+          pacman -Sy --noconfirm gcc cmake make pkg-config extra-cmake-modules fmt fcitx5 fcitx5-chinese-addons fcitx5-gtk fcitx5-qt
       - name: Build
         run: |
           mkdir -p build
