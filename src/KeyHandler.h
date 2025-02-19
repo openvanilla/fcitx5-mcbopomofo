@@ -133,6 +133,9 @@ class KeyHandler {
   // Sets if the ESC key clears entire composing buffer.
   void setEscKeyClearsEntireComposingBuffer(bool flag);
 
+  // Sets if the Shift + Enter key is enabled.
+  void setShiftEnterEnabled(bool flag);
+
   // Sets the behaviour of the Ctrl + Enter key
   void setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior);
 
@@ -171,8 +174,7 @@ class KeyHandler {
   std::unique_ptr<InputStates::AssociatedPhrases> buildAssociatedPhrasesState(
       std::unique_ptr<InputStates::NotEmpty> previousState,
       size_t prefixCursorIndex, std::string prefixCombinedReading,
-      std::string prefixValue, size_t selectedCandidateIndex,
-      bool useShiftKey);
+      std::string prefixValue, size_t selectedCandidateIndex, bool useShiftKey);
 
   // Build an Associated Phrase state. The candidateCursorIndex is where the
   // user-visible cursor was *before* the ChoosingCandidateState was entered,
@@ -277,6 +279,7 @@ class KeyHandler {
   bool moveCursorAfterSelection_ = false;
   bool putLowercaseLettersToComposingBuffer_ = false;
   bool escKeyClearsEntireComposingBuffer_ = false;
+  bool shiftEnterEnabled_ = true;
   bool associatedPhrasesEnabled_ = false;
   bool halfWidthPunctuationEnabled_ = false;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;

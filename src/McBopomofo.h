@@ -147,6 +147,11 @@ FCITX_CONFIGURATION(
         shiftLetterKeys{this, "ShiftLetterKeys", _("Shift + Letter Keys"),
                         ShiftLetterKeys::DirectlyOutputUppercase};
 
+    // Shift + Enter keys.
+    fcitx::Option<bool> shiftEnterEnabled{
+        this, "ShitEnterEnabled",
+        _("Shift + Enter Key triggers associated phrases"), true};
+
     // Ctrl + enter keys.
     fcitx::OptionWithAnnotation<KeyHandlerCtrlEnter,
                                 KeyHandlerCtrlEnterI18NAnnotation>

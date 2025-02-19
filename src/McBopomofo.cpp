@@ -598,6 +598,7 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
       config_.escKeyClearsEntireComposingBuffer.value());
   keyHandler_->setPutLowercaseLettersToComposingBuffer(
       config_.shiftLetterKeys.value() == ShiftLetterKeys::PutLowercaseToBuffer);
+  keyHandler_->setShiftEnterEnabled(config_.shiftEnterEnabled.value());
   keyHandler_->setCtrlEnterKeyBehavior(config_.ctrlEnterKeys.value());
   keyHandler_->setAssociatedPhrasesEnabled(
       config_.associatedPhrasesEnabled.value());
@@ -740,7 +741,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get());
   bool shouldUseShiftKey =
       associatedPhrasesPlain != nullptr ||
-      (associatedPhrases != nullptr && associatedPhrases->useShiftKey);
+      (associatedPhrases != nullptr && associatedPhrases->useShiftKey &&
+       config_.shiftEnterEnabled.value());
 
   // Plain Bopomofo and Associated Phrases.
   if (shouldUseShiftKey) {

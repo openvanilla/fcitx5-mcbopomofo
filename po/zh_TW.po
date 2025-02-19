@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-07 02:17+0800\n"
+"POT-Creation-Date: 2025-02-19 23:01+0800\n"
 "PO-Revision-Date: 2022-12-28 21:39+0800\n"
 "Last-Translator: Chaoting Liu <brli@chakralinux.org>\n"
 "Language-Team: none\n"
@@ -19,17 +19,14 @@ msgstr ""
 "X-Generator: Poedit 3.2.2\n"
 
 #: src/McBopomofo.cpp:327
-#, c++-format
 msgid "Cursor is between syllables {0} and {1}"
 msgstr "游標在「{0}」與「{1}」之間"
 
 #: src/McBopomofo.cpp:332
-#, c++-format
 msgid "{0} syllables required"
 msgstr "至少需要選取{0}個字"
 
 #: src/McBopomofo.cpp:336
-#, c++-format
 msgid "{0} syllables maximum"
 msgstr "最多只能選取{0}個字"
 
@@ -42,7 +39,6 @@ msgid "press Enter to add the phrase"
 msgstr "請按 Enter 加入自訂詞庫"
 
 #: src/McBopomofo.cpp:350
-#, c++-format
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr "選取了「{0}」，注音「{1}」：{2}"
 
@@ -145,6 +141,7 @@ msgid "Associated Phrases Off"
 msgstr "停用聯想詞功能"
 
 #: src/McBopomofo.cpp:478
+#, fuzzy
 msgid "Now you can use Shift + Enter to insert associated phrases"
 msgstr "您接下來可以使用 Shift + Enter 按鍵輸入聯想詞"
 
@@ -170,13 +167,11 @@ msgstr "編輯排除的詞彙"
 msgid "Half width Punctuation"
 msgstr "半形標點"
 
-#: src/McBopomofo.cpp:1376
-#, c++-format
+#: src/McBopomofo.cpp:1378
 msgid "UTF8 String Length: {0}"
 msgstr "UTF8 字串長度 {0}"
 
-#: src/McBopomofo.cpp:1379
-#, c++-format
+#: src/McBopomofo.cpp:1381
 msgid "Code Point Count: {0}"
 msgstr "總字數 {0}"
 
@@ -298,30 +293,35 @@ msgid "Shift + Letter Keys"
 msgstr "Shift + 字母按鍵"
 
 #: src/McBopomofo.h:153
+#, fuzzy
+msgid "Shift + Enter Key triggers associated phrases"
+msgstr "使用 Shift + Enter 按鍵輸入聯想詞"
+
+#: src/McBopomofo.h:158
 msgid "Control + Enter Key"
 msgstr "Control + Enter 按鍵"
 
-#: src/McBopomofo.h:158
+#: src/McBopomofo.h:163
 msgid "Open User Phrase Files With"
 msgstr "開啟自訂詞庫檔案要用"
 
-#: src/McBopomofo.h:163
+#: src/McBopomofo.h:168
 msgid "Add Phrase Hook Path"
 msgstr "加詞腳本路徑"
 
-#: src/McBopomofo.h:169
+#: src/McBopomofo.h:174
 msgid "Run the hook script after adding a phrase"
 msgstr "在加入新詞之後執行加詞腳本"
 
-#: src/McBopomofo.h:173
+#: src/McBopomofo.h:178
 msgid "Enable Half Width Punctuation"
 msgstr "啟用半形標點符號"
 
-#: src/McBopomofo.h:178
+#: src/McBopomofo.h:183
 msgid "Enable Associated Phrases"
 msgstr "啟用聯想詞功能"
 
-#: src/McBopomofo.h:188
+#: src/McBopomofo.h:193
 msgid "User Data"
 msgstr "打開使用者資料目錄"
 
@@ -330,7 +330,6 @@ msgid "Character Information"
 msgstr "字元資訊"
 
 #: src/DictionaryService.cpp:105
-#, c++-format
 msgid "Look up \"{0}\" in {1}"
 msgstr "在{1}尋找「{0}」"
 

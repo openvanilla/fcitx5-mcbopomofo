@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-07 02:17+0800\n"
+"POT-Creation-Date: 2025-02-19 23:01+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,17 +18,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: src/McBopomofo.cpp:327
-#, c++-format
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
 #: src/McBopomofo.cpp:332
-#, c++-format
 msgid "{0} syllables required"
 msgstr ""
 
 #: src/McBopomofo.cpp:336
-#, c++-format
 msgid "{0} syllables maximum"
 msgstr ""
 
@@ -41,7 +38,6 @@ msgid "press Enter to add the phrase"
 msgstr ""
 
 #: src/McBopomofo.cpp:350
-#, c++-format
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
@@ -154,13 +150,11 @@ msgstr ""
 msgid "Half width Punctuation"
 msgstr ""
 
-#: src/McBopomofo.cpp:1376
-#, c++-format
+#: src/McBopomofo.cpp:1378
 msgid "UTF8 String Length: {0}"
 msgstr ""
 
-#: src/McBopomofo.cpp:1379
-#, c++-format
+#: src/McBopomofo.cpp:1381
 msgid "Code Point Count: {0}"
 msgstr ""
 
@@ -281,30 +275,34 @@ msgid "Shift + Letter Keys"
 msgstr ""
 
 #: src/McBopomofo.h:153
-msgid "Control + Enter Key"
+msgid "Shift + Enter Key triggers associated phrases"
 msgstr ""
 
 #: src/McBopomofo.h:158
-msgid "Open User Phrase Files With"
+msgid "Control + Enter Key"
 msgstr ""
 
 #: src/McBopomofo.h:163
+msgid "Open User Phrase Files With"
+msgstr ""
+
+#: src/McBopomofo.h:168
 msgid "Add Phrase Hook Path"
 msgstr ""
 
-#: src/McBopomofo.h:169
+#: src/McBopomofo.h:174
 msgid "Run the hook script after adding a phrase"
 msgstr ""
 
-#: src/McBopomofo.h:173
+#: src/McBopomofo.h:178
 msgid "Enable Half Width Punctuation"
 msgstr ""
 
-#: src/McBopomofo.h:178
+#: src/McBopomofo.h:183
 msgid "Enable Associated Phrases"
 msgstr ""
 
-#: src/McBopomofo.h:188
+#: src/McBopomofo.h:193
 msgid "User Data"
 msgstr ""
 
@@ -313,7 +311,6 @@ msgid "Character Information"
 msgstr ""
 
 #: src/DictionaryService.cpp:105
-#, c++-format
 msgid "Look up \"{0}\" in {1}"
 msgstr ""
 

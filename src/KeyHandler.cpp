@@ -327,7 +327,8 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     }
 
     // Shift + Enter
-    if (key.shiftPressed && inputMode_ == InputMode::McBopomofo) {
+    if (shiftEnterEnabled_ && key.shiftPressed &&
+        inputMode_ == InputMode::McBopomofo) {
       handleAssociatedPhrases(dynamic_cast<InputStates::Inputting*>(state),
                               stateCallback, errorCallback, false);
       return true;
@@ -643,6 +644,8 @@ void KeyHandler::setPutLowercaseLettersToComposingBuffer(bool flag) {
 void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
   escKeyClearsEntireComposingBuffer_ = flag;
 }
+
+void KeyHandler::setShiftEnterEnabled(bool flag) { shiftEnterEnabled_ = flag; }
 
 void KeyHandler::setCtrlEnterKeyBehavior(KeyHandlerCtrlEnter behavior) {
   ctrlEnterKey_ = behavior;
