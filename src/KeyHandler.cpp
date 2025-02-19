@@ -360,6 +360,14 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         reset();
         return true;
       }
+      if (ctrlEnterKey_ == KeyHandlerCtrlEnter::OutputHanyuPinyin) {
+        auto output = getHanyuPinyin();
+        auto committingState =
+            std::make_unique<InputStates::Committing>(output);
+        stateCallback(std::move(committingState));
+        reset();
+        return true;
+      }
       return false;
     }
 
@@ -1182,6 +1190,37 @@ std::string KeyHandler::getHTMLRubyText() {
       composed += value;
       composed += "<rp>(</rp><rt>" + key + "</rt><rp>)</rp>";
       composed += "</ruby>";
+    }
+  }
+  return composed;
+}
+
+std::string KeyHandler::getHanyuPinyin() {
+  std::string composed;
+  for (const auto& node : latestWalk_.nodes) {
+    std::string key = node->reading();
+    std::string value = node->value();
+
+    // If a key starts with underscore, it is usually for a punctuation or a
+    // symbol but not a Bopomofo reading, so we just ignore such case.
+    if (key.rfind(std::string("_"), 0) == 0) {
+      composed += value;
+    } else {
+      size_t start = 0, end;
+      std::string delimiter = "-";
+      while ((end = key.find(delimiter, start)) != std::string::npos) {
+        auto component = key.substr(start, end - start);
+        Formosa::Mandarin::BopomofoSyllable syllable =
+            Formosa::Mandarin::BopomofoSyllable::FromComposedString(component);
+        std::string hanyuPinyin = syllable.HanyuPinyinString(false, false);
+        composed += hanyuPinyin;
+        start = end + 1;
+      }
+      auto component = key.substr(start);
+      Formosa::Mandarin::BopomofoSyllable syllable =
+          Formosa::Mandarin::BopomofoSyllable::FromComposedString(component);
+      std::string hanyuPinyin = syllable.HanyuPinyinString(false, false);
+      composed += hanyuPinyin;
     }
   }
   return composed;

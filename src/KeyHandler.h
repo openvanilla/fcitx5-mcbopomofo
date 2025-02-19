@@ -46,7 +46,8 @@ namespace McBopomofo {
 enum class KeyHandlerCtrlEnter {
   Disabled,
   OutputBpmfReadings,
-  OutputHTMLRubyText
+  OutputHTMLRubyText,
+  OutputHanyuPinyin,
 };
 
 class KeyHandler {
@@ -229,6 +230,7 @@ class KeyHandler {
   };
   ComposedString getComposedString(size_t builderCursor);
   std::string getHTMLRubyText();
+  std::string getHanyuPinyin();
 
   // Build a Marking state, ranging from beginCursorIndex to the current builder
   // cursor. It doesn't matter if the beginCursorIndex is behind or after the

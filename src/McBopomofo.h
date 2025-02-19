@@ -88,7 +88,8 @@ constexpr char kDefaultAddPhraseHookPath[] =
 
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(KeyHandlerCtrlEnter, N_("disabled"),
                                  N_("output_bpmf_reading"),
-                                 N_("output_html_ruby_text"));
+                                 N_("output_html_ruby_text"),
+                                 N_("output_hanyu_pinyin"));
 
 FCITX_CONFIGURATION(
     McBopomofoConfig,
