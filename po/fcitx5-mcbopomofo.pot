@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-07 02:17+0800\n"
+"POT-Creation-Date: 2025-02-19 23:13+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,17 +18,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: src/McBopomofo.cpp:327
-#, c++-format
 msgid "Cursor is between syllables {0} and {1}"
 msgstr ""
 
 #: src/McBopomofo.cpp:332
-#, c++-format
 msgid "{0} syllables required"
 msgstr ""
 
 #: src/McBopomofo.cpp:336
-#, c++-format
 msgid "{0} syllables maximum"
 msgstr ""
 
@@ -41,7 +38,6 @@ msgid "press Enter to add the phrase"
 msgstr ""
 
 #: src/McBopomofo.cpp:350
-#, c++-format
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr ""
 
@@ -154,13 +150,11 @@ msgstr ""
 msgid "Half width Punctuation"
 msgstr ""
 
-#: src/McBopomofo.cpp:1376
-#, c++-format
+#: src/McBopomofo.cpp:1378
 msgid "UTF8 String Length: {0}"
 msgstr ""
 
-#: src/McBopomofo.cpp:1379
-#, c++-format
+#: src/McBopomofo.cpp:1381
 msgid "Code Point Count: {0}"
 msgstr ""
 
@@ -234,77 +228,85 @@ msgstr ""
 
 #: src/McBopomofo.h:90
 msgid "output_bpmf_reading"
-msgstr ""
+msgstr "Input Bofomofo Readings"
 
 #: src/McBopomofo.h:91
 msgid "output_html_ruby_text"
-msgstr ""
+msgstr "Input HTML Ruby Text"
 
-#: src/McBopomofo.h:99
+#: src/McBopomofo.h:92
+msgid "output_hanyu_pinyin"
+msgstr "Input Hanyu Pinyin"
+
+#: src/McBopomofo.h:100
 msgid "Bopomofo Keyboard Layout"
 msgstr ""
 
-#: src/McBopomofo.h:105
+#: src/McBopomofo.h:106
 msgid "Candidate List Layout"
 msgstr ""
 
-#: src/McBopomofo.h:110
+#: src/McBopomofo.h:111
 msgid "Selection Keys"
 msgstr ""
 
-#: src/McBopomofo.h:115
+#: src/McBopomofo.h:116
 msgid "Selection Keys Count"
 msgstr ""
 
-#: src/McBopomofo.h:120
+#: src/McBopomofo.h:121
 msgid "Show Candidate Phrase"
 msgstr ""
 
-#: src/McBopomofo.h:125
+#: src/McBopomofo.h:126
 msgid "Move cursor after selection"
 msgstr ""
 
-#: src/McBopomofo.h:130
+#: src/McBopomofo.h:131
 msgid "Allow using J and K key to move the cursor when choosing candidates"
 msgstr ""
 
-#: src/McBopomofo.h:137
+#: src/McBopomofo.h:138
 msgid "ESC key clears entire composing buffer"
 msgstr ""
 
-#: src/McBopomofo.h:142
+#: src/McBopomofo.h:143
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 msgstr ""
 
-#: src/McBopomofo.h:147
+#: src/McBopomofo.h:148
 msgid "Shift + Letter Keys"
 msgstr ""
 
-#: src/McBopomofo.h:153
+#: src/McBopomofo.h:154
+msgid "Shift + Enter Key triggers associated phrases"
+msgstr ""
+
+#: src/McBopomofo.h:159
 msgid "Control + Enter Key"
 msgstr ""
 
-#: src/McBopomofo.h:158
+#: src/McBopomofo.h:164
 msgid "Open User Phrase Files With"
 msgstr ""
 
-#: src/McBopomofo.h:163
+#: src/McBopomofo.h:169
 msgid "Add Phrase Hook Path"
 msgstr ""
 
-#: src/McBopomofo.h:169
+#: src/McBopomofo.h:175
 msgid "Run the hook script after adding a phrase"
 msgstr ""
 
-#: src/McBopomofo.h:173
+#: src/McBopomofo.h:179
 msgid "Enable Half Width Punctuation"
 msgstr ""
 
-#: src/McBopomofo.h:178
+#: src/McBopomofo.h:184
 msgid "Enable Associated Phrases"
 msgstr ""
 
-#: src/McBopomofo.h:188
+#: src/McBopomofo.h:194
 msgid "User Data"
 msgstr ""
 
@@ -313,7 +315,6 @@ msgid "Character Information"
 msgstr ""
 
 #: src/DictionaryService.cpp:105
-#, c++-format
 msgid "Look up \"{0}\" in {1}"
 msgstr ""
 

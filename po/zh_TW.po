@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-07 02:17+0800\n"
+"POT-Creation-Date: 2025-02-19 23:06+0800\n"
 "PO-Revision-Date: 2022-12-28 21:39+0800\n"
 "Last-Translator: Chaoting Liu <brli@chakralinux.org>\n"
 "Language-Team: none\n"
@@ -19,17 +19,14 @@ msgstr ""
 "X-Generator: Poedit 3.2.2\n"
 
 #: src/McBopomofo.cpp:327
-#, c++-format
 msgid "Cursor is between syllables {0} and {1}"
 msgstr "游標在「{0}」與「{1}」之間"
 
 #: src/McBopomofo.cpp:332
-#, c++-format
 msgid "{0} syllables required"
 msgstr "至少需要選取{0}個字"
 
 #: src/McBopomofo.cpp:336
-#, c++-format
 msgid "{0} syllables maximum"
 msgstr "最多只能選取{0}個字"
 
@@ -42,7 +39,6 @@ msgid "press Enter to add the phrase"
 msgstr "請按 Enter 加入自訂詞庫"
 
 #: src/McBopomofo.cpp:350
-#, c++-format
 msgid "Marked: {0}, syllables: {1}, {2}"
 msgstr "選取了「{0}」，注音「{1}」：{2}"
 
@@ -145,6 +141,7 @@ msgid "Associated Phrases Off"
 msgstr "停用聯想詞功能"
 
 #: src/McBopomofo.cpp:478
+#, fuzzy
 msgid "Now you can use Shift + Enter to insert associated phrases"
 msgstr "您接下來可以使用 Shift + Enter 按鍵輸入聯想詞"
 
@@ -170,13 +167,11 @@ msgstr "編輯排除的詞彙"
 msgid "Half width Punctuation"
 msgstr "半形標點"
 
-#: src/McBopomofo.cpp:1376
-#, c++-format
+#: src/McBopomofo.cpp:1378
 msgid "UTF8 String Length: {0}"
 msgstr "UTF8 字串長度 {0}"
 
-#: src/McBopomofo.cpp:1379
-#, c++-format
+#: src/McBopomofo.cpp:1381
 msgid "Code Point Count: {0}"
 msgstr "總字數 {0}"
 
@@ -256,72 +251,82 @@ msgstr "輸出整個句子的注音符號"
 msgid "output_html_ruby_text"
 msgstr "輸出加上注音標示的 HTML (Ruby Text)"
 
-#: src/McBopomofo.h:99
+#: src/McBopomofo.h:92
+#, fuzzy
+msgid "output_hanyu_pinyin"
+msgstr "漢語拼音"
+
+#: src/McBopomofo.h:100
 msgid "Bopomofo Keyboard Layout"
 msgstr "注音鍵盤配置"
 
-#: src/McBopomofo.h:105
+#: src/McBopomofo.h:106
 msgid "Candidate List Layout"
 msgstr "選字窗樣式"
 
-#: src/McBopomofo.h:110
+#: src/McBopomofo.h:111
 msgid "Selection Keys"
 msgstr "選字鍵"
 
-#: src/McBopomofo.h:115
+#: src/McBopomofo.h:116
 #, fuzzy
 msgid "Selection Keys Count"
 msgstr "選字鍵"
 
-#: src/McBopomofo.h:120
+#: src/McBopomofo.h:121
 msgid "Show Candidate Phrase"
 msgstr "選字時，候選詞起算點"
 
-#: src/McBopomofo.h:125
+#: src/McBopomofo.h:126
 msgid "Move cursor after selection"
 msgstr "選字後自動移動游標"
 
-#: src/McBopomofo.h:130
+#: src/McBopomofo.h:131
 msgid "Allow using J and K key to move the cursor when choosing candidates"
 msgstr "允許使用 J 和 K 鍵在選字時移動游標"
 
-#: src/McBopomofo.h:137
+#: src/McBopomofo.h:138
 msgid "ESC key clears entire composing buffer"
 msgstr "ESC 按鍵清除輸入緩衝區的所有內容"
 
-#: src/McBopomofo.h:142
+#: src/McBopomofo.h:143
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 msgstr "在大寫鎖定時也能輸入中文（像微軟新注音）"
 
-#: src/McBopomofo.h:147
+#: src/McBopomofo.h:148
 msgid "Shift + Letter Keys"
 msgstr "Shift + 字母按鍵"
 
-#: src/McBopomofo.h:153
+#: src/McBopomofo.h:154
+#, fuzzy
+msgid "Shift + Enter Key triggers associated phrases"
+msgstr "使用 Shift + Enter 按鍵輸入聯想詞"
+
+#: src/McBopomofo.h:159
 msgid "Control + Enter Key"
 msgstr "Control + Enter 按鍵"
 
-#: src/McBopomofo.h:158
+#: src/McBopomofo.h:164
 msgid "Open User Phrase Files With"
 msgstr "開啟自訂詞庫檔案要用"
 
-#: src/McBopomofo.h:163
+#: src/McBopomofo.h:169
 msgid "Add Phrase Hook Path"
 msgstr "加詞腳本路徑"
 
-#: src/McBopomofo.h:169
+#: src/McBopomofo.h:175
 msgid "Run the hook script after adding a phrase"
 msgstr "在加入新詞之後執行加詞腳本"
 
-#: src/McBopomofo.h:173
+#: src/McBopomofo.h:179
 msgid "Enable Half Width Punctuation"
 msgstr "啟用半形標點符號"
 
-#: src/McBopomofo.h:178
+#: src/McBopomofo.h:184
 msgid "Enable Associated Phrases"
 msgstr "啟用聯想詞功能"
 
-#: src/McBopomofo.h:188
+#: src/McBopomofo.h:194
 msgid "User Data"
 msgstr "打開使用者資料目錄"
 
@@ -330,7 +335,6 @@ msgid "Character Information"
 msgstr "字元資訊"
 
 #: src/DictionaryService.cpp:105
-#, c++-format
 msgid "Look up \"{0}\" in {1}"
 msgstr "在{1}尋找「{0}」"
 
