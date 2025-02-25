@@ -442,7 +442,7 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
         if (notifications()) {
           notifications()->call<fcitx::INotifications::showTip>(
               "mcbopomofo-half-width-punctuation-toggle", _("Punctuation"),
-              "fcitx-mcbopomofo",
+              "fcitx_mcbopomofo",
               enabled ? _("Half Width Punctuation")
                       : _("Full Width Punctuation"),
               enabled ? _("Now using half width punctuation")
@@ -471,7 +471,7 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
           auto mode = keyHandler_->inputMode();
           notifications()->call<fcitx::INotifications::showTip>(
               "mcbopomofo-associated-phrases-toggle", _("Associated Phrases"),
-              "fcitx-mcbopomofo",
+              "fcitx_mcbopomofo",
               enabled ? _("Associated Phrases On")
                       : _("Associated Phrases Off"),
               enabled ? mode == InputMode::McBopomofo
