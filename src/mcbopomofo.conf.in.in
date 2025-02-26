@@ -1,6 +1,6 @@
 [InputMethod]
 Name=McBopomofo
-Icon=fcitx-mcbopomofo
+Icon=fcitx_mcbopomofo
 Label=麥
 LangCode=zh_TW
 Addon=mcbopomofo
