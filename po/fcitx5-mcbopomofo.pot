@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-19 23:13+0800\n"
+"POT-Creation-Date: 2025-03-15 19:45+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -150,11 +150,11 @@ msgstr ""
 msgid "Half width Punctuation"
 msgstr ""
 
-#: src/McBopomofo.cpp:1378
+#: src/McBopomofo.cpp:1381
 msgid "UTF8 String Length: {0}"
 msgstr ""
 
-#: src/McBopomofo.cpp:1381
+#: src/McBopomofo.cpp:1384
 msgid "Code Point Count: {0}"
 msgstr ""
 
@@ -228,15 +228,15 @@ msgstr ""
 
 #: src/McBopomofo.h:90
 msgid "output_bpmf_reading"
-msgstr "Input Bofomofo Readings"
+msgstr ""
 
 #: src/McBopomofo.h:91
 msgid "output_html_ruby_text"
-msgstr "Input HTML Ruby Text"
+msgstr ""
 
 #: src/McBopomofo.h:92
 msgid "output_hanyu_pinyin"
-msgstr "Input Hanyu Pinyin"
+msgstr "Hanyu Pinyin"
 
 #: src/McBopomofo.h:100
 msgid "Bopomofo Keyboard Layout"
@@ -283,30 +283,34 @@ msgid "Shift + Enter Key triggers associated phrases"
 msgstr ""
 
 #: src/McBopomofo.h:159
-msgid "Control + Enter Key"
+msgid "Repeated punctuation to select next candidate"
 msgstr ""
 
 #: src/McBopomofo.h:164
-msgid "Open User Phrase Files With"
+msgid "Control + Enter Key"
 msgstr ""
 
 #: src/McBopomofo.h:169
+msgid "Open User Phrase Files With"
+msgstr ""
+
+#: src/McBopomofo.h:174
 msgid "Add Phrase Hook Path"
 msgstr ""
 
-#: src/McBopomofo.h:175
+#: src/McBopomofo.h:180
 msgid "Run the hook script after adding a phrase"
 msgstr ""
 
-#: src/McBopomofo.h:179
+#: src/McBopomofo.h:184
 msgid "Enable Half Width Punctuation"
 msgstr ""
 
-#: src/McBopomofo.h:184
+#: src/McBopomofo.h:189
 msgid "Enable Associated Phrases"
 msgstr ""
 
-#: src/McBopomofo.h:194
+#: src/McBopomofo.h:199
 msgid "User Data"
 msgstr ""
 

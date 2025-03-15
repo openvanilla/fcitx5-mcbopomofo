@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-19 23:06+0800\n"
+"POT-Creation-Date: 2025-03-15 19:45+0800\n"
 "PO-Revision-Date: 2022-12-28 21:39+0800\n"
 "Last-Translator: Chaoting Liu <brli@chakralinux.org>\n"
 "Language-Team: none\n"
@@ -167,11 +167,11 @@ msgstr "編輯排除的詞彙"
 msgid "Half width Punctuation"
 msgstr "半形標點"
 
-#: src/McBopomofo.cpp:1378
+#: src/McBopomofo.cpp:1381
 msgid "UTF8 String Length: {0}"
 msgstr "UTF8 字串長度 {0}"
 
-#: src/McBopomofo.cpp:1381
+#: src/McBopomofo.cpp:1384
 msgid "Code Point Count: {0}"
 msgstr "總字數 {0}"
 
@@ -303,30 +303,34 @@ msgid "Shift + Enter Key triggers associated phrases"
 msgstr "使用 Shift + Enter 按鍵輸入聯想詞"
 
 #: src/McBopomofo.h:159
+msgid "Repeated punctuation to select next candidate"
+msgstr "重複輸入標點時，輸入下一個候選標點符號"
+
+#: src/McBopomofo.h:164
 msgid "Control + Enter Key"
 msgstr "Control + Enter 按鍵"
 
-#: src/McBopomofo.h:164
+#: src/McBopomofo.h:169
 msgid "Open User Phrase Files With"
 msgstr "開啟自訂詞庫檔案要用"
 
-#: src/McBopomofo.h:169
+#: src/McBopomofo.h:174
 msgid "Add Phrase Hook Path"
 msgstr "加詞腳本路徑"
 
-#: src/McBopomofo.h:175
+#: src/McBopomofo.h:180
 msgid "Run the hook script after adding a phrase"
 msgstr "在加入新詞之後執行加詞腳本"
 
-#: src/McBopomofo.h:179
+#: src/McBopomofo.h:184
 msgid "Enable Half Width Punctuation"
 msgstr "啟用半形標點符號"
 
-#: src/McBopomofo.h:184
+#: src/McBopomofo.h:189
 msgid "Enable Associated Phrases"
 msgstr "啟用聯想詞功能"
 
-#: src/McBopomofo.h:194
+#: src/McBopomofo.h:199
 msgid "User Data"
 msgstr "打開使用者資料目錄"
 
