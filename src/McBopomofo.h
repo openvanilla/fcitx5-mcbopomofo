@@ -153,6 +153,11 @@ FCITX_CONFIGURATION(
         this, "ShitEnterEnabled",
         _("Shift + Enter Key triggers associated phrases"), true};
 
+    // Repeated punctuation to select next candidate.
+    fcitx::Option<bool> repeatedPunctuationToSelectCandidateEnabled{
+        this, "RepeatedPunctuationToSelectCandidateEnabled",
+        _("Repeated punctuation to select next candidate"), false};
+
     // Ctrl + enter keys.
     fcitx::OptionWithAnnotation<KeyHandlerCtrlEnter,
                                 KeyHandlerCtrlEnterI18NAnnotation>

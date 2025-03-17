@@ -150,6 +150,10 @@ class KeyHandler {
   void setOnAddNewPhrase(
       std::function<void(const std::string&)> onAddNewPhrase);
 
+  //  Sets whether repeated punctuation characters should be used to select
+  //  candidates.
+  void setRepeatedPunctuationToSelectCandidateEnabled(bool enabled);
+
   // Compute the actual candidate cursor index based on the current index.
   size_t actualCandidateCursorIndex();
   // Compute the actual candidate cursor index.
@@ -207,7 +211,7 @@ class KeyHandler {
                              StateCallback stateCallback,
                              ErrorCallback errorCallback);
 
-  bool handleTabKey(Key key, McBopomofo::InputState* state,
+  bool handleTabKey(bool isShiftPressed, McBopomofo::InputState* state,
                     const StateCallback& stateCallback,
                     const ErrorCallback& errorCallback);
   bool handleCursorKeys(Key key, McBopomofo::InputState* state,
@@ -217,6 +221,7 @@ class KeyHandler {
                         const StateCallback& stateCallback,
                         const ErrorCallback& errorCallback);
   bool handlePunctuation(const std::string& punctuationUnigramKey,
+                         McBopomofo::InputState* state,
                          const StateCallback& stateCallback,
                          const ErrorCallback& errorCallback);
 
@@ -284,6 +289,7 @@ class KeyHandler {
   bool shiftEnterEnabled_ = true;
   bool associatedPhrasesEnabled_ = false;
   bool halfWidthPunctuationEnabled_ = false;
+  bool repeatedPunctuationToSelectCandidateEnabled_ = false;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
   std::function<void(const std::string&)> onAddNewPhrase_;
 

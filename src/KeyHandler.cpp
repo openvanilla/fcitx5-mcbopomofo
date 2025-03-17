@@ -301,7 +301,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
   // Tab key.
   if (key.ascii == Key::TAB) {
-    return handleTabKey(key, state, stateCallback, errorCallback);
+    return handleTabKey(key.shiftPressed, state, stateCallback, errorCallback);
   }
 
   // Cursor keys.
@@ -444,18 +444,18 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     if (key.ctrlPressed) {
       unigram = std::string(kCtrlPunctuationKeyPrefix) + chrStr;
-      return handlePunctuation(unigram, stateCallback, errorCallback);
+      return handlePunctuation(unigram, state, stateCallback, errorCallback);
     }
 
     if (halfWidthPunctuationEnabled_) {
       unigram = std::string(kHalfWidthPunctuationKeyPrefix) +
                 GetKeyboardLayoutName(reading_.keyboardLayout()) + "_" + chrStr;
-      if (handlePunctuation(unigram, stateCallback, errorCallback)) {
+      if (handlePunctuation(unigram, state, stateCallback, errorCallback)) {
         return true;
       }
 
       unigram = std::string(kHalfWidthPunctuationKeyPrefix) + chrStr;
-      if (handlePunctuation(unigram, stateCallback, errorCallback)) {
+      if (handlePunctuation(unigram, state, stateCallback, errorCallback)) {
         return true;
       }
     }
@@ -463,13 +463,13 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     // Bopomofo layout-specific punctuation handling.
     unigram = std::string(kPunctuationKeyPrefix) +
               GetKeyboardLayoutName(reading_.keyboardLayout()) + "_" + chrStr;
-    if (handlePunctuation(unigram, stateCallback, errorCallback)) {
+    if (handlePunctuation(unigram, state, stateCallback, errorCallback)) {
       return true;
     }
 
     // Not handled, try generic punctuations.
     unigram = std::string(kPunctuationKeyPrefix) + chrStr;
-    if (handlePunctuation(unigram, stateCallback, errorCallback)) {
+    if (handlePunctuation(unigram, state, stateCallback, errorCallback)) {
       return true;
     }
 
@@ -479,7 +479,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         unigram = std::string(kLetterPrefix) + chrStr;
 
         // Ignore return value, since we always return true below.
-        handlePunctuation(unigram, stateCallback, errorCallback);
+        handlePunctuation(unigram, state, stateCallback, errorCallback);
       } else {
         // If current state is *not* NonEmpty, it must be Empty.
         if (maybeNotEmptyState == nullptr) {
@@ -672,6 +672,10 @@ void KeyHandler::setOnAddNewPhrase(
   onAddNewPhrase_ = std::move(onAddNewPhrase);
 }
 
+void KeyHandler::setRepeatedPunctuationToSelectCandidateEnabled(bool enabled) {
+  repeatedPunctuationToSelectCandidateEnabled_ = enabled;
+}
+
 #pragma endregion Settings
 
 #pragma region Key_Handling
@@ -792,7 +796,8 @@ bool KeyHandler::handleAssociatedPhrases(InputStates::Inputting* state,
   return true;
 }
 
-bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
+bool KeyHandler::handleTabKey(bool isShiftPressed,
+                              McBopomofo::InputState* state,
                               const StateCallback& stateCallback,
                               const ErrorCallback& errorCallback) {
   if (reading_.isEmpty() && latestWalk_.nodes.empty()) {
@@ -839,7 +844,7 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
         candidates[0].value == currentNode->value()) {
       // If the first candidate is the value of the current node, we use next
       // one.
-      if (key.shiftPressed) {
+      if (isShiftPressed) {
         currentIndex = candidates.size() - 1;
       } else {
         currentIndex = 1;
@@ -849,7 +854,7 @@ bool KeyHandler::handleTabKey(Key key, McBopomofo::InputState* state,
     for (const auto& candidate : candidates) {
       if (candidate.reading == currentNode->reading() &&
           candidate.value == currentNode->value()) {
-        if (key.shiftPressed) {
+        if (isShiftPressed) {
           currentIndex == 0 ? currentIndex = candidates.size() - 1
                             : currentIndex--;
         } else {
@@ -973,10 +978,34 @@ bool KeyHandler::handleDeleteKeys(Key key, McBopomofo::InputState* state,
 }
 
 bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
+                                   McBopomofo::InputState* state,
                                    const StateCallback& stateCallback,
                                    const ErrorCallback& errorCallback) {
   if (!lm_->hasUnigrams(punctuationUnigramKey)) {
     return false;
+  }
+
+  if (repeatedPunctuationToSelectCandidateEnabled_) {
+    size_t prefixCursorIndex = grid_.cursor();
+    size_t actualPrefixCursorIndex =
+        prefixCursorIndex > 0 ? prefixCursorIndex - 1 : 0;
+    auto nodeIter = latestWalk_.findNodeAt(actualPrefixCursorIndex);
+    if (nodeIter != latestWalk_.nodes.cend()) {
+      const Formosa::Gramambular2::ReadingGrid::NodePtr& currentNode =
+          *nodeIter;
+      if (currentNode->reading() == punctuationUnigramKey) {
+        auto candidates = grid_.candidatesAt(actualPrefixCursorIndex);
+        if (candidates.size() > 1) {
+          if (selectPhraseAfterCursorAsCandidate_) {
+            grid_.setCursor(actualPrefixCursorIndex);
+          }
+          handleTabKey(false, state, stateCallback, errorCallback);
+          grid_.setCursor(prefixCursorIndex);
+          stateCallback(buildInputtingState());
+          return true;
+        }
+      }
+    }
   }
 
   if (!reading_.isEmpty()) {
