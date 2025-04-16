@@ -43,7 +43,7 @@ constexpr char kCtrlPunctuationKeyPrefix[] = "_ctrl_punctuation_";
 constexpr char kHalfWidthPunctuationKeyPrefix[] = "_half_punctuation_";
 constexpr char kLetterPrefix[] = "_letter_";
 constexpr size_t kMinValidMarkingReadingCount = 2;
-constexpr size_t kMaxValidMarkingReadingCount = 6;
+constexpr size_t kMaxValidMarkingReadingCount = 8;
 constexpr size_t kMaxChineseNumberConversionDigits = 20;
 
 constexpr int kUserOverrideModelCapacity = 500;
