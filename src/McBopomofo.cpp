@@ -676,7 +676,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get()) !=
           nullptr ||
       dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr ||
-      dynamic_cast<InputStates::SelectingDateMacro*>(state_.get()) != nullptr) {
+      dynamic_cast<InputStates::SelectingDateMacro*>(state_.get()) != nullptr ||
+      dynamic_cast<InputStates::CustomMenu*>(state_.get()) != nullptr) {
     // Absorb all keys when the candidate panel is on.
     keyEvent.filterAndAccept();
 
@@ -715,7 +716,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
             nullptr ||
         dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr ||
         dynamic_cast<InputStates::SelectingDateMacro*>(state_.get()) !=
-            nullptr) {
+            nullptr ||
+        dynamic_cast<InputStates::CustomMenu*>(state_.get()) != nullptr) {
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       context->updatePreedit();
     }
@@ -839,6 +841,23 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
             page * pageSize + candidateList->cursorIndex();
         std::string phrase =
             choosingCandidate->candidates[selectedCandidateIndex].value;
+        std::string reading =
+            choosingCandidate->candidates[selectedCandidateIndex].reading;
+
+        std::vector<std::string> invalidPrefixes = {
+            "_half_punctuation_", "_ctrl_punctuation_", "_letter_",
+            "_number_",           "_punctuation_",
+        };
+
+        // If the reading has an invalid prefix, skip dictionary lookup
+        if (std::any_of(invalidPrefixes.begin(), invalidPrefixes.end(),
+                        [&reading](const std::string& prefix) {
+                          return reading.compare(0, prefix.length(), prefix) ==
+                                 0;
+                        })) {
+          return true;
+        }
+
         std::unique_ptr<InputStates::ChoosingCandidate> copy =
             std::make_unique<InputStates::ChoosingCandidate>(
                 *choosingCandidate);
@@ -850,6 +869,90 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     } else if (selectingDictionary != nullptr || showingCharInfo != nullptr) {
       // Leave selecting dictionary service state.
       keyIsCancel = true;
+    }
+  }
+
+  if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
+      (key.check(FcitxKey_plus) || key.check(FcitxKey_equal))) {
+    auto* choosingCandidate =
+        dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
+    if (choosingCandidate != nullptr) {
+      int page = candidateList->currentPage();
+      int pageSize = candidateList->size();
+      int index = candidateList->cursorIndex();
+      int selectedCandidateIndex = page * pageSize + index;
+      std::string phrase =
+          choosingCandidate->candidates[selectedCandidateIndex].value;
+      // std::string reading =
+      //     choosingCandidate->candidates[selectedCandidateIndex].reading;
+
+      std::vector<InputStates::CustomMenu::MenuEntry> entries;
+      InputStates::CustomMenu::MenuEntry confirmEntry(
+          _("Boost"), [this, stateCallback]() {
+            // todo : implement this
+            auto inputting = keyHandler_->buildInputtingState();
+            stateCallback(std::move(inputting));
+          });
+      InputStates::CustomMenu::MenuEntry cancelEntry(
+          _("Cancel"),
+          [choosingCandidate, stateCallback, page, candidateList, index]() {
+            auto copy = std::make_unique<InputStates::ChoosingCandidate>(
+                *choosingCandidate);
+            stateCallback(std::move(copy));
+            // TODO : reset cursor
+            candidateList->setPage(page);
+            candidateList->setCursorIndex(index);
+          });
+      entries.push_back(std::move(confirmEntry));
+      entries.push_back(std::move(cancelEntry));
+      std::string title = fmt::format(
+          _("Do you want to boost the score of the phrase \"{}\"?"), phrase);
+      auto confirm = std::make_unique<InputStates::CustomMenu>(
+          std::move(title), std::move(entries));
+      stateCallback(std::move(confirm));
+      return true;
+    }
+  }
+
+  if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
+      (key.check(FcitxKey_minus) || key.check(FcitxKey_underscore))) {
+    auto* choosingCandidate =
+        dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
+    if (choosingCandidate != nullptr) {
+      int page = candidateList->currentPage();
+      int pageSize = candidateList->size();
+      int index = candidateList->cursorIndex();
+      int selectedCandidateIndex = page * pageSize + index;
+      std::string phrase =
+          choosingCandidate->candidates[selectedCandidateIndex].value;
+      // std::string reading =
+      //     choosingCandidate->candidates[selectedCandidateIndex].reading;
+
+      std::vector<InputStates::CustomMenu::MenuEntry> entries;
+      InputStates::CustomMenu::MenuEntry confirmEntry(
+          _("Exclude"), [this, stateCallback]() {
+            // todo : implement this
+            auto inputting = keyHandler_->buildInputtingState();
+            stateCallback(std::move(inputting));
+          });
+      InputStates::CustomMenu::MenuEntry cancelEntry(
+          _("Cancel"),
+          [choosingCandidate, stateCallback, page, candidateList, index]() {
+            auto copy = std::make_unique<InputStates::ChoosingCandidate>(
+                *choosingCandidate);
+            stateCallback(std::move(copy));
+            // TODO : reset cursor
+            candidateList->setPage(page);
+            candidateList->setCursorIndex(index);
+          });
+      entries.push_back(std::move(confirmEntry));
+      entries.push_back(std::move(cancelEntry));
+      std::string title =
+          fmt::format(_("Do you want to exclude the phrase \"{}\"?"), phrase);
+      auto confirm = std::make_unique<InputStates::CustomMenu>(
+          std::move(title), std::move(entries));
+      stateCallback(std::move(confirm));
+      return true;
     }
   }
 
@@ -1325,11 +1428,12 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       dynamic_cast<InputStates::SelectingFeature*>(current);
   auto* selectingDateMacro =
       dynamic_cast<InputStates::SelectingDateMacro*>(current);
+  auto* customMenu = dynamic_cast<InputStates::CustomMenu*>(current);
 
   if (choosing != nullptr) {
     // Construct the candidate list with special care for candidates that have
-    // the same values. The display text of such a candidate will be in the form
-    // of "value (reading)" to help user disambiguate those candidates.
+    // the same values. The display text of such a candidate will be in the
+    // form of "value (reading)" to help user disambiguate those candidates.
 
     std::unordered_map<std::string, size_t> valueCountMap;
 
@@ -1463,6 +1567,20 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
     }
   } else if (selectingDateMacro != nullptr) {
     for (const auto& displayText : selectingDateMacro->menu) {
+#ifdef USE_LEGACY_FCITX5_API
+      fcitx::CandidateWord* candidate = new McBopomofoDirectInsertWord(
+          fcitx::Text(displayText), displayText, callback);
+      candidateList->append(candidate);
+#else
+      std::unique_ptr<fcitx::CandidateWord> candidate =
+          std::make_unique<McBopomofoDirectInsertWord>(fcitx::Text(displayText),
+                                                       displayText, callback);
+      candidateList->append(std::move(candidate));
+#endif
+    }
+  } else if (customMenu != nullptr) {
+    for (const auto& entry : customMenu->entries) {
+      std::string displayText = entry.name;
 #ifdef USE_LEGACY_FCITX5_API
       fcitx::CandidateWord* candidate = new McBopomofoDirectInsertWord(
           fcitx::Text(displayText), displayText, callback);

@@ -319,6 +319,20 @@ struct SelectingFeature : InputState {
   std::function<std::string(std::string)> converter;
 };
 
+struct CustomMenu : InputState {
+  struct MenuEntry {
+    MenuEntry(std::string name, std::function<void(void)> callback)
+        : name(std::move(name)), callback(std::move(callback)) {}
+    std::string name;
+    std::function<void(void)> callback;
+  };
+
+  explicit CustomMenu(std::string title, std::vector<MenuEntry> entries)
+      : title(std::move(title)), entries(std::move(entries)) {}
+  std::string title;
+  std::vector<MenuEntry> entries;
+};
+
 }  // namespace InputStates
 
 }  // namespace McBopomofo
