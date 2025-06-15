@@ -299,6 +299,27 @@ class McBopomofoFeatureWord : public fcitx::CandidateWord {
   KeyHandler::StateCallback stateCallback_;
 };
 
+class McBopomofoCustomMenuWord : public fcitx::CandidateWord {
+ public:
+  explicit McBopomofoCustomMenuWord(fcitx::Text displayText, size_t index,
+                                    InputStates::CustomMenu* currentState)
+      : fcitx::CandidateWord(std::move(displayText)),
+        index_(index),
+        currentState_(currentState) {}
+
+  void select(fcitx::InputContext* /*unused*/) const override {
+    // callback(std::make_unique<InputStates::Committing>(text));
+    auto entry = currentState_->entries[index_];
+    if (entry.callback) {
+      entry.callback();
+    }
+  }
+
+ private:
+  size_t index_;
+  InputStates::CustomMenu* currentState_;
+};
+
 class McBopomofoDirectInsertWord : public fcitx::CandidateWord {
  public:
   explicit McBopomofoDirectInsertWord(fcitx::Text displayText, std::string text,
@@ -881,34 +902,33 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       int pageSize = candidateList->size();
       int index = candidateList->cursorIndex();
       int selectedCandidateIndex = page * pageSize + index;
-      std::string phrase =
-          choosingCandidate->candidates[selectedCandidateIndex].value;
-      // std::string reading =
-      //     choosingCandidate->candidates[selectedCandidateIndex].reading;
+      auto candidate = choosingCandidate->candidates[selectedCandidateIndex];
+      std::string phrase = candidate.value;
+      std::string reading = candidate.reading;
 
       std::vector<InputStates::CustomMenu::MenuEntry> entries;
       InputStates::CustomMenu::MenuEntry confirmEntry(
-          _("Boost"), [this, stateCallback]() {
-            // todo : implement this
+          _("Boost"), [this, phrase, reading, stateCallback]() {
+            keyHandler_->boostPhrase(reading, phrase);
             auto inputting = keyHandler_->buildInputtingState();
             stateCallback(std::move(inputting));
           });
       InputStates::CustomMenu::MenuEntry cancelEntry(
-          _("Cancel"),
-          [choosingCandidate, stateCallback, page, candidateList, index]() {
-            auto copy = std::make_unique<InputStates::ChoosingCandidate>(
-                *choosingCandidate);
-            stateCallback(std::move(copy));
-            // TODO : reset cursor
-            candidateList->setPage(page);
-            candidateList->setCursorIndex(index);
+          _("Cancel"), [this, stateCallback]() {
+            auto inputting = keyHandler_->buildInputtingState();
+            auto choosing = keyHandler_->buildChoosingCandidateState(
+                inputting.get(), keyHandler_->candidateCursorIndex());
+            stateCallback(std::move(inputting));
+            stateCallback(std::move(choosing));
           });
       entries.push_back(std::move(confirmEntry));
       entries.push_back(std::move(cancelEntry));
       std::string title = fmt::format(
           _("Do you want to boost the score of the phrase \"{}\"?"), phrase);
+      auto copy =
+          std::make_unique<InputStates::ChoosingCandidate>(*choosingCandidate);
       auto confirm = std::make_unique<InputStates::CustomMenu>(
-          std::move(title), std::move(entries));
+          std::move(copy), std::move(title), std::move(entries));
       stateCallback(std::move(confirm));
       return true;
     }
@@ -923,34 +943,33 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       int pageSize = candidateList->size();
       int index = candidateList->cursorIndex();
       int selectedCandidateIndex = page * pageSize + index;
-      std::string phrase =
-          choosingCandidate->candidates[selectedCandidateIndex].value;
-      // std::string reading =
-      //     choosingCandidate->candidates[selectedCandidateIndex].reading;
+      auto candidate = choosingCandidate->candidates[selectedCandidateIndex];
+      std::string phrase = candidate.value;
+      std::string reading = candidate.reading;
 
       std::vector<InputStates::CustomMenu::MenuEntry> entries;
       InputStates::CustomMenu::MenuEntry confirmEntry(
-          _("Exclude"), [this, stateCallback]() {
-            // todo : implement this
+          _("Exclude"), [this, phrase, reading, stateCallback]() {
+            keyHandler_->excludePhrase(reading, phrase);
             auto inputting = keyHandler_->buildInputtingState();
             stateCallback(std::move(inputting));
           });
       InputStates::CustomMenu::MenuEntry cancelEntry(
-          _("Cancel"),
-          [choosingCandidate, stateCallback, page, candidateList, index]() {
-            auto copy = std::make_unique<InputStates::ChoosingCandidate>(
-                *choosingCandidate);
-            stateCallback(std::move(copy));
-            // TODO : reset cursor
-            candidateList->setPage(page);
-            candidateList->setCursorIndex(index);
+          _("Cancel"), [this, stateCallback]() {
+            auto inputting = keyHandler_->buildInputtingState();
+            auto choosing = keyHandler_->buildChoosingCandidateState(
+                inputting.get(), keyHandler_->candidateCursorIndex());
+            stateCallback(std::move(inputting));
+            stateCallback(std::move(choosing));
           });
       entries.push_back(std::move(confirmEntry));
       entries.push_back(std::move(cancelEntry));
       std::string title =
           fmt::format(_("Do you want to exclude the phrase \"{}\"?"), phrase);
+      auto copy =
+          std::make_unique<InputStates::ChoosingCandidate>(*choosingCandidate);
       auto confirm = std::make_unique<InputStates::CustomMenu>(
-          std::move(title), std::move(entries));
+          std::move(copy), std::move(title), std::move(entries));
       stateCallback(std::move(confirm));
       return true;
     }
@@ -1317,7 +1336,7 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
     handleEnclosingNumberState(context, prevPtr, enclosingNumber);
   } else if (auto* customMenu =
                  dynamic_cast<InputStates::CustomMenu*>(currentPtr)) {
-    handleCandidatesState(context, prevPtr, enclosingNumber);
+    handleCandidatesState(context, prevPtr, customMenu);
   }
 }
 
@@ -1582,19 +1601,20 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
 #endif
     }
   } else if (customMenu != nullptr) {
+    size_t index = 0;
     for (const auto& entry : customMenu->entries) {
       std::string displayText = entry.name;
-      // to do use custom menu word
 #ifdef USE_LEGACY_FCITX5_API
-      fcitx::CandidateWord* candidate = new McBopomofoDirectInsertWord(
-          fcitx::Text(displayText), displayText, callback);
+      fcitx::CandidateWord* candidate = new McBopomofoCustomMenuWord(
+          fcitx::Text(displayText), index, customMenu);
       candidateList->append(candidate);
 #else
       std::unique_ptr<fcitx::CandidateWord> candidate =
-          std::make_unique<McBopomofoDirectInsertWord>(fcitx::Text(displayText),
-                                                       displayText, callback);
+          std::make_unique<McBopomofoCustomMenuWord>(fcitx::Text(displayText),
+                                                     index, customMenu);
       candidateList->append(std::move(candidate));
 #endif
+      index++;
     }
   }
 

@@ -40,6 +40,8 @@ class UserPhraseAdder {
   virtual ~UserPhraseAdder() = default;
   virtual void addUserPhrase(const std::string_view& reading,
                              const std::string_view& phrase) = 0;
+  virtual void removeUserPhrase(const std::string_view& reading,
+                                const std::string_view& phrase) = 0;
 };
 
 class LanguageModelLoader : public UserPhraseAdder {
@@ -55,6 +57,9 @@ class LanguageModelLoader : public UserPhraseAdder {
 
   void addUserPhrase(const std::string_view& reading,
                      const std::string_view& phrase) override;
+
+  void removeUserPhrase(const std::string_view& reading,
+                        const std::string_view& phrase) override;
 
   void reloadUserModelsIfNeeded();
 

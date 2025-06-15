@@ -146,6 +146,9 @@ void LanguageModelLoader::addUserPhrase(const std::string_view& reading,
   reloadUserModelsIfNeeded();
 }
 
+void LanguageModelLoader::removeUserPhrase(const std::string_view& reading,
+                                           const std::string_view& phrase) {}
+
 void LanguageModelLoader::reloadUserModelsIfNeeded() {
   bool shouldReloadUserPhrases = false;
   bool shouldReloadPhrasesReplacement = false;

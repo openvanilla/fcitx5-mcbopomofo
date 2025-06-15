@@ -98,6 +98,10 @@ class KeyHandler {
       Key key, SelectCurrentCandidateCallback SelectCurrentCandidateCallback,
       StateCallback stateCallback, ErrorCallback errorCallback);
 
+  void boostPhrase(const std::string& reading, const std::string& value);
+
+  void excludePhrase(const std::string& reading, const std::string& value);
+
   void reset();
 
 #pragma region Dictionary Services

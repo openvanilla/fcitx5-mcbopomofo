@@ -319,7 +319,7 @@ struct SelectingFeature : InputState {
   std::function<std::string(std::string)> converter;
 };
 
-struct CustomMenu : InputState {
+struct CustomMenu : NotEmpty {
   struct MenuEntry {
     MenuEntry(std::string name, std::function<void(void)> callback)
         : name(std::move(name)), callback(std::move(callback)) {}
@@ -327,9 +327,14 @@ struct CustomMenu : InputState {
     std::function<void(void)> callback;
   };
 
-  explicit CustomMenu(std::string title, std::vector<MenuEntry> entries)
-      : title(std::move(title)), entries(std::move(entries)) {}
-  std::string title;
+  explicit CustomMenu(std::unique_ptr<NotEmpty> previousState,
+                      std::string title, std::vector<MenuEntry> entries)
+      : NotEmpty(previousState->composingBuffer, previousState->cursorIndex,
+                 title),
+        previousState(std::move(previousState)),
+        entries(std::move(entries)) {}
+
+  std::unique_ptr<NotEmpty> previousState;
   std::vector<MenuEntry> entries;
 };
 

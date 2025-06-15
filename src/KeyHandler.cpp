@@ -193,7 +193,6 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         walk();
       }
     }
-
     if (inputMode_ == McBopomofo::InputMode::McBopomofo &&
         associatedPhrasesEnabled_) {
       auto inputting = buildInputtingState();
@@ -620,6 +619,18 @@ bool KeyHandler::handleCandidateKeyForTraditionalBopomofoIfRequired(
     return true;
   }
   return false;
+}
+
+void KeyHandler::boostPhrase(const std::string& reading,
+                             const std::string& value) {
+  userPhraseAdder_->addUserPhrase(reading, value);
+  onAddNewPhrase_(value);
+}
+
+void KeyHandler::excludePhrase(const std::string& reading,
+                               const std::string& value) {
+  userPhraseAdder_->removeUserPhrase(reading, value);
+  onAddNewPhrase_(value);
 }
 
 void KeyHandler::reset() {

@@ -35,6 +35,8 @@ class MockUserPhraseAdder : public UserPhraseAdder {
  public:
   void addUserPhrase(const std::string_view&,
                      const std::string_view&) override {}
+  void removeUserPhrase(const std::string_view&,
+                        const std::string_view&) override {}
 };
 
 class MockLocalizedString : public KeyHandler::LocalizedStrings {
