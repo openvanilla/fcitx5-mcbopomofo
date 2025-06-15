@@ -73,6 +73,15 @@ class LanguageModelLoader : public UserPhraseAdder {
 
  private:
   void populateUserDataFilesIfNeeded();
+  bool checkIfPhraseExists(const std::filesystem::path& path,
+                           const std::string& reading,
+                           const std::string& value) const;
+  bool addPhraseToEndOfFile(const std::filesystem::path& path,
+                            const std::string& reading,
+                            const std::string& value) const;
+  bool removePhraseFromFile(const std::filesystem::path& path,
+                            const std::string& reading,
+                            const std::string& value) const;
 
   std::unique_ptr<LocalizedStrings> localizedStrings_;
 

@@ -1042,6 +1042,18 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       return true;
     }
 
+    auto* customMenu = dynamic_cast<InputStates::CustomMenu*>(state_.get());
+    if (customMenu != nullptr) {
+      auto* choosingCandidate = dynamic_cast<InputStates::ChoosingCandidate*>(
+          customMenu->previousState.get());
+      if (choosingCandidate != nullptr) {
+        auto copy = std::make_unique<InputStates::ChoosingCandidate>(
+            *choosingCandidate);
+        stateCallback(std::move(copy));
+      }
+      return true;
+    }
+
     auto* selecting =
         dynamic_cast<InputStates::SelectingDictionary*>(state_.get());
     if (selecting != nullptr) {
