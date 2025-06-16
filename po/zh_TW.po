@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-15 19:45+0800\n"
+"POT-Creation-Date: 2025-06-16 23:21+0800\n"
 "PO-Revision-Date: 2022-12-28 21:39+0800\n"
 "Last-Translator: Chaoting Liu <brli@chakralinux.org>\n"
 "Language-Team: none\n"
@@ -167,11 +167,11 @@ msgstr "編輯排除的詞彙"
 msgid "Half width Punctuation"
 msgstr "半形標點"
 
-#: src/McBopomofo.cpp:1381
+#: src/McBopomofo.cpp:1383
 msgid "UTF8 String Length: {0}"
 msgstr "UTF8 字串長度 {0}"
 
-#: src/McBopomofo.cpp:1384
+#: src/McBopomofo.cpp:1386
 msgid "Code Point Count: {0}"
 msgstr "總字數 {0}"
 
@@ -274,63 +274,67 @@ msgid "Selection Keys Count"
 msgstr "選字鍵"
 
 #: src/McBopomofo.h:121
+msgid "Space key chooses candidate"
+msgstr "使用空白鍵選字"
+
+#: src/McBopomofo.h:126
 msgid "Show Candidate Phrase"
 msgstr "選字時，候選詞起算點"
 
-#: src/McBopomofo.h:126
+#: src/McBopomofo.h:131
 msgid "Move cursor after selection"
 msgstr "選字後自動移動游標"
 
-#: src/McBopomofo.h:131
+#: src/McBopomofo.h:136
 msgid "Allow using J and K key to move the cursor when choosing candidates"
 msgstr "允許使用 J 和 K 鍵在選字時移動游標"
 
-#: src/McBopomofo.h:138
+#: src/McBopomofo.h:143
 msgid "ESC key clears entire composing buffer"
 msgstr "ESC 按鍵清除輸入緩衝區的所有內容"
 
-#: src/McBopomofo.h:143
+#: src/McBopomofo.h:148
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 msgstr "在大寫鎖定時也能輸入中文（像微軟新注音）"
 
-#: src/McBopomofo.h:148
+#: src/McBopomofo.h:153
 msgid "Shift + Letter Keys"
 msgstr "Shift + 字母按鍵"
 
-#: src/McBopomofo.h:154
+#: src/McBopomofo.h:159
 #, fuzzy
 msgid "Shift + Enter Key triggers associated phrases"
 msgstr "使用 Shift + Enter 按鍵輸入聯想詞"
 
-#: src/McBopomofo.h:159
+#: src/McBopomofo.h:164
 msgid "Repeated punctuation to select next candidate"
 msgstr "重複輸入標點時，輸入下一個候選標點符號"
 
-#: src/McBopomofo.h:164
+#: src/McBopomofo.h:169
 msgid "Control + Enter Key"
 msgstr "Control + Enter 按鍵"
 
-#: src/McBopomofo.h:169
+#: src/McBopomofo.h:174
 msgid "Open User Phrase Files With"
 msgstr "開啟自訂詞庫檔案要用"
 
-#: src/McBopomofo.h:174
+#: src/McBopomofo.h:179
 msgid "Add Phrase Hook Path"
 msgstr "加詞腳本路徑"
 
-#: src/McBopomofo.h:180
+#: src/McBopomofo.h:185
 msgid "Run the hook script after adding a phrase"
 msgstr "在加入新詞之後執行加詞腳本"
 
-#: src/McBopomofo.h:184
+#: src/McBopomofo.h:189
 msgid "Enable Half Width Punctuation"
 msgstr "啟用半形標點符號"
 
-#: src/McBopomofo.h:189
+#: src/McBopomofo.h:194
 msgid "Enable Associated Phrases"
 msgstr "啟用聯想詞功能"
 
-#: src/McBopomofo.h:199
+#: src/McBopomofo.h:204
 msgid "User Data"
 msgstr "打開使用者資料目錄"
 
@@ -342,15 +346,15 @@ msgstr "字元資訊"
 msgid "Look up \"{0}\" in {1}"
 msgstr "在{1}尋找「{0}」"
 
-#: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
+#: src/mcbopomofo.conf.in.in:2 src/mcbopomofo-addon.conf.in.in:2
 msgid "McBopomofo"
 msgstr "小麥注音"
 
-#: src/mcbopomofo-plain.conf.in.in:3
+#: src/mcbopomofo-plain.conf.in.in:2
 msgid "PlainBopomofo"
 msgstr "傳統注音"
 
-#: src/mcbopomofo-addon.conf.in.in:4
+#: src/mcbopomofo-addon.conf.in.in:3
 msgid "McBopomofo Input Method For Fcitx"
 msgstr "Fctix 的小麥注音輸入法"
 
@@ -362,9 +366,10 @@ msgstr "Fctix 5 的小麥注音"
 msgid "A Bopomofo input method that picks phrases intelligently"
 msgstr "一套智慧選字的注音輸入法"
 
+#: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:10
 #, fuzzy
-#~ msgid "The McBopomofo Authors"
-#~ msgstr "小麥注音"
+msgid "The McBopomofo Authors"
+msgstr "小麥注音"
 
 #~ msgid "Open URL With"
 #~ msgstr "開啟網址連結時要用"

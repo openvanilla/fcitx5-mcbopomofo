@@ -116,6 +116,11 @@ FCITX_CONFIGURATION(
         this, "SelectionKeysCount", _("Selection Keys Count"), 9,
         fcitx::IntConstrain(4, 9)};
 
+    // Space key chooses candidate.
+    fcitx::Option<bool> chooseCandidateUsingSpace{
+        this, "ChooseCandidateUsingSpace", _("Space key chooses candidate"),
+        true};
+
     // Select the phrase as candidate before or after the cursor.
     fcitx::OptionWithAnnotation<SelectPhrase, SelectPhraseI18NAnnotation>
         selectPhrase{this, "SelectPhrase", _("Show Candidate Phrase"),

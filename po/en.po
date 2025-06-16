@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo v0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-15 19:45+0800\n"
+"POT-Creation-Date: 2025-06-16 23:21+0800\n"
 "PO-Revision-Date: 2022-03-22 20:28-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -166,11 +166,11 @@ msgstr "Edit Excluded Phrases"
 msgid "Half width Punctuation"
 msgstr "Half width Punctuation"
 
-#: src/McBopomofo.cpp:1381
+#: src/McBopomofo.cpp:1383
 msgid "UTF8 String Length: {0}"
 msgstr "UTF8 String Length: {0}"
 
-#: src/McBopomofo.cpp:1384
+#: src/McBopomofo.cpp:1386
 msgid "Code Point Count: {0}"
 msgstr "Code Point Count: {0}"
 
@@ -273,62 +273,66 @@ msgid "Selection Keys Count"
 msgstr "Selection Keys Count"
 
 #: src/McBopomofo.h:121
+msgid "Space key chooses candidate"
+msgstr "Space key chooses candidate"
+
+#: src/McBopomofo.h:126
 msgid "Show Candidate Phrase"
 msgstr "Show Candidates"
 
-#: src/McBopomofo.h:126
+#: src/McBopomofo.h:131
 msgid "Move cursor after selection"
 msgstr "Move cursor after selection"
 
-#: src/McBopomofo.h:131
+#: src/McBopomofo.h:136
 msgid "Allow using J and K key to move the cursor when choosing candidates"
 msgstr "Allow using J and K key to move the cursor when choosing candidates"
 
-#: src/McBopomofo.h:138
+#: src/McBopomofo.h:143
 msgid "ESC key clears entire composing buffer"
 msgstr "ESC key clears entire composing buffer"
 
-#: src/McBopomofo.h:143
+#: src/McBopomofo.h:148
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 msgstr "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 
-#: src/McBopomofo.h:148
+#: src/McBopomofo.h:153
 msgid "Shift + Letter Keys"
 msgstr "Shift + Letter Keys"
 
-#: src/McBopomofo.h:154
+#: src/McBopomofo.h:159
 msgid "Shift + Enter Key triggers associated phrases"
 msgstr "Shift + Enter Key triggers associated phrases"
 
-#: src/McBopomofo.h:159
+#: src/McBopomofo.h:164
 msgid "Repeated punctuation to select next candidate"
 msgstr "Repeated punctuation to select next candidate"
 
-#: src/McBopomofo.h:164
+#: src/McBopomofo.h:169
 msgid "Control + Enter Key"
 msgstr "Control + Enter Key"
 
-#: src/McBopomofo.h:169
+#: src/McBopomofo.h:174
 msgid "Open User Phrase Files With"
 msgstr "Open User Phrase Files With"
 
-#: src/McBopomofo.h:174
+#: src/McBopomofo.h:179
 msgid "Add Phrase Hook Path"
 msgstr "Add Phrase Hook Path"
 
-#: src/McBopomofo.h:180
+#: src/McBopomofo.h:185
 msgid "Run the hook script after adding a phrase"
 msgstr "Run the hook script after adding a phrase"
 
-#: src/McBopomofo.h:184
+#: src/McBopomofo.h:189
 msgid "Enable Half Width Punctuation"
 msgstr "Enable Half Width Punctuation"
 
-#: src/McBopomofo.h:189
+#: src/McBopomofo.h:194
 msgid "Enable Associated Phrases"
 msgstr "Enable Associated Phrases"
 
-#: src/McBopomofo.h:199
+#: src/McBopomofo.h:204
 msgid "User Data"
 msgstr "User Data"
 
@@ -340,16 +344,16 @@ msgstr "Character Information"
 msgid "Look up \"{0}\" in {1}"
 msgstr "Look up \"{0}\" in {1}"
 
-#: src/mcbopomofo.conf.in.in:3 src/mcbopomofo-addon.conf.in.in:3
+#: src/mcbopomofo.conf.in.in:2 src/mcbopomofo-addon.conf.in.in:2
 #, fuzzy
 msgid "McBopomofo"
 msgstr "Plain Bopomofo"
 
-#: src/mcbopomofo-plain.conf.in.in:3
+#: src/mcbopomofo-plain.conf.in.in:2
 msgid "PlainBopomofo"
 msgstr "Plain Bopomofo"
 
-#: src/mcbopomofo-addon.conf.in.in:4
+#: src/mcbopomofo-addon.conf.in.in:3
 msgid "McBopomofo Input Method For Fcitx"
 msgstr "McBopomofo Input Method For Fcitx"
 
@@ -362,9 +366,10 @@ msgstr "McBopomofo for Fcitx 5"
 msgid "A Bopomofo input method that picks phrases intelligently"
 msgstr "A Bopomofo input method that picks phrases intelligently"
 
+#: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:10
 #, fuzzy
-#~ msgid "The McBopomofo Authors"
-#~ msgstr "Plain Bopomofo"
+msgid "The McBopomofo Authors"
+msgstr "Plain Bopomofo"
 
 #~ msgid "Open URL With"
 #~ msgstr "Open URL With"
