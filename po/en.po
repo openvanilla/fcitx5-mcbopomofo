@@ -172,33 +172,32 @@ msgstr "Half width Punctuation"
 
 #: src/McBopomofo.cpp:905
 msgid "Boost"
-msgstr ""
+msgstr "Boost"
 
 #: src/McBopomofo.cpp:911 src/McBopomofo.cpp:952
 msgid "Cancel"
-msgstr ""
+msgstr "Cancel"
 
 #: src/McBopomofo.cpp:921
 #, c++-format
 msgid "Do you want to boost the score of the phrase \"{}\"?"
-msgstr ""
+msgstr "Do you want to boost the score of the phrase \"{}\"?"
 
 #: src/McBopomofo.cpp:946
 msgid "Exclude"
-msgstr ""
+msgstr "Exclude"
 
 #: src/McBopomofo.cpp:962
 #, c++-format
 msgid "Do you want to exclude the phrase \"{}\"?"
-msgstr ""
+msgstr "Do you want to exclude the phrase \"{}\"?"
 
 #: src/McBopomofo.cpp:1519
 #, c++-format
 msgid "UTF8 String Length: {0}"
 msgstr "UTF8 String Length: {0}"
 
-#: src/McBopomofo.cpp:1522
-#, c++-format
+#: src/McBopomofo.cpp:1386
 msgid "Code Point Count: {0}"
 msgstr "Code Point Count: {0}"
 

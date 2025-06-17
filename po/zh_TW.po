@@ -198,8 +198,7 @@ msgstr "您確定要排除「{}」這個詞彙嗎？"
 msgid "UTF8 String Length: {0}"
 msgstr "UTF8 字串長度 {0}"
 
-#: src/McBopomofo.cpp:1522
-#, c++-format
+#: src/McBopomofo.cpp:1386
 msgid "Code Point Count: {0}"
 msgstr "總字數 {0}"
 
