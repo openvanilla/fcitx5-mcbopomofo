@@ -606,6 +606,8 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
       config_.halfWidthPunctuationEnable.value());
   keyHandler_->setRepeatedPunctuationToSelectCandidateEnabled(
       config_.repeatedPunctuationToSelectCandidateEnabled.value());
+  keyHandler_->setChooseCandidateUsingSpace(
+      config_.chooseCandidateUsingSpace.value());
 
   languageModelLoader_->reloadUserModelsIfNeeded();
 }

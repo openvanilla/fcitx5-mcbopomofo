@@ -154,6 +154,9 @@ class KeyHandler {
   //  candidates.
   void setRepeatedPunctuationToSelectCandidateEnabled(bool enabled);
 
+  // Sets whether the space key should be used to choose candidates.
+  void setChooseCandidateUsingSpace(bool enabled);
+
   // Compute the actual candidate cursor index based on the current index.
   size_t actualCandidateCursorIndex();
   // Compute the actual candidate cursor index.
@@ -290,6 +293,7 @@ class KeyHandler {
   bool associatedPhrasesEnabled_ = false;
   bool halfWidthPunctuationEnabled_ = false;
   bool repeatedPunctuationToSelectCandidateEnabled_ = false;
+  bool chooseCandidateUsingSpace_ = true;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
   std::function<void(const std::string&)> onAddNewPhrase_;
 

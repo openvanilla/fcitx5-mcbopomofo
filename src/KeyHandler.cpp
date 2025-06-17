@@ -238,8 +238,10 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     return true;
   }
 
-  // Shift + Space.
-  if (key.ascii == Key::SPACE && key.shiftPressed) {
+  // Shift + Space: emit a space directly.
+  // Space may also be used to insert space if user has configured it to do so.
+  if (key.ascii == Key::SPACE &&
+      (key.shiftPressed || !chooseCandidateUsingSpace_)) {
     if (putLowercaseLettersToComposingBuffer_) {
       grid_.insertReading(" ");
       walk();
@@ -674,6 +676,10 @@ void KeyHandler::setOnAddNewPhrase(
 
 void KeyHandler::setRepeatedPunctuationToSelectCandidateEnabled(bool enabled) {
   repeatedPunctuationToSelectCandidateEnabled_ = enabled;
+}
+
+void KeyHandler::setChooseCandidateUsingSpace(bool enabled) {
+  chooseCandidateUsingSpace_ = enabled;
 }
 
 #pragma endregion Settings
