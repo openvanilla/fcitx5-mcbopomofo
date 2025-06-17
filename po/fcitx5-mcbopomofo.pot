@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-mcbopomofo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-16 00:40+0800\n"
+"POT-Creation-Date: 2025-06-18 00:42+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -154,34 +154,34 @@ msgstr ""
 msgid "Half width Punctuation"
 msgstr ""
 
-#: src/McBopomofo.cpp:905
+#: src/McBopomofo.cpp:910
 msgid "Boost"
 msgstr "Boost"
 
-#: src/McBopomofo.cpp:911 src/McBopomofo.cpp:952
+#: src/McBopomofo.cpp:916 src/McBopomofo.cpp:961
 msgid "Cancel"
 msgstr "Cancel"
 
-#: src/McBopomofo.cpp:921
+#: src/McBopomofo.cpp:926
 #, c++-format
 msgid "Do you want to boost the score of the phrase \"{}\"?"
 msgstr "Do you want to boost the score of the phrase \"{}\"?"
 
-#: src/McBopomofo.cpp:946
+#: src/McBopomofo.cpp:955
 msgid "Exclude"
 msgstr "Exclude"
 
-#: src/McBopomofo.cpp:962
+#: src/McBopomofo.cpp:971
 #, c++-format
 msgid "Do you want to exclude the phrase \"{}\"?"
 msgstr "Do you want to exclude the phrase \"{}\"?"
 
-#: src/McBopomofo.cpp:1519
+#: src/McBopomofo.cpp:1528
 #, c++-format
 msgid "UTF8 String Length: {0}"
 msgstr ""
 
-#: src/McBopomofo.cpp:1522
+#: src/McBopomofo.cpp:1531
 #, c++-format
 msgid "Code Point Count: {0}"
 msgstr ""

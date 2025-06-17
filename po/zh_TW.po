@@ -394,11 +394,3 @@ msgstr "Fctix 5 的小麥注音"
 #: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:8
 msgid "A Bopomofo input method that picks phrases intelligently"
 msgstr "一套智慧選字的注音輸入法"
-
-#: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:10
-#, fuzzy
-msgid "The McBopomofo Authors"
-msgstr "小麥注音"
-
-#~ msgid "Open URL With"
-#~ msgstr "開啟網址連結時要用"

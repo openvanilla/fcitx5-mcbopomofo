@@ -395,10 +395,3 @@ msgstr "McBopomofo for Fcitx 5"
 msgid "A Bopomofo input method that picks phrases intelligently"
 msgstr "A Bopomofo input method that picks phrases intelligently"
 
-#: org.fcitx.Fcitx5.Addon.McBopomofo.metainfo.xml.in:10
-#, fuzzy
-msgid "The McBopomofo Authors"
-msgstr "Plain Bopomofo"
-
-#~ msgid "Open URL With"
-#~ msgstr "Open URL With"
