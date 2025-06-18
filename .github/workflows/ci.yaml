@@ -81,11 +81,19 @@ jobs:
   build_archlinux:
     runs-on: ubuntu-latest
     container: ghcr.io/xatier/arch-dev:latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Move to absolute path
+      - name: Checkout
         run: |
-          mv $GITHUB_WORKSPACE /home/xatier/fcitx5-mcbopomofo
+          export HOME=/home/xatier
+          cd /home/xatier
+          echo "cloning $GITHUB_SERVER_URL/$GITHUB_REPOSITORY into $PWD $GITHUB_SHA"
+          git clone "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+
+          cd /home/xatier/fcitx5-mcbopomofo
+          git fetch origin "$GITHUB_REF" ||:
+          git checkout "$GITHUB_SHA"
+
       - name: Build
         run: |
           export HOME=/home/xatier
