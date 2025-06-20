@@ -37,6 +37,7 @@
 #include <utility>
 #include <vector>
 
+#include "Format.h"
 #include "Key.h"
 #include "Log.h"
 #include "UTF8Helper.h"
@@ -324,16 +325,19 @@ class KeyHandlerLocalizedString : public KeyHandler::LocalizedStrings {
  public:
   std::string cursorIsBetweenSyllables(
       const std::string& prevReading, const std::string& nextReading) override {
-    return fmt::format(_("Cursor is between syllables {0} and {1}"),
-                       prevReading, nextReading);
+    return fmt::format(
+        FmtRuntime(_("Cursor is between syllables {0} and {1}")), prevReading,
+        nextReading);
   }
 
   std::string syllablesRequired(size_t syllables) override {
-    return fmt::format(_("{0} syllables required"), std::to_string(syllables));
+    return fmt::format(FmtRuntime(_("{0} syllables required")),
+                       std::to_string(syllables));
   }
 
   std::string syllablesMaximum(size_t syllables) override {
-    return fmt::format(_("{0} syllables maximum"), std::to_string(syllables));
+    return fmt::format(FmtRuntime(_("{0} syllables maximum")),
+                       std::to_string(syllables));
   }
 
   std::string phraseAlreadyExists() override {
@@ -347,8 +351,8 @@ class KeyHandlerLocalizedString : public KeyHandler::LocalizedStrings {
   std::string markedWithSyllablesAndStatus(const std::string& marked,
                                            const std::string& readingUiText,
                                            const std::string& status) override {
-    return fmt::format(_("Marked: {0}, syllables: {1}, {2}"), marked,
-                       readingUiText, status);
+    return fmt::format(FmtRuntime(_("Marked: {0}, syllables: {1}, {2}")),
+                       marked, readingUiText, status);
   }
 };
 
@@ -1380,10 +1384,11 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
     }
   } else if (showingCharInfo != nullptr) {
     std::vector<std::string> menu;
-    menu.emplace_back(fmt::format(_("UTF8 String Length: {0}"),
+    menu.emplace_back(fmt::format(FmtRuntime(_("UTF8 String Length: {0}")),
                                   showingCharInfo->selectedPhrase.length()));
     size_t count = CodePointCount(showingCharInfo->selectedPhrase);
-    menu.emplace_back(fmt::format(_("Code Point Count: {0}"), count));
+    menu.emplace_back(
+        fmt::format(FmtRuntime(_("Code Point Count: {0}")), count));
 
     for (const auto& menuItem : menu) {
       std::string displayText = menuItem;
