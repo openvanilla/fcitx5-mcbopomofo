@@ -13,7 +13,12 @@ makedepends=('cmake' 'extra-cmake-modules' 'git')
 optdepends=()
 conflicts=('fcitx5-mcbopomofo')
 provides=('fcitx5-mcbopomofo')
-source=("${_pkgname}::git+https://github.com/openvanilla/fcitx5-mcbopomofo.git")
+
+if [[ -z "${MCBOPOMOFO_REPO}" ]]; then
+    MCBOPOMOFO_REPO=$url
+fi
+
+source=("${_pkgname}::git+${MCBOPOMOFO_REPO}")
 sha512sums=('SKIP')
 
 pkgver() {
