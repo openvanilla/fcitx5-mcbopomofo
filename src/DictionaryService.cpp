@@ -34,6 +34,7 @@
 #include <sstream>
 #include <utility>
 
+#include "Format.h"
 #include "Log.h"
 
 constexpr char kDataPath[] = "data/mcbopomofo-dictionary-service.json";
@@ -57,7 +58,7 @@ std::string urlEncode(const std::string& str) {
 class CharacterInfoService : public McBopomofo::DictionaryService {
  public:
   std::string name() const override {
-    return fmt::format(_("Character Information"));
+    return fmt::format(FmtRuntime(_("Character Information")));
   }
 
   void lookup(std::string phrase, McBopomofo::InputState* state,
@@ -77,7 +78,7 @@ class CharacterInfoService : public McBopomofo::DictionaryService {
   }
 
   std::string textForMenu(std::string /*Unused*/) const override {
-    return fmt::format(_("Character Information"));
+    return fmt::format(FmtRuntime(_("Character Information")));
   }
 };
 
@@ -102,7 +103,8 @@ class HttpBasedDictionaryService : public McBopomofo::DictionaryService {
   }
 
   std::string textForMenu(std::string selectedString) const override {
-    return fmt::format(_("Look up \"{0}\" in {1}"), selectedString, name_);
+    return fmt::format(FmtRuntime(_("Look up \"{0}\" in {1}")),
+                       selectedString, name_);
   }
 
  private:
