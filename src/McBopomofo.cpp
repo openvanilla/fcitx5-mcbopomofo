@@ -346,9 +346,8 @@ class KeyHandlerLocalizedString : public KeyHandler::LocalizedStrings {
  public:
   std::string cursorIsBetweenSyllables(
       const std::string& prevReading, const std::string& nextReading) override {
-    return fmt::format(
-        FmtRuntime(_("Cursor is between syllables {0} and {1}")), prevReading,
-        nextReading);
+    return fmt::format(FmtRuntime(_("Cursor is between syllables {0} and {1}")),
+                       prevReading, nextReading);
   }
 
   std::string syllablesRequired(size_t syllables) override {
@@ -935,7 +934,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
             });
         entries.emplace_back(std::move(confirmEntry));
         title = fmt::format(
-            _("Do you want to boost the score of the phrase \"{}\"?"), phrase);
+            FmtRuntime(
+                _("Do you want to boost the score of the phrase \"{}\"?")),
+            phrase);
       } else if (isMinusKey) {
         InputStates::CustomMenu::MenuEntry confirmEntry(
             _("Exclude"), [this, phrase, reading, stateCallback]() {
@@ -944,8 +945,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
               stateCallback(std::move(inputting));
             });
         entries.emplace_back(std::move(confirmEntry));
-        title =
-            fmt::format(_("Do you want to exclude the phrase \"{}\"?"), phrase);
+        title = fmt::format(
+            FmtRuntime(_("Do you want to exclude the phrase \"{}\"?")), phrase);
       }
 
       InputStates::CustomMenu::MenuEntry cancelEntry(
