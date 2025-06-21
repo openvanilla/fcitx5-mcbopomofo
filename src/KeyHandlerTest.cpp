@@ -190,7 +190,7 @@ TEST_F(KeyHandlerTest, EnterCandidateState) {
 
   EXPECT_THAT(choosingCandidateState->candidates,
               testing::Contains(InputStates::ChoosingCandidate::Candidate(
-                  "ㄓㄨㄥ-ㄨㄣˊ", "中文")));
+                  "ㄓㄨㄥ-ㄨㄣˊ", "中文", "中文")));
 }
 
 TEST_F(KeyHandlerTest, CursorMovementLeft) {
@@ -224,8 +224,8 @@ TEST_F(KeyHandlerTest, SelectCandidatesBeforeCursor) {
   ASSERT_EQ(choosingCandidateState->composingBuffer, "中文");
   ASSERT_EQ(choosingCandidateState->cursorIndex, strlen("中"));
   EXPECT_THAT(choosingCandidateState->candidates,
-              testing::Contains(
-                  InputStates::ChoosingCandidate::Candidate("ㄓㄨㄥ", "中")));
+              testing::Contains(InputStates::ChoosingCandidate::Candidate(
+                  "ㄓㄨㄥ", "中", "中")));
 }
 
 TEST_F(KeyHandlerTest, SelectCandidatesAfterCursor) {
@@ -241,8 +241,8 @@ TEST_F(KeyHandlerTest, SelectCandidatesAfterCursor) {
   ASSERT_EQ(choosingCandidateState->composingBuffer, "中文");
   ASSERT_EQ(choosingCandidateState->cursorIndex, strlen("中"));
   EXPECT_THAT(choosingCandidateState->candidates,
-              testing::Contains(
-                  InputStates::ChoosingCandidate::Candidate("ㄨㄣˊ", "文")));
+              testing::Contains(InputStates::ChoosingCandidate::Candidate(
+                  "ㄨㄣˊ", "文", "文")));
 }
 
 TEST_F(KeyHandlerTest, UppercaseLetterCommitComposingBufferByDefault) {

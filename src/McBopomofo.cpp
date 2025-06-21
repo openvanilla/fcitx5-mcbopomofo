@@ -842,6 +842,11 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 
   bool keyIsCancel = false;
 
+  std::vector<std::string> invalidPrefixes = {
+      "_half_punctuation_", "_ctrl_punctuation_", "_letter_",
+      "_number_",           "_punctuation_",
+  };
+
   // When pressing "?" in the candidate list, tries to look up the candidate in
   // dictionaries.
   if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
@@ -860,15 +865,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
         int pageSize = candidateList->size();
         int selectedCandidateIndex =
             page * pageSize + candidateList->cursorIndex();
-        std::string phrase =
-            choosingCandidate->candidates[selectedCandidateIndex].value;
         std::string reading =
             choosingCandidate->candidates[selectedCandidateIndex].reading;
-
-        std::vector<std::string> invalidPrefixes = {
-            "_half_punctuation_", "_ctrl_punctuation_", "_letter_",
-            "_number_",           "_punctuation_",
-        };
 
         // If the reading has an invalid prefix, skip dictionary lookup
         if (std::any_of(invalidPrefixes.begin(), invalidPrefixes.end(),
@@ -879,6 +877,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
           return true;
         }
 
+        std::string phrase =
+            choosingCandidate->candidates[selectedCandidateIndex].value;
         std::unique_ptr<InputStates::ChoosingCandidate> copy =
             std::make_unique<InputStates::ChoosingCandidate>(
                 *choosingCandidate);
@@ -893,29 +893,61 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
-      (key.check(FcitxKey_plus) || key.check(FcitxKey_equal))) {
+  if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo) {
     auto* choosingCandidate =
         dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
-    if (choosingCandidate != nullptr) {
+    bool isPlusKey = key.check(FcitxKey_plus) || key.check(FcitxKey_equal);
+    bool isMinusKey =
+        key.check(FcitxKey_minus) || key.check(FcitxKey_underscore);
+    if (choosingCandidate != nullptr && (isPlusKey || isMinusKey)) {
       int page = candidateList->currentPage();
       int pageSize = candidateList->size();
       int index = candidateList->cursorIndex();
       int selectedCandidateIndex = page * pageSize + index;
       auto candidate = choosingCandidate->candidates[selectedCandidateIndex];
-      std::string phrase = candidate.value;
       std::string reading = candidate.reading;
+      // If the reading has an invalid prefix, skip dictionary lookup
+      if (std::any_of(invalidPrefixes.begin(), invalidPrefixes.end(),
+                      [&reading](const std::string& prefix) {
+                        return reading.compare(0, prefix.length(), prefix) == 0;
+                      })) {
+        return true;
+      }
+
       // If the reading doesn't contain a hyphen, return true
       if (reading.find('-') == std::string::npos) {
         return true;
       }
+      std::string phrase = candidate.value;
+      std::string originalValue = candidate.originalValue;
+      if (phrase != originalValue) {
+        return true;
+      }
+
       std::vector<InputStates::CustomMenu::MenuEntry> entries;
-      InputStates::CustomMenu::MenuEntry confirmEntry(
-          _("Boost"), [this, phrase, reading, stateCallback]() {
-            keyHandler_->boostPhrase(reading, phrase);
-            auto inputting = keyHandler_->buildInputtingState();
-            stateCallback(std::move(inputting));
-          });
+      std::string title;
+      if (isPlusKey) {
+        InputStates::CustomMenu::MenuEntry confirmEntry(
+            _("Boost"), [this, phrase, reading, stateCallback]() {
+              keyHandler_->boostPhrase(reading, phrase);
+              auto inputting = keyHandler_->buildInputtingState();
+              stateCallback(std::move(inputting));
+            });
+        entries.emplace_back(std::move(confirmEntry));
+        title = fmt::format(
+            _("Do you want to boost the score of the phrase \"{}\"?"), phrase);
+      } else if (isMinusKey) {
+        InputStates::CustomMenu::MenuEntry confirmEntry(
+            _("Exclude"), [this, phrase, reading, stateCallback]() {
+              keyHandler_->excludePhrase(reading, phrase);
+              auto inputting = keyHandler_->buildInputtingState();
+              stateCallback(std::move(inputting));
+            });
+        entries.emplace_back(std::move(confirmEntry));
+        title =
+            fmt::format(_("Do you want to exclude the phrase \"{}\"?"), phrase);
+      }
+
       InputStates::CustomMenu::MenuEntry cancelEntry(
           _("Cancel"), [this, stateCallback]() {
             auto inputting = keyHandler_->buildInputtingState();
@@ -924,55 +956,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
             stateCallback(std::move(inputting));
             stateCallback(std::move(choosing));
           });
-      entries.push_back(std::move(confirmEntry));
       entries.push_back(std::move(cancelEntry));
-      std::string title = fmt::format(
-          _("Do you want to boost the score of the phrase \"{}\"?"), phrase);
-      auto copy =
-          std::make_unique<InputStates::ChoosingCandidate>(*choosingCandidate);
-      auto confirm = std::make_unique<InputStates::CustomMenu>(
-          std::move(copy), std::move(title), std::move(entries));
-      stateCallback(std::move(confirm));
-      return true;
-    }
-  }
-
-  if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
-      (key.check(FcitxKey_minus) || key.check(FcitxKey_underscore))) {
-    auto* choosingCandidate =
-        dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
-    if (choosingCandidate != nullptr) {
-      int page = candidateList->currentPage();
-      int pageSize = candidateList->size();
-      int index = candidateList->cursorIndex();
-      int selectedCandidateIndex = page * pageSize + index;
-      auto candidate = choosingCandidate->candidates[selectedCandidateIndex];
-      std::string phrase = candidate.value;
-      std::string reading = candidate.reading;
-      // If the reading doesn't contain a hyphen, return true
-      if (reading.find('-') == std::string::npos) {
-        return true;
-      }
-
-      std::vector<InputStates::CustomMenu::MenuEntry> entries;
-      InputStates::CustomMenu::MenuEntry confirmEntry(
-          _("Exclude"), [this, phrase, reading, stateCallback]() {
-            keyHandler_->excludePhrase(reading, phrase);
-            auto inputting = keyHandler_->buildInputtingState();
-            stateCallback(std::move(inputting));
-          });
-      InputStates::CustomMenu::MenuEntry cancelEntry(
-          _("Cancel"), [this, stateCallback]() {
-            auto inputting = keyHandler_->buildInputtingState();
-            auto choosing = keyHandler_->buildChoosingCandidateState(
-                inputting.get(), keyHandler_->candidateCursorIndex());
-            stateCallback(std::move(inputting));
-            stateCallback(std::move(choosing));
-          });
-      entries.push_back(std::move(confirmEntry));
-      entries.push_back(std::move(cancelEntry));
-      std::string title =
-          fmt::format(_("Do you want to exclude the phrase \"{}\"?"), phrase);
       auto copy =
           std::make_unique<InputStates::ChoosingCandidate>(*choosingCandidate);
       auto confirm = std::make_unique<InputStates::CustomMenu>(

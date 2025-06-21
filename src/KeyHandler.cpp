@@ -1368,7 +1368,7 @@ KeyHandler::buildChoosingCandidateState(InputStates::NotEmpty* nonEmptyState,
   auto candidates = grid_.candidatesAt(actualCandidateCursorIndex());
   std::vector<InputStates::ChoosingCandidate::Candidate> stateCandidates;
   for (const auto& c : candidates) {
-    stateCandidates.emplace_back(c.reading, c.value);
+    stateCandidates.emplace_back(c.reading, c.value, c.originalValue);
   }
 
   return std::make_unique<InputStates::ChoosingCandidate>(
@@ -1455,7 +1455,7 @@ KeyHandler::buildAssociatedPhrasesState(
     std::vector<InputStates::ChoosingCandidate::Candidate> cs;
     for (const auto& phrase : phrases) {
       // The candidates should contain the prefix.
-      cs.emplace_back(phrase.combinedReading(), phrase.value);
+      cs.emplace_back(phrase.combinedReading(), phrase.value, phrase.value);
     }
 
     return std::make_unique<InputStates::AssociatedPhrases>(
@@ -1514,7 +1514,8 @@ KeyHandler::buildAssociatedPhrasesPlainState(const std::string& reading,
     // Ditto for the value.
     std::string valueWithoutPrefix = phrase.value.substr(value.length());
 
-    cs.emplace_back(combinedReadingWithoutPrefix, valueWithoutPrefix);
+    cs.emplace_back(combinedReadingWithoutPrefix, valueWithoutPrefix,
+                    valueWithoutPrefix);
   }
 
   if (!cs.empty()) {
@@ -1584,8 +1585,8 @@ void KeyHandler::pinNode(
     const InputStates::ChoosingCandidate::Candidate& candidate,
     bool useMoveCursorAfterSelectionSetting) {
   size_t actualCursor = actualCandidateCursorIndex();
-  Formosa::Gramambular2::ReadingGrid::Candidate gridCandidate(candidate.reading,
-                                                              candidate.value);
+  Formosa::Gramambular2::ReadingGrid::Candidate gridCandidate(
+      candidate.reading, candidate.value, "");
   if (!grid_.overrideCandidate(actualCursor, gridCandidate)) {
     return;
   }
@@ -1660,8 +1661,8 @@ void KeyHandler::pinNodeWithAssociatedPhrase(
   // Now, we override the prefix candidate again. This provides us with
   // information for how many more we need to fill in to complete the
   // associated phrase.
-  Formosa::Gramambular2::ReadingGrid::Candidate prefixCandidate{prefixReading,
-                                                                prefixValue};
+  Formosa::Gramambular2::ReadingGrid::Candidate prefixCandidate{
+      prefixReading, prefixValue, ""};
   if (!grid_.overrideCandidate(actualPrefixCursorIndex, prefixCandidate)) {
     return;
   }
