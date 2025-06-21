@@ -99,7 +99,7 @@ jobs:
           export HOME=/home/xatier
           cd /home/xatier/fcitx5-mcbopomofo/distro/archlinux/
           sudo pacman -Syy
-          makepkg -s --noconfirm
+          MCBOPOMOFO_REPO="file:///home/xatier/fcitx5-mcbopomofo#commit=$GITHUB_SHA" makepkg -s --noconfirm
 
   build_fedora:
     strategy:
