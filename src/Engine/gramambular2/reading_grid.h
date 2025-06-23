@@ -183,13 +183,13 @@ class ReadingGrid {
   WalkResult walk();
 
   struct Candidate {
-    Candidate(std::string r, std::string v, std::string originalValue)
+    Candidate(std::string r, std::string v, std::string rawValue)
         : reading(std::move(r)),
           value(std::move(v)),
-          originalValue(std::move(originalValue)) {}
+          rawValue(std::move(rawValue)) {}
     const std::string reading;
     const std::string value;
-    const std::string originalValue;
+    const std::string rawValue;
   };
 
   // Returns all candidate values at the location. If spans are not empty and

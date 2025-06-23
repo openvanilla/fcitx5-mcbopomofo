@@ -307,7 +307,7 @@ std::vector<ReadingGrid::Candidate> ReadingGrid::candidatesAt(size_t loc) {
   for (const NodeInSpan& nodeInSpan : nodes) {
     for (const LanguageModel::Unigram& unigram : nodeInSpan.node->unigrams()) {
       result.emplace_back(nodeInSpan.node->reading(), unigram.value(),
-                          unigram.originalValue());
+                          unigram.rawValue());
     }
   }
   return result;

@@ -918,8 +918,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
         return true;
       }
       std::string phrase = candidate.value;
-      std::string originalValue = candidate.originalValue;
-      if (phrase != originalValue) {
+      std::string rawValue = candidate.rawValue;
+      if (phrase != rawValue) {
         return true;
       }
 

@@ -1368,7 +1368,7 @@ KeyHandler::buildChoosingCandidateState(InputStates::NotEmpty* nonEmptyState,
   auto candidates = grid_.candidatesAt(actualCandidateCursorIndex());
   std::vector<InputStates::ChoosingCandidate::Candidate> stateCandidates;
   for (const auto& c : candidates) {
-    stateCandidates.emplace_back(c.reading, c.value, c.originalValue);
+    stateCandidates.emplace_back(c.reading, c.value, c.rawValue);
   }
 
   return std::make_unique<InputStates::ChoosingCandidate>(
