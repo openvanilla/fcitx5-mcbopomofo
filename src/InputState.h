@@ -116,10 +116,13 @@ struct ChoosingCandidate : NotEmpty {
   size_t originalCursor;
 
   struct Candidate {
-    Candidate(std::string r, std::string v)
-        : reading(std::move(r)), value(std::move(v)) {}
+    Candidate(std::string r, std::string v, std::string rawValue)
+        : reading(std::move(r)),
+          value(std::move(v)),
+          rawValue(std::move(rawValue)) {}
     const std::string reading;
     const std::string value;
+    const std::string rawValue;
   };
 };
 
@@ -317,6 +320,25 @@ struct SelectingFeature : InputState {
 
  protected:
   std::function<std::string(std::string)> converter;
+};
+
+struct CustomMenu : NotEmpty {
+  struct MenuEntry {
+    MenuEntry(std::string name, std::function<void(void)> callback)
+        : name(std::move(name)), callback(std::move(callback)) {}
+    std::string name;
+    std::function<void(void)> callback;
+  };
+
+  explicit CustomMenu(std::unique_ptr<NotEmpty> previousState,
+                      std::string title, std::vector<MenuEntry> entries)
+      : NotEmpty(previousState->composingBuffer, previousState->cursorIndex,
+                 title),
+        previousState(std::move(previousState)),
+        entries(std::move(entries)) {}
+
+  std::unique_ptr<NotEmpty> previousState;
+  std::vector<MenuEntry> entries;
 };
 
 }  // namespace InputStates

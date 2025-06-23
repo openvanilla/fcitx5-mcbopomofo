@@ -40,6 +40,8 @@ class UserPhraseAdder {
   virtual ~UserPhraseAdder() = default;
   virtual void addUserPhrase(const std::string_view& reading,
                              const std::string_view& phrase) = 0;
+  virtual void removeUserPhrase(const std::string_view& reading,
+                                const std::string_view& phrase) = 0;
 };
 
 class LanguageModelLoader : public UserPhraseAdder {
@@ -56,6 +58,9 @@ class LanguageModelLoader : public UserPhraseAdder {
   void addUserPhrase(const std::string_view& reading,
                      const std::string_view& phrase) override;
 
+  void removeUserPhrase(const std::string_view& reading,
+                        const std::string_view& phrase) override;
+
   void reloadUserModelsIfNeeded();
 
   std::string userDataPath() const { return userDataPath_; }
@@ -68,6 +73,15 @@ class LanguageModelLoader : public UserPhraseAdder {
 
  private:
   void populateUserDataFilesIfNeeded();
+  bool checkIfPhraseExists(const std::filesystem::path& path,
+                           const std::string& reading,
+                           const std::string& value) const;
+  bool addPhraseToEndOfFile(const std::filesystem::path& path,
+                            const std::string& reading,
+                            const std::string& value) const;
+  bool removePhraseFromFile(const std::filesystem::path& path,
+                            const std::string& reading,
+                            const std::string& value) const;
 
   std::unique_ptr<LocalizedStrings> localizedStrings_;
 
