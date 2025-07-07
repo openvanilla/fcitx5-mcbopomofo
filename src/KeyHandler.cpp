@@ -237,31 +237,31 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     return true;
   }
 
+  auto* maybeNotEmptyState = dynamic_cast<InputStates::NotEmpty*>(state);
+
   // Shift + Space: emit a space directly.
-  // Space may also be used to insert space if user has configured it to do so.
-  if (key.ascii == Key::SPACE &&
+  // Space also emits a space if not configured as a candidate choosing key.
+  if (maybeNotEmptyState != nullptr && key.ascii == Key::SPACE &&
       (key.shiftPressed || !chooseCandidateUsingSpace_)) {
-    if (putLowercaseLettersToComposingBuffer_) {
+    if (grid_.cursor() >= grid_.length()) {
+      auto inputtingState = buildInputtingState();
+      // Steal the composingBuffer built by the inputting state.
+      auto committingState = std::make_unique<InputStates::Committing>(
+          inputtingState->composingBuffer);
+      stateCallback(std::move(committingState));
+
+      auto commitSpaceState = std::make_unique<InputStates::Committing>(" ");
+      stateCallback(std::move(commitSpaceState));
+      reset();
+    } else {
       grid_.insertReading(" ");
       walk();
       stateCallback(buildInputtingState());
-    } else {
-      if (grid_.length() != 0) {
-        auto inputtingState = buildInputtingState();
-        // Steal the composingBuffer built by the inputting state.
-        auto committingState = std::make_unique<InputStates::Committing>(
-            inputtingState->composingBuffer);
-        stateCallback(std::move(committingState));
-      }
-      auto committingState = std::make_unique<InputStates::Committing>(" ");
-      stateCallback(std::move(committingState));
-      reset();
     }
     return true;
   }
 
   // Space hit: see if we should enter the candidate choosing state.
-  auto* maybeNotEmptyState = dynamic_cast<InputStates::NotEmpty*>(state);
   if ((simpleAscii == Key::SPACE || key.name == Key::KeyName::DOWN) &&
       maybeNotEmptyState != nullptr && reading_.isEmpty()) {
     size_t originalCursor = grid_.cursor();
