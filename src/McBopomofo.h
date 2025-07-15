@@ -77,6 +77,12 @@ enum class SelectPhrase { BeforeCursor, AfterCursor };
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(SelectPhrase, N_("before_cursor"),
                                  N_("after_cursor"));
 
+enum class MovingCursorOption { Disabled, UseJK, UseHL };
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(MovingCursorOption,
+                                 N_("Moving cursor is not allowed"),
+                                 N_("J and K keys move cursor"),
+                                 N_("H and L keys move cursor"));
+
 enum class ShiftLetterKeys { DirectlyOutputUppercase, PutLowercaseToBuffer };
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftLetterKeys,
                                  N_("directly_output_uppercase"),
@@ -131,11 +137,15 @@ FCITX_CONFIGURATION(
         this, "MoveCursorAfterSelection", _("Move cursor after selection"),
         false};
 
-    fcitx::Option<bool> allowMovingCursorWhenChoosingCandidates{
-        this, "AllowMovingCursorWhenChoosingCandidates",
-        _("Allow using J and K key to move the cursor when choosing "
-          "candidates"),
-        false};
+    // This defines an option with annotation for MovingCursorOption
+    // enumeration, which configures the cursor behavior when typing in
+    // McBopomofo input method. The option allows users to customize how the
+    // cursor moves after character selection.
+    fcitx::OptionWithAnnotation<MovingCursorOption,
+                                MovingCursorOptionI18NAnnotation>
+        allowMovingCursorWhenChoosingCandidates{
+            this, "AllowMovingCursorWhenChoosingCandidates",
+            _("When Choosing Candidates:"), MovingCursorOption::Disabled};
 
     // ESC key clears entire composing buffer.
     fcitx::Option<bool> escKeyClearsEntireComposingBuffer{
