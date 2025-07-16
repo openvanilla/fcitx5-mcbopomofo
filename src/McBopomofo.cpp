@@ -810,25 +810,31 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  bool isCursorMovingKey =
-      (config_.allowMovingCursorWhenChoosingCandidates.value() &&
-       (key.check(FcitxKey_j) || key.check(FcitxKey_k))) ||
-      (key.check(FcitxKey_Left, fcitx::KeyStates(fcitx::KeyState::Shift)) ||
-       key.check(FcitxKey_Right, fcitx::KeyStates(fcitx::KeyState::Shift)));
+  bool isCursorMovingLeft =
+      key.check(FcitxKey_Left, fcitx::KeyStates(fcitx::KeyState::Shift));
+  bool isCursorMovingRight =
+      key.check(FcitxKey_Right, fcitx::KeyStates(fcitx::KeyState::Shift));
+
+  if (!isCursorMovingLeft && !isCursorMovingRight) {
+    MovingCursorOption movingCursorOption =
+        config_.allowMovingCursorWhenChoosingCandidates.value();
+    if (movingCursorOption == MovingCursorOption::UseJK) {
+      isCursorMovingLeft = key.check(FcitxKey_j);
+      isCursorMovingRight = key.check(FcitxKey_k);
+    } else if (movingCursorOption == MovingCursorOption::UseHL) {
+      isCursorMovingLeft = key.check(FcitxKey_h);
+      isCursorMovingRight = key.check(FcitxKey_l);
+    }
+  }
 
   if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
       dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr &&
-      isCursorMovingKey) {
+      (isCursorMovingLeft || isCursorMovingRight)) {
     size_t cursor = keyHandler_->candidateCursorIndex();
 
-    if (key.check(FcitxKey_j) ||
-        key.check(FcitxKey_Left, fcitx::KeyStates(fcitx::KeyState::Shift))) {
-      if (cursor > 0) {
-        cursor--;
-      }
-    } else if (key.check(FcitxKey_k) ||
-               key.check(FcitxKey_Right,
-                         fcitx::KeyStates(fcitx::KeyState::Shift))) {
+    if (isCursorMovingLeft) {
+      if (cursor > 0) cursor--;
+    } else if (isCursorMovingRight) {
       cursor++;
     }
     keyHandler_->setCandidateCursorIndex(cursor);
@@ -846,8 +852,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       "_number_",           "_punctuation_",
   };
 
-  // When pressing "?" in the candidate list, tries to look up the candidate in
-  // dictionaries.
+  // When pressing "?" in the candidate list, tries to look up the candidate
+  // in dictionaries.
   if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
       key.check(FcitxKey_question)) {
     auto* choosingCandidate =
