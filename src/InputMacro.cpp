@@ -664,7 +664,7 @@ int GetCurrentYear() {
 int getYearBase(int year) {
   if (year < 4) {
     year = year * -1;
-    return 60 - (year + 2) % 60;
+    return 60 - ((year + 2) % 60);
   }
   return (year - 3) % 60;
 }

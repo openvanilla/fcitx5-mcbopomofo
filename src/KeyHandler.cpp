@@ -708,7 +708,7 @@ bool KeyHandler::handleAssociatedPhrases(InputStates::Inputting* state,
     errorCallback();
     return true;
   }
-  auto* inputting = dynamic_cast<InputStates::Inputting*>(state);
+  auto* inputting = state;
   if (inputting != nullptr) {
     // Find the selected node *before* the cursor.
     size_t prefixCursorIndex = cursor - 1;
@@ -1572,9 +1572,7 @@ size_t KeyHandler::candidateCursorIndex() {
 }
 
 void KeyHandler::setCandidateCursorIndex(size_t newCursor) {
-  if (newCursor > grid_.length()) {
-    newCursor = grid_.length();
-  }
+  newCursor = std::min(newCursor, grid_.length());
   grid_.setCursor(newCursor);
 }
 

@@ -88,7 +88,7 @@ LanguageModelLoader::LanguageModelLoader(
   }
 
   userDataPath += "/mcbopomofo";
-  if (!std::filesystem::exists(userDataPath), err) {
+  if (!std::filesystem::exists(userDataPath, err)) {
     bool result = std::filesystem::create_directory(userDataPath, err);
     if (result) {
       FCITX_MCBOPOMOFO_INFO()

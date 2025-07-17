@@ -419,9 +419,7 @@ void ReadingGrid::update() {
   size_t begin =
       (cursor_ <= kMaximumSpanLength) ? 0 : cursor_ - kMaximumSpanLength;
   size_t end = cursor_ + kMaximumSpanLength;
-  if (end > readings_.size()) {
-    end = readings_.size();
-  }
+  end = std::min(end, readings_.size());
 
   for (size_t pos = begin; pos < end; pos++) {
     for (size_t len = 1; len <= kMaximumSpanLength && pos + len <= end; len++) {
@@ -633,9 +631,7 @@ void ReadingGrid::Span::add(const ReadingGrid::NodePtr& node) {
   assert(node->spanningLength() > 0 &&
          node->spanningLength() <= kMaximumSpanLength);
   nodes_[node->spanningLength() - 1] = node;
-  if (node->spanningLength() >= maxLength_) {
-    maxLength_ = node->spanningLength();
-  }
+  maxLength_ = std::max(maxLength_, node->spanningLength());
 }
 
 void ReadingGrid::Span::removeNodesOfOrLongerThan(size_t length) {

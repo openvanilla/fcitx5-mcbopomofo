@@ -75,7 +75,8 @@ static Key MapFcitxKey(const fcitx::Key& key, const fcitx::Key& origKey) {
       return Key::asciiKey(sym + 'a' - 'A',
                            key.states() & fcitx::KeyState::Shift,
                            key.states() & fcitx::KeyState::Ctrl);
-    } else if (sym >= 'a' && sym <= 'z') {
+    }
+    if (sym >= 'a' && sym <= 'z') {
       return Key::asciiKey(sym + 'A' - 'a',
                            key.states() & fcitx::KeyState::Shift,
                            key.states() & fcitx::KeyState::Ctrl);
@@ -833,7 +834,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     size_t cursor = keyHandler_->candidateCursorIndex();
 
     if (isCursorMovingLeft) {
-      if (cursor > 0) cursor--;
+      if (cursor > 0) {
+        cursor--;
+      }
     } else if (isCursorMovingRight) {
       cursor++;
     }
@@ -869,7 +872,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
         int page = candidateList->currentPage();
         int pageSize = candidateList->size();
         int selectedCandidateIndex =
-            page * pageSize + candidateList->cursorIndex();
+            (page * pageSize) + candidateList->cursorIndex();
         std::string reading =
             choosingCandidate->candidates[selectedCandidateIndex].reading;
 
@@ -908,7 +911,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       int page = candidateList->currentPage();
       int pageSize = candidateList->size();
       int index = candidateList->cursorIndex();
-      int selectedCandidateIndex = page * pageSize + index;
+      int selectedCandidateIndex = (page * pageSize) + index;
       auto candidate = choosingCandidate->candidates[selectedCandidateIndex];
       std::string reading = candidate.reading;
       // If the reading has an invalid prefix, skip dictionary lookup

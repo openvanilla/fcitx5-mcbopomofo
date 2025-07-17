@@ -251,7 +251,8 @@ struct AssociatedPhrasesPlain : InputState {
 };
 
 struct EnclosingNumber : InputState {
-  EnclosingNumber(std::string number = "") : number(std::move(number)) {}
+  explicit EnclosingNumber(std::string number = "")
+      : number(std::move(number)) {}
   EnclosingNumber(EnclosingNumber const& number) : number(number.number) {}
   std::string composingBuffer() const { return "[標題數字] " + number; }
   std::string number;

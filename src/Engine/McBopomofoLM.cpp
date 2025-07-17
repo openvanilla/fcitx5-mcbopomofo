@@ -142,9 +142,7 @@ McBopomofoLM::getUnigrams(const std::string& key) {
     // Find the highest score from the existing allUnigrams.
     double topScore = std::numeric_limits<double>::lowest();
     for (const auto& unigram : allUnigrams) {
-      if (unigram.score() > topScore) {
-        topScore = unigram.score();
-      }
+      topScore = std::max(topScore, unigram.score());
     }
 
     // Boost by a very small number. This is the score for user phrases.
