@@ -29,6 +29,7 @@
 #include <unistd.h>
 
 #include <fstream>
+#include <string>
 #include <vector>
 
 #include "KeyValueBlobReader.h"

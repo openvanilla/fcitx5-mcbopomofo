@@ -25,6 +25,8 @@
 
 #include <cassert>
 #include <cstring>
+#include <string>
+#include <vector>
 
 namespace McBopomofo {
 

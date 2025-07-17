@@ -25,8 +25,11 @@
 
 #include <algorithm>
 #include <chrono>
+#include <memory>
 #include <sstream>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "ChineseNumbers/ChineseNumbers.h"
 #include "ChineseNumbers/SuzhouNumbers.h"

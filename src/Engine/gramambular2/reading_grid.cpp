@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <chrono>
 #include <limits>
+#include <memory>
 #include <stack>
 #include <string>
 #include <utility>

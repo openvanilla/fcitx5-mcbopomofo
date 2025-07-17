@@ -25,7 +25,9 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 

@@ -29,10 +29,14 @@
 #include <fmt/format.h>
 #include <json-c/json.h>
 
+#include <cstdio>
 #include <iomanip>
+#include <memory>
 #include <ostream>
 #include <sstream>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "Format.h"
 #include "Log.h"

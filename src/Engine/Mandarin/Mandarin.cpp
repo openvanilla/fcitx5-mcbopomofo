@@ -25,6 +25,9 @@
 
 #include <algorithm>
 #include <cctype>
+#include <map>
+#include <string>
+#include <vector>
 
 namespace Formosa {
 namespace Mandarin {
