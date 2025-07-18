@@ -325,8 +325,8 @@ msgid "Move cursor after selection"
 msgstr "Move cursor after selection"
 
 #: src/McBopomofo.h:148
-msgid "When Choosing Candidates:"
-msgstr "When Choosing Candidates:"
+msgid "When Choosing Candidates"
+msgstr "When Choosing Candidates"
 
 #: src/McBopomofo.h:153
 msgid "ESC key clears entire composing buffer"
