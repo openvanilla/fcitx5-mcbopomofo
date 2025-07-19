@@ -23,6 +23,8 @@
 
 #include "InputState.h"
 
+#include <string>
+
 namespace McBopomofo {
 
 InputStates::SelectingDateMacro::SelectingDateMacro(

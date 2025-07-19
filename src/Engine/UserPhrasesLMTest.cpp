@@ -24,6 +24,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <string>
+#include <vector>
 
 #include "UserPhrasesLM.h"
 #include "gtest/gtest.h"

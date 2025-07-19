@@ -23,6 +23,8 @@
 
 #include "TimestampedPath.h"
 
+#include <string>
+
 namespace McBopomofo {
 
 std::filesystem::path TimestampedPath::path() const { return path_; }

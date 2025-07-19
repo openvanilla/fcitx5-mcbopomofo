@@ -25,6 +25,9 @@
 
 #include <algorithm>
 #include <cctype>
+#include <map>
+#include <string>
+#include <vector>
 
 namespace Formosa {
 namespace Mandarin {
@@ -59,7 +62,7 @@ class BopomofoCharacterMap {
 };
 
 const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
-  if (str.length() == 0) {
+  if (str.empty()) {
     return BPMF();
   }
 
@@ -104,7 +107,7 @@ const BPMF BPMF::FromHanyuPinyin(const std::string& str) {
   }
 
   // try the first character
-  char c = pinyin.length() != 0 ? pinyin[0] : '\0';
+  char c = !pinyin.empty() ? pinyin[0] : '\0';
   switch (c) {
     case 'b':
       firstComponent = BPMF::B;
