@@ -87,8 +87,7 @@ cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DENABLE_C
 ```
 rm -rf build  # 如果先前已經使用 make，要先移除 build 目錄
 cmake -B build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DENABLE_CLANG_TIDY=On
-cd build
-ninja
+cmake --build build  # 使用 ninja 建置
 ```
 
 ## 社群公約
