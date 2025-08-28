@@ -38,9 +38,8 @@ sudo apt install \
 
 ```bash
 cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
-cd build
-make
-sudo make install
+cmake --build build
+sudo cmake --install build
 
 # 初次安裝後，執行以下指令，小麥注音 icon 就會出現在 fcitx5 選單中
 sudo update-icon-caches /usr/share/icons/*
