@@ -10,6 +10,8 @@ add_subdirectory(Mandarin)
 add_library(McBopomofoLMLib
         AssociatedPhrasesV2.h
         AssociatedPhrasesV2.cpp
+        ByteBlockBackedDictionary.h
+        ByteBlockBackedDictionary.cpp
         KeyValueBlobReader.cpp
         KeyValueBlobReader.h
         McBopomofoLM.cpp
@@ -42,13 +44,14 @@ if (ENABLE_TEST)
         # Test target declarations.
         add_executable(McBopomofoLMLibTest
                 AssociatedPhrasesV2Test.cpp
+                ByteBlockBackedDictionaryTest.cpp
                 KeyValueBlobReaderTest.cpp
                 McBopomofoLMTest.cpp
                 MemoryMappedFileTest.cpp
                 ParselessLMTest.cpp
                 ParselessPhraseDBTest.cpp
                 PhraseReplacementMapTest.cpp
-		UTF8HelperTest.cpp
+                UTF8HelperTest.cpp
                 UserOverrideModelTest.cpp
                 UserPhrasesLMTest.cpp)
         target_link_libraries(McBopomofoLMLibTest GTest::gtest_main McBopomofoLMLib gramambular2_lib)
@@ -61,7 +64,14 @@ if (ENABLE_TEST)
         )
         add_dependencies(runMcBopomofoLMLibTest McBopomofoLMLibTest)
 
-        # Benchmark target; to run, manually uncomment the lines below.
+        # Benchmark for ByteBlockBackedDictionary; not enabled by default
+        #
+        # find_package(benchmark)
+        # add_executable(ByteBlockBackedDictionaryBenchmark
+        #         ByteBlockBackedDictionaryBenchmark.cpp)
+        # target_link_libraries(ByteBlockBackedDictionaryBenchmark McBopomofoLMLib benchmark::benchmark)
+
+        # Stressed benchmark for ParselessLM; not enabled by default
         #
         # find_package(benchmark)
         # add_executable(ParselessLMBenchmark
