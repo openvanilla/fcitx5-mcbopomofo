@@ -160,6 +160,35 @@ TEST(ByteBlockBackedDictionaryTest, NullCharacterNotAllowed) {
   ASSERT_EQ(issues[0].lineNumber, 2);
 }
 
+TEST(ByteBlockBackedDictionaryTest, NullCharacterNotAllowedLarge) {
+  constexpr size_t size = 16 * 1024 * 1024;
+  std::unique_ptr<char[]> data(new char[size]);
+  memset(data.get(), ' ', size);
+  data.get()[size - 2] = '\0';
+
+  ByteBlockBackedDictionary dict;
+  bool result = dict.parse(data.get(), size);
+  ASSERT_FALSE(result);
+}
+
+TEST(ByteBlockBackedDictionaryTest, NullCharacterNotAllowedLargeTestIssues) {
+  constexpr size_t size = 16 * 1024 * 1024 + 7;
+  std::unique_ptr<char[]> data(new char[size]);
+  memset(data.get(), ' ', size);
+  data[size - 2] = '\0';
+  data[5] = '\n';
+  data[size - 3] = '\n';
+  memset(data.get() + 1024, '\n', 1024);
+
+  ByteBlockBackedDictionary dict;
+  bool result = dict.parse(data.get(), size);
+  ASSERT_FALSE(result);
+  ASSERT_EQ(dict.issues().size(), 1);
+  ASSERT_EQ(dict.issues().at(0).type,
+            ByteBlockBackedDictionary::Issue::Type::NULL_CHARACTER_IN_TEXT);
+  ASSERT_EQ(dict.issues().at(0).lineNumber, 1027);
+}
+
 TEST(ByteBlockBackedDictionaryTest, ComplexEntries) {
   constexpr char data[] =
       "\n"

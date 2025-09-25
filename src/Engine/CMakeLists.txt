@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(McBopomofoLMLib)
 
 set(CMAKE_CXX_STANDARD 17)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 add_subdirectory(gramambular2)
 add_subdirectory(Mandarin)
@@ -24,8 +24,8 @@ add_library(McBopomofoLMLib
         ParselessLM.h
         PhraseReplacementMap.h
         PhraseReplacementMap.cpp
-	UTF8Helper.h
-	UTF8Helper.cpp
+        UTF8Helper.h
+        UTF8Helper.cpp
         UserOverrideModel.h
         UserOverrideModel.cpp
         UserPhrasesLM.h
@@ -33,6 +33,10 @@ add_library(McBopomofoLMLib
 
 if (ENABLE_CLANG_TIDY)
     set_target_properties(McBopomofoLMLib PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+endif ()
+
+if (ENABLE_EXPERIMENTAL_SIMD_SUPPORT_AVX512)
+    target_compile_options(McBopomofoLMLib PRIVATE -mavx512f -march=native -DENABLE_EXPERIMENTAL_SIMD_SUPPORT_AVX512=1)
 endif ()
 
 if (ENABLE_TEST)
