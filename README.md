@@ -90,6 +90,17 @@ cmake -B build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -
 cmake --build build  # 使用 ninja 建置
 ```
 
+## 使用 SIMD 指令集加快資料解析速度的實驗
+
+[PR #194](https://github.com/openvanilla/fcitx5-mcbopomofo/pull/194) 加入了選項，可使用 SIMD 指令集加速用戶詞庫的解析速度。這個選項屬於實驗性質。要啟用該解析器，可在 CMake 建置時增加以下定義：
+
+```
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_EXPERIMENTAL_SIMD_SUPPORT_AVX512=1
+```
+
 ## 社群公約
 
 歡迎小麥注音 Linux 用戶回報問題與指教，也歡迎大家參與小麥注音開發。

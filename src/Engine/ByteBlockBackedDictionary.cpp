@@ -26,7 +26,6 @@
 #include <immintrin.h>
 
 #include <cstdint>
-#include <memory>
 #else
 #error AVX512 support required
 #endif
@@ -130,7 +129,7 @@ const char* AVX512_AdvanceToNextCRLF(const char* ptr,
     const __mmask32 foundCRs = _mm256_cmpeq_epi8_mask(block, crs);
     const __mmask32 mask = _kor_mask32(foundLFs, foundCRs);
     if (mask != 0) {
-      return ptr + _tzcnt_u64(mask);
+      return ptr + _tzcnt_u32(mask);
     }
 
     ptr += 32;
@@ -177,8 +176,7 @@ const char* AVX512_AdvanceToNextNonContentCharacter(const char* ptr,
     const __mmask32 nonContentMask =
         _mm256_cmpneq_epi8_mask(intersection, _mm256_setzero_si256());
     if (nonContentMask != 0) {
-      int64_t firstNonContentIndex = _tzcnt_u64(nonContentMask);
-      return ptr + firstNonContentIndex;
+      return ptr + _tzcnt_u32(nonContentMask);
     }
     ptr += 32;
   }
@@ -215,7 +213,7 @@ const char* AVX512_FindFirstNULL(const char* ptr, const char* end,
       const __mmask64 mask = _mm512_cmpeq_epi8_mask(block, zeros);
       if (mask != 0) {
         found = true;
-        i += _tzcnt_u64(mask);
+        i += _tzcnt_u32(mask);
         break;
       }
       i += ALIGN64;
