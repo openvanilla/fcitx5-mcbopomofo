@@ -24,10 +24,10 @@
 #ifndef SRC_ENGINE_PHRASEREPLACEMENTMAP_H_
 #define SRC_ENGINE_PHRASEREPLACEMENTMAP_H_
 
-#include <iostream>
 #include <map>
 #include <string>
 
+#include "ByteBlockBackedDictionary.h"
 #include "MemoryMappedFile.h"
 
 namespace McBopomofo {
@@ -50,7 +50,7 @@ class PhraseReplacementMap {
   std::string valueForKey(const std::string& key) const;
 
  protected:
-  std::map<std::string_view, std::string_view> keyValueMap_;
+  ByteBlockBackedDictionary dictionary_;
   MemoryMappedFile mmapedFile_;
 };
 
