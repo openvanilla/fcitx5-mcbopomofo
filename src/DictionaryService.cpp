@@ -25,7 +25,7 @@
 
 #include <fcitx-utils/i18n.h>
 #include <fcitx-utils/misc.h>
-#include <fcitx-utils/standardpath.h>
+#include <fcitx-utils/standardpaths.h>
 #include <fmt/format.h>
 #include <json-c/json.h>
 
@@ -144,8 +144,8 @@ void McBopomofo::DictionaryServices::load() {
   services_.emplace_back(std::make_unique<CharacterInfoService>());
 
   // Load json and add to services_
-  std::string dictionaryServicesPath = fcitx::StandardPath::global().locate(
-      fcitx::StandardPath::Type::PkgData, kDataPath);
+  std::string dictionaryServicesPath = fcitx::StandardPaths::global().locate(
+      fcitx::StandardPathsType::PkgData, kDataPath);
   FILE* file = fopen(dictionaryServicesPath.c_str(), "r");
   if (!file) {
     FCITX_MCBOPOMOFO_INFO()

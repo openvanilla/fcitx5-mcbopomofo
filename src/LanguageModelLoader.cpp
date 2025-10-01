@@ -23,7 +23,7 @@
 
 #include "LanguageModelLoader.h"
 
-#include <fcitx-utils/standardpath.h>
+#include <fcitx-utils/standardpaths.h>
 
 #include <filesystem>
 #include <fstream>
@@ -47,8 +47,8 @@ LanguageModelLoader::LanguageModelLoader(
     std::unique_ptr<LocalizedStrings> localizedStrings)
     : localizedStrings_(std::move(localizedStrings)),
       lm_(std::make_shared<McBopomofoLM>()) {
-  std::string buildInLMPath = fcitx::StandardPath::global().locate(
-      fcitx::StandardPath::Type::PkgData, kDataPath);
+  std::string buildInLMPath = fcitx::StandardPaths::global().locate(
+      fcitx::StandardPathsType::PkgData, kDataPath);
   FCITX_MCBOPOMOFO_INFO() << "Built-in LM: " << buildInLMPath;
   lm_->loadLanguageModel(buildInLMPath.c_str());
   if (!lm_->isDataModelLoaded()) {
@@ -56,8 +56,8 @@ LanguageModelLoader::LanguageModelLoader(
   }
 
   // Load associated phrases v2.
-  std::string associatedPhrasesV2Path = fcitx::StandardPath::global().locate(
-      fcitx::StandardPath::Type::PkgData, kAssociatedPhrasesV2Path);
+  std::string associatedPhrasesV2Path = fcitx::StandardPaths::global().locate(
+      fcitx::StandardPathsType::PkgData, kAssociatedPhrasesV2Path);
   FCITX_MCBOPOMOFO_INFO() << "Associated phrases: " << associatedPhrasesV2Path;
   lm_->loadAssociatedPhrasesV2(associatedPhrasesV2Path.c_str());
 
@@ -67,8 +67,8 @@ LanguageModelLoader::LanguageModelLoader(
   };
   lm_->setMacroConverter(converter);
 
-  std::string userDataPath = fcitx::StandardPath::global().userDirectory(
-      fcitx::StandardPath::Type::PkgData);
+  std::string userDataPath = fcitx::StandardPaths::global().userDirectory(
+      fcitx::StandardPathsType::PkgData);
 
   // fcitx5 is configured not to provide userDataPath, bail.
   if (userDataPath.empty()) {
@@ -118,8 +118,8 @@ void LanguageModelLoader::loadModelForMode(McBopomofo::InputMode mode) {
                          ? kDataPathPlainBPMF
                          : kDataPath;
 
-  std::string buildInLMPath = fcitx::StandardPath::global().locate(
-      fcitx::StandardPath::Type::PkgData, path);
+  std::string buildInLMPath = fcitx::StandardPaths::global().locate(
+      fcitx::StandardPathsType::PkgData, path);
 
   FCITX_MCBOPOMOFO_INFO() << "Built-in LM: " << buildInLMPath;
   lm_->loadLanguageModel(buildInLMPath.c_str());
