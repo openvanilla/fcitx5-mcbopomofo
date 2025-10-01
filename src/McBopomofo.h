@@ -28,7 +28,7 @@
 #include <fcitx-config/enum.h>
 #include <fcitx-config/iniparser.h>
 #include <fcitx-utils/i18n.h>
-#include <fcitx-utils/standardpath.h>
+#include <fcitx-utils/standardpaths.h>
 #include <fcitx/action.h>
 #include <fcitx/addonfactory.h>
 #include <fcitx/addonmanager.h>
@@ -216,8 +216,9 @@ FCITX_CONFIGURATION(
             "xdg-open \"",
             fcitx::stringutils::replaceAll(
                 fcitx::stringutils::joinPath(
-                    fcitx::StandardPath::global().userDirectory(
-                        fcitx::StandardPath::Type::PkgData),
+                    fcitx::StandardPaths::global()
+                        .userDirectory(fcitx::StandardPathsType::PkgData)
+                        .string(),
                     "mcbopomofo"),
                 "\"", "\"\"\""),
             "\"")};);
