@@ -31,8 +31,6 @@
 #include <fstream>
 #include <string>
 
-#include "KeyValueBlobReader.h"
-
 namespace McBopomofo {
 
 bool PhraseReplacementMap::open(const char* path) {

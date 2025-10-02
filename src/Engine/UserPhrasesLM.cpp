@@ -32,8 +32,6 @@
 #include <string>
 #include <vector>
 
-#include "KeyValueBlobReader.h"
-
 namespace McBopomofo {
 
 bool UserPhrasesLM::open(const char* path) {
