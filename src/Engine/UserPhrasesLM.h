@@ -53,6 +53,8 @@ class UserPhrasesLM : public Formosa::Gramambular2::LanguageModel {
       const std::string& key) override;
   bool hasUnigrams(const std::string& key) override;
 
+  std::vector<ByteBlockBackedDictionary::Issue> getParsingIssues() const;
+
   static constexpr double kUserUnigramScore = 0;
 
  protected:

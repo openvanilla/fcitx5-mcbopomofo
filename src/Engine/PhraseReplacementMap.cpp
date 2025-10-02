@@ -64,4 +64,9 @@ std::string PhraseReplacementMap::valueForKey(const std::string& key) const {
   return {};
 }
 
+std::vector<ByteBlockBackedDictionary::Issue>
+PhraseReplacementMap::getParsingIssues() const {
+  return dictionary_.issues();
+}
+
 }  // namespace McBopomofo

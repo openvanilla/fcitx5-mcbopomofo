@@ -74,4 +74,9 @@ bool UserPhrasesLM::hasUnigrams(const std::string& key) {
   return dictionary_.hasKey(key);
 }
 
+std::vector<ByteBlockBackedDictionary::Issue> UserPhrasesLM::getParsingIssues()
+    const {
+  return dictionary_.issues();
+}
+
 }  // namespace McBopomofo

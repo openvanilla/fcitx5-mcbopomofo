@@ -49,6 +49,8 @@ class PhraseReplacementMap {
 
   std::string valueForKey(const std::string& key) const;
 
+  std::vector<ByteBlockBackedDictionary::Issue> getParsingIssues() const;
+
  protected:
   ByteBlockBackedDictionary dictionary_;
   MemoryMappedFile mmapedFile_;
