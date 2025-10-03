@@ -1808,6 +1808,9 @@ void McBopomofoEngine::showAndClearUserFileIssues() {
       case McBopomofoLM::UserFileType::PHRASE_REPLACEMENT_MAP:
         sst << _("Phrase Replacement File");
         break;
+      default:
+        // should not happen
+        break;
     }
 
     sst << " (";
@@ -1825,6 +1828,9 @@ void McBopomofoEngine::showAndClearUserFileIssues() {
         break;
       case McBopomofoLM::IssueType::NULL_CHARACTER_IN_TEXT:
         sst << _("Illegal NULL character was found.");
+        break;
+      default:
+        // should not happen
         break;
     }
     sst << "\n";

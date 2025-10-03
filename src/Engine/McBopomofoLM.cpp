@@ -98,8 +98,10 @@ static McBopomofoLM::IssueType TranslateIssue(
       return McBopomofoLM::IssueType::MISSING_SECOND_COLUMN;
     case ByteBlockBackedDictionary::Issue::Type::NULL_CHARACTER_IN_TEXT:
       return McBopomofoLM::IssueType::NULL_CHARACTER_IN_TEXT;
+    default:
+      // should not happen
+      return McBopomofoLM::IssueType::NO_ISSUE;
   }
-  return McBopomofoLM::IssueType::NO_ISSUE;
 }
 
 std::vector<McBopomofoLM::UserFileIssue> McBopomofoLM::getUserFileIssues()
