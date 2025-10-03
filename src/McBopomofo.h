@@ -279,9 +279,12 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void updatePreedit(fcitx::InputContext* context,
                      InputStates::NotEmpty* state);
 
+  void showAndClearUserFileIssues();
+
   fcitx::CandidateLayoutHint getCandidateLayoutHint() const;
 
   std::shared_ptr<LanguageModelLoader> languageModelLoader_;
+  std::vector<McBopomofoLM::UserFileIssue> userFileIssues_;
   std::shared_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;

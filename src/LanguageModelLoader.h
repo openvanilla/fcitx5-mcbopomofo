@@ -61,7 +61,7 @@ class LanguageModelLoader : public UserPhraseAdder {
   void removeUserPhrase(const std::string_view& reading,
                         const std::string_view& phrase) override;
 
-  void reloadUserModelsIfNeeded();
+  bool reloadUserModelsIfNeeded();
 
   std::string userDataPath() const { return userDataPath_; }
 
@@ -70,6 +70,8 @@ class LanguageModelLoader : public UserPhraseAdder {
   std::string excludedPhrasesPath() const {
     return excludedPhrasesPath_.path();
   }
+
+  std::vector<McBopomofoLM::UserFileIssue> getUserFileIssues() const;
 
  private:
   void populateUserDataFilesIfNeeded();
