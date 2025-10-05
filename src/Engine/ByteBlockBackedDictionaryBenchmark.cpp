@@ -27,7 +27,6 @@
 #include <string>
 
 #include "ByteBlockBackedDictionary.h"
-#include "KeyValueBlobReader.h"
 
 namespace {
 
@@ -80,23 +79,6 @@ void BM_ByteBlockBackedDictionaryValueColumnFirstParseTest(
   }
 }
 BENCHMARK(BM_ByteBlockBackedDictionaryValueColumnFirstParseTest);
-
-void BM_KeyValueBlobReaderParseTest(benchmark::State& state) {
-  const std::string& testData = GetTestData();
-
-  for (auto _ : state) {
-    McBopomofo::KeyValueBlobReader reader(testData.c_str(), testData.size());
-    std::unordered_map<std::string_view, std::vector<std::string_view>>
-        keyRowMap;
-
-    McBopomofo::KeyValueBlobReader::KeyValue kv;
-    while (reader.Next(&kv) ==
-           McBopomofo::KeyValueBlobReader::State::HAS_PAIR) {
-      keyRowMap[kv.key].emplace_back(kv.value);
-    }
-  }
-}
-BENCHMARK(BM_KeyValueBlobReaderParseTest);
 
 };  // namespace
 

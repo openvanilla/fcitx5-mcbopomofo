@@ -31,8 +31,6 @@
 #include <fstream>
 #include <string>
 
-#include "KeyValueBlobReader.h"
-
 namespace McBopomofo {
 
 bool PhraseReplacementMap::open(const char* path) {
@@ -45,7 +43,7 @@ bool PhraseReplacementMap::open(const char* path) {
 }
 
 void PhraseReplacementMap::close() {
-  keyValueMap_.clear();
+  dictionary_.clear();
   mmapedFile_.close();
 }
 
@@ -53,23 +51,20 @@ bool PhraseReplacementMap::load(const char* data, size_t length) {
   if (data == nullptr || length == 0) {
     return false;
   }
-  keyValueMap_.clear();
-
-  KeyValueBlobReader reader(data, length);
-  KeyValueBlobReader::KeyValue keyValue;
-  while (reader.Next(&keyValue) == KeyValueBlobReader::State::HAS_PAIR) {
-    keyValueMap_[keyValue.key] = keyValue.value;
-  }
-  return true;
+  return dictionary_.parse(data, length);
 }
 
 std::string PhraseReplacementMap::valueForKey(const std::string& key) const {
-  auto iter = keyValueMap_.find(key);
-  if (iter != keyValueMap_.end()) {
-    const std::string_view& v = iter->second;
-    return std::string(v);
+  std::vector<std::string_view> values = dictionary_.getValues(key);
+  if (!values.empty()) {
+    return std::string(values[0]);
   }
   return {};
+}
+
+std::vector<ByteBlockBackedDictionary::Issue>
+PhraseReplacementMap::getParsingIssues() const {
+  return dictionary_.issues();
 }
 
 }  // namespace McBopomofo

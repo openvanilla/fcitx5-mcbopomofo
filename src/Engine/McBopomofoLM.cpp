@@ -62,10 +62,17 @@ void McBopomofoLM::loadUserPhrases(const char* userPhrasesDataPath,
   excludedPhrases_.close();
 
   if (userPhrasesDataPath) {
+    userPhrasesDataPath_ = userPhrasesDataPath;
     userPhrases_.open(userPhrasesDataPath);
+  } else {
+    userPhrasesDataPath_.reset();
   }
+
   if (excludedPhrasesDataPath) {
+    excludedPhrasesDataPath_ = excludedPhrasesDataPath;
     excludedPhrases_.open(excludedPhrasesDataPath);
+  } else {
+    excludedPhrasesDataPath_.reset();
   }
 }
 
@@ -74,10 +81,58 @@ bool McBopomofoLM::isAssociatedPhrasesV2Loaded() const {
 }
 
 void McBopomofoLM::loadPhraseReplacementMap(const char* phraseReplacementPath) {
+  phraseReplacement_.close();
+
   if (phraseReplacementPath) {
-    phraseReplacement_.close();
+    phraseReplacementPath_ = phraseReplacementPath;
     phraseReplacement_.open(phraseReplacementPath);
+  } else {
+    phraseReplacementPath_.reset();
   }
+}
+
+static McBopomofoLM::IssueType TranslateIssue(
+    ByteBlockBackedDictionary::Issue::Type t) {
+  switch (t) {
+    case ByteBlockBackedDictionary::Issue::Type::MISSING_SECOND_COLUMN:
+      return McBopomofoLM::IssueType::MISSING_SECOND_COLUMN;
+    case ByteBlockBackedDictionary::Issue::Type::NULL_CHARACTER_IN_TEXT:
+      return McBopomofoLM::IssueType::NULL_CHARACTER_IN_TEXT;
+    default:
+      // should not happen
+      return McBopomofoLM::IssueType::NO_ISSUE;
+  }
+}
+
+std::vector<McBopomofoLM::UserFileIssue> McBopomofoLM::getUserFileIssues()
+    const {
+  std::vector<McBopomofoLM::UserFileIssue> issues;
+
+  if (userPhrasesDataPath_.has_value()) {
+    for (const auto& issue : userPhrases_.getParsingIssues()) {
+      issues.emplace_back(McBopomofoLM::UserFileType::USER_PHRASES,
+                          userPhrasesDataPath_.value(),
+                          TranslateIssue(issue.type), issue.lineNumber);
+    }
+  }
+
+  if (excludedPhrasesDataPath_.has_value()) {
+    for (const auto& issue : excludedPhrases_.getParsingIssues()) {
+      issues.emplace_back(McBopomofoLM::UserFileType::EXCLUDED_PHRASES,
+                          excludedPhrasesDataPath_.value(),
+                          TranslateIssue(issue.type), issue.lineNumber);
+    }
+  }
+
+  if (phraseReplacementPath_.has_value()) {
+    for (const auto& issue : phraseReplacement_.getParsingIssues()) {
+      issues.emplace_back(McBopomofoLM::UserFileType::PHRASE_REPLACEMENT_MAP,
+                          phraseReplacementPath_.value(),
+                          TranslateIssue(issue.type), issue.lineNumber);
+    }
+  }
+
+  return issues;
 }
 
 std::vector<Formosa::Gramambular2::LanguageModel::Unigram>
@@ -154,9 +209,7 @@ McBopomofoLM::getUnigrams(const std::string& key) {
     std::vector<Formosa::Gramambular2::LanguageModel::Unigram>
         rewrittenUserUnigrams;
     for (const auto& unigram : userUnigrams) {
-      rewrittenUserUnigrams.emplace_back(
-          Formosa::Gramambular2::LanguageModel::Unigram(unigram.value(),
-                                                        boostedScore));
+      rewrittenUserUnigrams.emplace_back(unigram.value(), boostedScore);
     }
     allUnigrams.insert(allUnigrams.begin(), rewrittenUserUnigrams.begin(),
                        rewrittenUserUnigrams.end());
@@ -223,7 +276,7 @@ void McBopomofoLM::setMacroConverter(
   macroConverter_ = std::move(macroConverter);
 }
 
-std::string McBopomofoLM::convertMacro(const std::string& input) {
+std::string McBopomofoLM::convertMacro(const std::string& input) const {
   if (macroConverter_ != nullptr) {
     return macroConverter_(input);
   }
@@ -232,9 +285,9 @@ std::string McBopomofoLM::convertMacro(const std::string& input) {
 
 std::vector<Formosa::Gramambular2::LanguageModel::Unigram>
 McBopomofoLM::filterAndTransformUnigrams(
-    const std::vector<Formosa::Gramambular2::LanguageModel::Unigram> unigrams,
+    const std::vector<Formosa::Gramambular2::LanguageModel::Unigram>& unigrams,
     const std::unordered_set<std::string>& excludedValues,
-    std::unordered_set<std::string>& insertedValues) {
+    std::unordered_set<std::string>& insertedValues) const {
   std::vector<Formosa::Gramambular2::LanguageModel::Unigram> results;
 
   for (auto&& unigram : unigrams) {

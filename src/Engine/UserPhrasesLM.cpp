@@ -32,8 +32,6 @@
 #include <string>
 #include <vector>
 
-#include "KeyValueBlobReader.h"
-
 namespace McBopomofo {
 
 bool UserPhrasesLM::open(const char* path) {
@@ -72,6 +70,11 @@ UserPhrasesLM::getUnigrams(const std::string& key) {
 
 bool UserPhrasesLM::hasUnigrams(const std::string& key) {
   return dictionary_.hasKey(key);
+}
+
+std::vector<ByteBlockBackedDictionary::Issue> UserPhrasesLM::getParsingIssues()
+    const {
+  return dictionary_.issues();
 }
 
 }  // namespace McBopomofo
