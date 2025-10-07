@@ -24,6 +24,7 @@
 #include <filesystem>
 #include <fstream>
 #include <random>
+#include <string>
 
 #include "TimestampedPath.h"
 #include "gmock/gmock.h"

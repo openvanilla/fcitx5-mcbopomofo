@@ -33,6 +33,7 @@
 
 #include <memory>
 #include <sstream>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -75,7 +76,8 @@ static Key MapFcitxKey(const fcitx::Key& key, const fcitx::Key& origKey) {
       return Key::asciiKey(sym + 'a' - 'A',
                            key.states() & fcitx::KeyState::Shift,
                            key.states() & fcitx::KeyState::Ctrl);
-    } else if (sym >= 'a' && sym <= 'z') {
+    }
+    if (sym >= 'a' && sym <= 'z') {
       return Key::asciiKey(sym + 'A' - 'a',
                            key.states() & fcitx::KeyState::Shift,
                            key.states() & fcitx::KeyState::Ctrl);
@@ -428,10 +430,10 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
     : instance_(instance) {
   languageModelLoader_ = std::make_shared<LanguageModelLoader>(
       std::make_unique<LanguageModelLoaderLocalizedStrings>());
+  userFileIssues_ = languageModelLoader_->getUserFileIssues();
   keyHandler_ = std::make_shared<KeyHandler>(
       languageModelLoader_->getLM(), languageModelLoader_,
       std::make_unique<KeyHandlerLocalizedString>());
-
   keyHandler_->setOnAddNewPhrase([this](std::string newPhrase) {
     auto addScriptHookEnabled = config_.addScriptHookEnabled.value();
     if (!addScriptHookEnabled) {
@@ -465,7 +467,7 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
 
         if (notifications()) {
           notifications()->call<fcitx::INotifications::showTip>(
-              "mcbopomofo-half-width-punctuation-toggle", _("Punctuation"),
+              "mcbopomofo-half-width-punctuation-toggle", _("McBopomofo"),
               "fcitx_mcbopomofo",
               enabled ? _("Half Width Punctuation")
                       : _("Full Width Punctuation"),
@@ -494,7 +496,7 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
         if (notifications()) {
           auto mode = keyHandler_->inputMode();
           notifications()->call<fcitx::INotifications::showTip>(
-              "mcbopomofo-associated-phrases-toggle", _("Associated Phrases"),
+              "mcbopomofo-associated-phrases-toggle", _("McBopomofo"),
               "fcitx_mcbopomofo",
               enabled ? _("Associated Phrases On")
                       : _("Associated Phrases Off"),
@@ -633,7 +635,14 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
   keyHandler_->setChooseCandidateUsingSpace(
       config_.chooseCandidateUsingSpace.value());
 
-  languageModelLoader_->reloadUserModelsIfNeeded();
+  bool didReload = languageModelLoader_->reloadUserModelsIfNeeded();
+  if (didReload) {
+    userFileIssues_ = languageModelLoader_->getUserFileIssues();
+  }
+
+  if (!userFileIssues_.empty()) {
+    showAndClearUserFileIssues();
+  }
 }
 
 void McBopomofoEngine::reset(const fcitx::InputMethodEntry& /*unused*/,
@@ -833,7 +842,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     size_t cursor = keyHandler_->candidateCursorIndex();
 
     if (isCursorMovingLeft) {
-      if (cursor > 0) cursor--;
+      if (cursor > 0) {
+        cursor--;
+      }
     } else if (isCursorMovingRight) {
       cursor++;
     }
@@ -869,7 +880,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
         int page = candidateList->currentPage();
         int pageSize = candidateList->size();
         int selectedCandidateIndex =
-            page * pageSize + candidateList->cursorIndex();
+            (page * pageSize) + candidateList->cursorIndex();
         std::string reading =
             choosingCandidate->candidates[selectedCandidateIndex].reading;
 
@@ -908,7 +919,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       int page = candidateList->currentPage();
       int pageSize = candidateList->size();
       int index = candidateList->cursorIndex();
-      int selectedCandidateIndex = page * pageSize + index;
+      int selectedCandidateIndex = (page * pageSize) + index;
       auto candidate = choosingCandidate->candidates[selectedCandidateIndex];
       std::string reading = candidate.reading;
       // If the reading has an invalid prefix, skip dictionary lookup
@@ -1779,6 +1790,79 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
 
   context->inputPanel().setAuxDown(fcitx::Text(state->tooltip));
   context->updatePreedit();
+}
+
+void McBopomofoEngine::showAndClearUserFileIssues() {
+  size_t numIssues = 0;
+  const size_t MAX_ISSUES = 3;
+
+  std::stringstream sst;
+  for (const auto& issue : userFileIssues_) {
+    switch (issue.fileType) {
+      case McBopomofoLM::UserFileType::USER_PHRASES:
+        sst << _("User Phrases");
+        break;
+      case McBopomofoLM::UserFileType::EXCLUDED_PHRASES:
+        sst << _("Excluded Phrases");
+        break;
+      case McBopomofoLM::UserFileType::PHRASE_REPLACEMENT_MAP:
+        sst << _("Phrase Replacement File");
+        break;
+      default:
+        // should not happen
+        break;
+    }
+
+    sst << " (";
+    sst << issue.path.string();
+    sst << ") ";
+    sst << fmt::format(FmtRuntime(_("line {0}")), issue.lineNumber);
+    sst << ": ";
+
+    switch (issue.issueType) {
+      case McBopomofoLM::IssueType::NO_ISSUE:
+        // Ignored.
+        break;
+      case McBopomofoLM::IssueType::MISSING_SECOND_COLUMN:
+        sst << _("Only one column was found.");
+        break;
+      case McBopomofoLM::IssueType::NULL_CHARACTER_IN_TEXT:
+        sst << _("Illegal NULL character was found.");
+        break;
+      default:
+        // should not happen
+        break;
+    }
+    sst << "\n";
+
+    ++numIssues;
+    if (numIssues >= MAX_ISSUES) {
+      break;
+    }
+  }
+
+  if (userFileIssues_.size() > MAX_ISSUES) {
+    sst << "\n";
+    size_t remainingIssues = userFileIssues_.size() - MAX_ISSUES;
+
+    if (remainingIssues == 1) {
+      sst << _("And one more issue.");
+    } else {
+      sst << fmt::format(FmtRuntime(_("And {0} more issues.")),
+                         remainingIssues);
+    }
+    sst << "\n";
+  }
+
+  if (notifications()) {
+    notifications()->call<fcitx::INotifications::showTip>(
+        "mcbopomofo-user-file-issues", _("McBopomofo"), "fcitx_mcbopomofo",
+        _("Issues found in user files"), sst.str(),
+        kFcitx5NotificationTimeoutInMs);
+  } else {
+    FCITX_MCBOPOMOFO_ERROR() << sst.str();
+  }
+  userFileIssues_.clear();
 }
 
 FCITX_ADDON_FACTORY(McBopomofoEngineFactory);

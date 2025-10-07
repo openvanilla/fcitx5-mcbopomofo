@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <string>
 
 std::string StringUtils::TrimZerosAtStart(const std::string& input) {
   std::stringstream output;

@@ -26,6 +26,7 @@
 #include <cmath>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include "StringUtils.h"
 
@@ -84,11 +85,11 @@ std::string ChineseNumbers::Generate(const std::string& intPart,
 
   std::stringstream output;
   if (intTrimmed.empty()) {
-      if (digitCase == ChineseNumbers::ChineseNumberCase::LOWERCASE) {
-        output << kLowerDigits[0];
-      } else if (digitCase == ChineseNumbers::ChineseNumberCase::UPPERCASE) {
-        output << kUpperDigits[0];
-      }
+    if (digitCase == ChineseNumbers::ChineseNumberCase::LOWERCASE) {
+      output << kLowerDigits[0];
+    } else if (digitCase == ChineseNumbers::ChineseNumberCase::UPPERCASE) {
+      output << kUpperDigits[0];
+    }
   } else {
     size_t intSectionCount = static_cast<size_t>(
         ceil(static_cast<double>(intTrimmed.length()) / 4.0));

@@ -28,6 +28,7 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "Log.h"
@@ -88,7 +89,7 @@ LanguageModelLoader::LanguageModelLoader(
   }
 
   userDataPath += "/mcbopomofo";
-  if (!std::filesystem::exists(userDataPath), err) {
+  if (!std::filesystem::exists(userDataPath, err)) {
     bool result = std::filesystem::create_directory(userDataPath, err);
     if (result) {
       FCITX_MCBOPOMOFO_INFO()
@@ -179,7 +180,7 @@ void LanguageModelLoader::removeUserPhrase(const std::string_view& reading,
   reloadUserModelsIfNeeded();
 }
 
-void LanguageModelLoader::reloadUserModelsIfNeeded() {
+bool LanguageModelLoader::reloadUserModelsIfNeeded() {
   bool shouldReloadUserPhrases = false;
   bool shouldReloadPhrasesReplacement = false;
 
@@ -238,6 +239,13 @@ void LanguageModelLoader::reloadUserModelsIfNeeded() {
   if (shouldReloadPhrasesReplacement) {
     lm_->loadPhraseReplacementMap(phrasesReplacementPath_.path().c_str());
   }
+
+  return shouldReloadUserPhrases || shouldReloadPhrasesReplacement;
+}
+
+std::vector<McBopomofoLM::UserFileIssue>
+LanguageModelLoader::getUserFileIssues() const {
+  return lm_->getUserFileIssues();
 }
 
 void LanguageModelLoader::populateUserDataFilesIfNeeded() {

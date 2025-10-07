@@ -21,7 +21,10 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "KeyHandler.h"
 #include "gmock/gmock.h"
@@ -249,8 +252,7 @@ TEST_F(KeyHandlerTest, UppercaseLetterCommitComposingBufferByDefault) {
   auto endState = handleKeySequence(asciiKeys("jp6A"));
   auto committingState = dynamic_cast<InputStates::Committing*>(endState.get());
   ASSERT_TRUE(committingState != nullptr);
-  // "文" was already committed, so only A is committed.
-  ASSERT_EQ(committingState->text, "A");
+  ASSERT_EQ(committingState->text, "文A");
 }
 
 TEST_F(KeyHandlerTest, UppercaseLetterNotHandledIfComposingBufferIsEmpty) {

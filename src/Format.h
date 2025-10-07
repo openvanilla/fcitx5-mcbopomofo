@@ -25,6 +25,7 @@
 #define SRC_FORMAT_H_
 
 #include <fmt/format.h>
+
 #include <utility>
 
 namespace McBopomofo {
@@ -35,6 +36,6 @@ namespace McBopomofo {
 #define FmtRuntime(X) (X)
 #endif
 
-}
+}  // namespace McBopomofo
 
-#endif
+#endif  // SRC_FORMAT_H_

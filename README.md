@@ -24,7 +24,7 @@
 
 ## 安裝方式
 
-以下說明如何在 Ubuntu 22.04 LTS 上面編譯安裝。
+以下說明如何在 Ubuntu 24.04 LTS（或是 22.04 LTS）上編譯安裝。
 
 請先安裝 fcitx5, CMake, 以及以下開發用模組：
 
@@ -37,11 +37,9 @@ sudo apt install \
 然後在本專案的 git 目錄下執行以下指令：
 
 ```bash
-mkdir -p build
-cd build
-cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
-make
-sudo make install
+cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+sudo cmake --install build
 
 # 初次安裝後，執行以下指令，小麥注音 icon 就會出現在 fcitx5 選單中
 sudo update-icon-caches /usr/share/icons/*
@@ -79,7 +77,28 @@ cpplint --filter=-build/c++11,-build/include_alpha,-build/include_order,-build/i
 編譯時開啟 `-DENABLE_CLANG_TIDY=On` cmake flag 以啟用 `clang-tidy` 檢查 (需要 clang 14+)。
 
 ```bash
-cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DENABLE_CLANG_TIDY=On
+cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DENABLE_CLANG_TIDY=On
+```
+
+## 使用 Ninja 加快建置速度
+
+如果系統已經安裝 [Ninja](https://ninja-build.org/)，可使用以下指令，讓 CMake 將 `make` 換成 `ninja`，加快建置速度。尤其在啟用 clang-tidy 檢查程式時，可[加速不少](https://github.com/openvanilla/fcitx5-mcbopomofo/issues/96)：
+
+```
+rm -rf build  # 如果先前已經使用 make，要先移除 build 目錄
+cmake -B build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DENABLE_CLANG_TIDY=On
+cmake --build build  # 使用 ninja 建置
+```
+
+## 使用 SIMD 指令集加快資料解析速度的實驗
+
+[PR #194](https://github.com/openvanilla/fcitx5-mcbopomofo/pull/194) 加入了選項，可使用 SIMD 指令集加速用戶詞庫的解析速度。這個選項屬於實驗性質。要啟用該解析器，可在 CMake 建置時增加以下定義：
+
+```
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_EXPERIMENTAL_SIMD_SUPPORT_AVX512=1
 ```
 
 ## 社群公約

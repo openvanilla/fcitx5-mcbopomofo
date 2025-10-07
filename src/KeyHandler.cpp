@@ -25,8 +25,11 @@
 
 #include <algorithm>
 #include <chrono>
+#include <memory>
 #include <sstream>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "ChineseNumbers/ChineseNumbers.h"
 #include "ChineseNumbers/SuzhouNumbers.h"
@@ -243,20 +246,17 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   // Space also emits a space if not configured as a candidate choosing key.
   if (maybeNotEmptyState != nullptr && key.ascii == Key::SPACE &&
       (key.shiftPressed || !chooseCandidateUsingSpace_)) {
+    grid_.insertReading(" ");
+    walk();
+    auto inputtingState = buildInputtingState();
     if (grid_.cursor() >= grid_.length()) {
-      auto inputtingState = buildInputtingState();
       // Steal the composingBuffer built by the inputting state.
       auto committingState = std::make_unique<InputStates::Committing>(
           inputtingState->composingBuffer);
       stateCallback(std::move(committingState));
-
-      auto commitSpaceState = std::make_unique<InputStates::Committing>(" ");
-      stateCallback(std::move(commitSpaceState));
       reset();
     } else {
-      grid_.insertReading(" ");
-      walk();
-      stateCallback(buildInputtingState());
+      stateCallback(std::move(inputtingState));
     }
     return true;
   }
@@ -476,9 +476,8 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     // Upper case letters.
     if (simpleAscii >= 'A' && simpleAscii <= 'Z') {
+      unigram = std::string(kLetterPrefix) + chrStr;
       if (putLowercaseLettersToComposingBuffer_) {
-        unigram = std::string(kLetterPrefix) + chrStr;
-
         // Ignore return value, since we always return true below.
         handlePunctuation(unigram, state, stateCallback, errorCallback);
       } else {
@@ -488,15 +487,20 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
           return false;
         }
 
-        // First, commit what's already in the composing buffer.
+        grid_.insertReading(unigram);
+        size_t loc = grid_.cursor();
+        if (loc > 0) {  // Cursor must have moved after the insertion above.
+          --loc;
+
+          // Choose the uppercase letter.
+          grid_.overrideCandidate(loc, chrStr);
+        }
+        walk();
         auto inputtingState = buildInputtingState();
         // Steal the composingBuffer built by the inputting state.
         auto committingState = std::make_unique<InputStates::Committing>(
             inputtingState->composingBuffer);
         stateCallback(std::move(committingState));
-
-        // Then we commit that single character.
-        stateCallback(std::make_unique<InputStates::Committing>(chrStr));
         reset();
       }
       return true;
@@ -708,7 +712,7 @@ bool KeyHandler::handleAssociatedPhrases(InputStates::Inputting* state,
     errorCallback();
     return true;
   }
-  auto* inputting = dynamic_cast<InputStates::Inputting*>(state);
+  auto* inputting = state;
   if (inputting != nullptr) {
     // Find the selected node *before* the cursor.
     size_t prefixCursorIndex = cursor - 1;
@@ -1572,9 +1576,7 @@ size_t KeyHandler::candidateCursorIndex() {
 }
 
 void KeyHandler::setCandidateCursorIndex(size_t newCursor) {
-  if (newCursor > grid_.length()) {
-    newCursor = grid_.length();
-  }
+  newCursor = std::min(newCursor, grid_.length());
   grid_.setCursor(newCursor);
 }
 
