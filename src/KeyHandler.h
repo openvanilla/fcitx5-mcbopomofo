@@ -24,15 +24,12 @@
 #ifndef SRC_KEYHANDLER_H_
 #define SRC_KEYHANDLER_H_
 
-#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "DictionaryService.h"
 #include "Engine/Mandarin/Mandarin.h"
-#include "Engine/McBopomofoLM.h"
 #include "Engine/UserOverrideModel.h"
 #include "Engine/gramambular2/language_model.h"
 #include "Engine/gramambular2/reading_grid.h"

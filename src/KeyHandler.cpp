@@ -33,7 +33,6 @@
 
 #include "ChineseNumbers/ChineseNumbers.h"
 #include "ChineseNumbers/SuzhouNumbers.h"
-#include "Log.h"
 #include "UTF8Helper.h"
 
 namespace McBopomofo {
@@ -45,6 +44,7 @@ constexpr char kPunctuationKeyPrefix[] = "_punctuation_";
 constexpr char kCtrlPunctuationKeyPrefix[] = "_ctrl_punctuation_";
 constexpr char kHalfWidthPunctuationKeyPrefix[] = "_half_punctuation_";
 constexpr char kLetterPrefix[] = "_letter_";
+constexpr char kNumPadPrefix[] = "_numpad_";
 constexpr size_t kMinValidMarkingReadingCount = 2;
 constexpr size_t kMaxValidMarkingReadingCount = 8;
 constexpr size_t kMaxChineseNumberConversionDigits = 20;
@@ -439,7 +439,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     return true;
   }
 
-  if (key.ascii != 0) {
+  if (key.ascii != 0 && !key.isFromNumberPad) {
     std::string chrStr(1, key.ascii);
     std::string unigram;
 
@@ -505,6 +505,14 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       }
       return true;
     }
+  }
+
+  if (key.ascii != 0 && key.isFromNumberPad && maybeNotEmptyState != nullptr) {
+    std::string unigram = kNumPadPrefix + std::string(1, key.ascii);
+    grid_.insertReading(unigram);
+    walk();
+    stateCallback(buildInputtingState());
+    return true;
   }
 
   // No key is handled. Refresh and consume the key.
