@@ -85,6 +85,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+      - name: Update pacman mirror list
+        run: |
+          pacman -Syy
+          pacman -Sy --noconfirm --needed reflector
+          reflector --verbose --country 'United States' --latest 20 --protocol https --age 24 --sort rate --save /etc/pacman.d/mirrorlist
+          cat /etc/pacman.d/mirrorlist
       - name: Install dependencies
         run: |
           pacman -Syy
