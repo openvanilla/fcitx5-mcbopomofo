@@ -17,6 +17,17 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.23.0")
     find_package(GTest)
 endif()
 
+# Check Fcitx5Utils version and apply the standardpaths patch
+MESSAGE(STATUS "Found Fcitx5Utils (found version \"${Fcitx5Utils_VERSION}\")")
+if (Fcitx5Utils_VERSION VERSION_GREATER_EQUAL "5.1.13")
+    MESSAGE(STATUS "Patching for Fcitx5 standardpaths")
+    find_package(Git REQUIRED)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} apply --whitespace=nowarn ${CMAKE_SOURCE_DIR}/patches/standardpaths-fix.patch
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+endif()
+
 add_subdirectory(Engine)
 add_subdirectory(ChineseNumbers)
 

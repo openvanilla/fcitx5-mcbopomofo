@@ -28,7 +28,7 @@ jobs:
           apt-get update
           apt install -y pkg-config
           apt install -y clang
-          apt install -y cmake extra-cmake-modules gettext libfmt-dev
+          apt install -y cmake extra-cmake-modules git gettext libfmt-dev
           apt install -y fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev fcitx5-modules-dev
           apt install -y libicu-dev libjson-c-dev
       - name: Install Build Essential
@@ -120,7 +120,7 @@ jobs:
         run: |
           dnf -y install gcc g++
           dnf -y install fcitx5 fcitx5-configtool fcitx5-devel \
-                 cmake extra-cmake-modules gettext fmt-devel \
+                 cmake extra-cmake-modules git gettext fmt-devel \
                  libicu-devel json-c-devel
       - name: Build
         run: |
@@ -141,7 +141,7 @@ jobs:
       - name: Install dependencies
         run: |
           pacman -Sy
-          pacman -Sy --noconfirm gcc cmake make pkg-config extra-cmake-modules fmt fcitx5 fcitx5-chinese-addons fcitx5-gtk fcitx5-qt
+          pacman -Sy --noconfirm gcc cmake make pkg-config extra-cmake-modules git fmt fcitx5 fcitx5-chinese-addons fcitx5-gtk fcitx5-qt
       - name: Build
         run: |
           mkdir -p build
