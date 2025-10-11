@@ -31,6 +31,7 @@
 #include "Engine/McBopomofoLM.h"
 #include "InputMacro.h"
 #include "InputMode.h"
+#include "PathCompat.h"
 #include "TimestampedPath.h"
 
 namespace McBopomofo {
