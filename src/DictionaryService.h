@@ -1,4 +1,3 @@
-
 // Copyright (c) 2024 and onwards The McBopomofo Authors.
 //
 // Permission is hereby granted, free of charge, to any person
@@ -31,6 +30,7 @@
 #include <vector>
 
 #include "InputState.h"
+#include "PathCompat.h"
 
 namespace McBopomofo {
 

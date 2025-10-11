@@ -46,6 +46,7 @@
 #include "InputState.h"
 #include "KeyHandler.h"
 #include "LanguageModelLoader.h"
+#include "PathCompat.h"
 
 namespace McBopomofo {
 
@@ -216,9 +217,7 @@ FCITX_CONFIGURATION(
             "xdg-open \"",
             fcitx::stringutils::replaceAll(
                 fcitx::stringutils::joinPath(
-                    fcitx::StandardPath::global().userDirectory(
-                        fcitx::StandardPath::Type::PkgData),
-                    "mcbopomofo"),
+                    McBopomofo::fcitx5_compat::userDirectory(), "mcbopomofo"),
                 "\"", "\"\"\""),
             "\"")};);
 
