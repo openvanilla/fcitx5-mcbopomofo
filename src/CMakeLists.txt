@@ -17,6 +17,13 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.23.0")
     find_package(GTest)
 endif()
 
+# Check Fcitx5Utils version and enable the legacy path
+MESSAGE(STATUS "Found Fcitx5Utils (found version \"${Fcitx5Utils_VERSION}\")")
+if (Fcitx5Utils_VERSION VERSION_LESS "5.1.13")
+    MESSAGE(STATUS "Use legacy FCITX5 API <standardpath.h>")
+    add_compile_definitions(USE_LEGACY_FCITX5_API_STANDARDPATH=1)
+endif()
+
 add_subdirectory(Engine)
 add_subdirectory(ChineseNumbers)
 
@@ -62,7 +69,7 @@ add_library(mcbopomofo MODULE McBopomofo.cpp)
 # Use this to build McBopomofo on, for example, Ubuntu 20.04 LTS
 if (USE_LEGACY_FCITX5_API)
     MESSAGE(STATUS "Using legacy (pre-2021) Fcitx5 API")
-    add_compile_definitions(mcbopomofo USE_LEGACY_FCITX5_API=1)
+    add_compile_definitions(USE_LEGACY_FCITX5_API=1)
 endif()
 target_compile_options(mcbopomofo PRIVATE -Wno-unknown-pragmas)
 target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core Fcitx5::Module::Notifications McBopomofoLib fmt::fmt ${JSONC_LIBRARIES})

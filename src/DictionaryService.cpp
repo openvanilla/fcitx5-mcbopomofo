@@ -144,8 +144,8 @@ void McBopomofo::DictionaryServices::load() {
   services_.emplace_back(std::make_unique<CharacterInfoService>());
 
   // Load json and add to services_
-  std::string dictionaryServicesPath = fcitx::StandardPath::global().locate(
-      fcitx::StandardPath::Type::PkgData, kDataPath);
+  std::string dictionaryServicesPath =
+      McBopomofo::fcitx5_compat::locate(kDataPath);
   FILE* file = fopen(dictionaryServicesPath.c_str(), "r");
   if (!file) {
     FCITX_MCBOPOMOFO_INFO()
