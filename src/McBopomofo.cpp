@@ -1263,7 +1263,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   bool isAdditionalPageDown = false;
 
   if (movingCursorOption == MovingCursorOption::UseJK) {
-    isAdditionalPageUp = key.check(FcitxKey_j);
+    isAdditionalPageUp = key.check(FcitxKey_h);
     isAdditionalPageDown = key.check(FcitxKey_l);
   } else if (movingCursorOption == MovingCursorOption::UseHL) {
     isAdditionalPageUp = key.check(FcitxKey_j);
