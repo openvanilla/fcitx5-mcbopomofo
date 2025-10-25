@@ -340,7 +340,7 @@ msgid "Move cursor after selection"
 msgstr "選字後自動移動游標"
 
 #: src/McBopomofo.h:148
-msgid "When Choosing Candidates:"
+msgid "When Choosing Candidates"
 msgstr "選字時"
 
 #: src/McBopomofo.h:153

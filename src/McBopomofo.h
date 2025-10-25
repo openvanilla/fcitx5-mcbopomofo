@@ -146,7 +146,7 @@ FCITX_CONFIGURATION(
                                 MovingCursorOptionI18NAnnotation>
         allowMovingCursorWhenChoosingCandidates{
             this, "AllowMovingCursorWhenChoosingCandidates",
-            _("When Choosing Candidates:"), MovingCursorOption::Disabled};
+            _("When Choosing Candidates"), MovingCursorOption::Disabled};
 
     // ESC key clears entire composing buffer.
     fcitx::Option<bool> escKeyClearsEntireComposingBuffer{

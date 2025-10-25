@@ -332,7 +332,7 @@ msgid "Move cursor after selection"
 msgstr ""
 
 #: src/McBopomofo.h:148
-msgid "When Choosing Candidates:"
+msgid "When Choosing Candidates"
 msgstr ""
 
 #: src/McBopomofo.h:153

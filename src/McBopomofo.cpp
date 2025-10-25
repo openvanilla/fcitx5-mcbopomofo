@@ -819,14 +819,15 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
+  MovingCursorOption movingCursorOption =
+      config_.allowMovingCursorWhenChoosingCandidates.value();
+
   bool isCursorMovingLeft =
       key.check(FcitxKey_Left, fcitx::KeyStates(fcitx::KeyState::Shift));
   bool isCursorMovingRight =
       key.check(FcitxKey_Right, fcitx::KeyStates(fcitx::KeyState::Shift));
 
   if (!isCursorMovingLeft && !isCursorMovingRight) {
-    MovingCursorOption movingCursorOption =
-        config_.allowMovingCursorWhenChoosingCandidates.value();
     if (movingCursorOption == MovingCursorOption::UseJK) {
       isCursorMovingLeft = key.check(FcitxKey_j);
       isCursorMovingRight = key.check(FcitxKey_k);
@@ -1256,6 +1257,44 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       return true;
     }
+  }
+
+  bool isAdditionalPageUp = false;
+  bool isAdditionalPageDown = false;
+
+  if (movingCursorOption == MovingCursorOption::UseJK) {
+    isAdditionalPageUp = key.check(FcitxKey_h);
+    isAdditionalPageDown = key.check(FcitxKey_l);
+  } else if (movingCursorOption == MovingCursorOption::UseHL) {
+    isAdditionalPageUp = key.check(FcitxKey_j);
+    isAdditionalPageDown = key.check(FcitxKey_k);
+  }
+
+  if (isAdditionalPageDown) {
+    if (candidateList->hasNext()) {
+      candidateList->next();
+      candidateList->toCursorMovable()->nextCandidate();
+    } else if (candidateList->currentPage() > 0) {
+      candidateList->setPage(0);
+      candidateList->toCursorMovable()->nextCandidate();
+    }
+    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+    return true;
+  }
+
+  if (isAdditionalPageUp) {
+    if (candidateList->hasPrev()) {
+      candidateList->prev();
+      candidateList->toCursorMovable()->nextCandidate();
+    } else {
+      int totalPages = candidateList->totalPages();
+      if (totalPages > 0) {
+        candidateList->setPage(totalPages - 1);
+      }
+      candidateList->toCursorMovable()->nextCandidate();
+    }
+    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+    return true;
   }
 
   if (associatedPhrases != nullptr) {
