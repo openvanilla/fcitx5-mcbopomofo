@@ -1632,15 +1632,9 @@ void McBopomofoEngine::handleRomanNumberState(
 
   bool useClientPreedit =
       context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
-#ifdef USE_LEGACY_FCITX5_API
-  fcitx::TextFormatFlags normalFormat{useClientPreedit
-                                          ? fcitx::TextFormatFlag::Underline
-                                          : fcitx::TextFormatFlag::None};
-#else
   fcitx::TextFormatFlags normalFormat{useClientPreedit
                                           ? fcitx::TextFormatFlag::Underline
                                           : fcitx::TextFormatFlag::NoFlag};
-#endif
   fcitx::Text preedit;
   preedit.append(current->composingBuffer(), normalFormat);
   preedit.setCursor(static_cast<int>(current->composingBuffer().length()));
