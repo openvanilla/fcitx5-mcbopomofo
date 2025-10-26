@@ -28,37 +28,37 @@
 
 namespace ChineseNumbers {
 
-TEST(SuzhouNumberTest, Test1_1) {
+TEST(SuzhouNumberTest, UsesSuzhouGlyphsWhenEnabled) {
   std::string output = SuzhouNumbers::Generate("0001", "0", "單位", true);
   EXPECT_EQ(output, "〡單位");
 }
 
-TEST(SuzhouNumberTest, Test1_2) {
+TEST(SuzhouNumberTest, FallsBackToChineseDigitsWhenDisabled) {
   std::string output = SuzhouNumbers::Generate("0001", "0", "單位", false);
   EXPECT_EQ(output, "一單位");
 }
 
-TEST(SuzhouNumberTest, Test1_10) {
+TEST(SuzhouNumberTest, UsesSuzhouGlyphForTen) {
   std::string output = SuzhouNumbers::Generate("0010", "0", "單位", true);
   EXPECT_EQ(output, "〸單位");
 }
 
-TEST(SuzhouNumberTest, Test1234_1) {
+TEST(SuzhouNumberTest, FormatsSuzhouDigitsAcrossRows) {
   std::string output = SuzhouNumbers::Generate("1234", "0", "單位", true);
   EXPECT_EQ(output, "〡二〣〤\n千單位");
 }
 
-TEST(SuzhouNumberTest, Test1234_2) {
+TEST(SuzhouNumberTest, FormatsMixedDigitsAcrossRows) {
   std::string output = SuzhouNumbers::Generate("1234", "0", "單位", false);
   EXPECT_EQ(output, "一〢三〤\n千單位");
 }
 
-TEST(SuzhouNumberTest, Test12345_1) {
+TEST(SuzhouNumberTest, AppendsSuzhouDigitsForFraction) {
   std::string output = SuzhouNumbers::Generate("1234", "5", "單位", true);
   EXPECT_EQ(output, "〡二〣〤〥\n千單位");
 }
 
-TEST(SuzhouNumberTest, Test12345_2) {
+TEST(SuzhouNumberTest, AppendsChineseDigitsForFraction) {
   std::string output = SuzhouNumbers::Generate("1234", "5", "單位", false);
   EXPECT_EQ(output, "一〢三〤〥\n千單位");
 }

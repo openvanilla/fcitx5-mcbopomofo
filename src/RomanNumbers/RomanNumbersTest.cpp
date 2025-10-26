@@ -28,55 +28,55 @@
 
 namespace RomanNumbers {
 
-TEST(RomanNumberTest, Test1_1) {
+TEST(RomanNumberTest, ConvertsZeroToEmptyStringInAlphabetStyle) {
   std::string output =
       RomanNumbers::ConvertFromInt(0, RomanNumbersStyle::ALPHABETS);
   EXPECT_EQ(output, "");
 }
 
-TEST(RomanNumberTest, Test1_2) {
+TEST(RomanNumberTest, ConvertsZeroToEmptyStringInFullWidthUpperStyle) {
   std::string output =
       RomanNumbers::ConvertFromInt(0, RomanNumbersStyle::FULL_WIDTH_UPPER);
   EXPECT_EQ(output, "");
 }
 
-TEST(RomanNumberTest, Test1_3) {
+TEST(RomanNumberTest, ConvertsZeroToEmptyStringInFullWidthLowerStyle) {
   std::string output =
       RomanNumbers::ConvertFromInt(0, RomanNumbersStyle::FULL_WIDTH_LOWER);
   EXPECT_EQ(output, "");
 }
 
-TEST(RomanNumberTest, Test2_1) {
+TEST(RomanNumberTest, ConvertsOneToAlphabetStyle) {
   std::string output =
       RomanNumbers::ConvertFromInt(1, RomanNumbersStyle::ALPHABETS);
   EXPECT_EQ(output, "I");
 }
 
-TEST(RomanNumberTest, Test2_2) {
+TEST(RomanNumberTest, ConvertsOneToFullWidthUpperStyle) {
   std::string output =
       RomanNumbers::ConvertFromInt(1, RomanNumbersStyle::FULL_WIDTH_UPPER);
   EXPECT_EQ(output, "Ⅰ");
 }
 
-TEST(RomanNumberTest, Test2_3) {
+TEST(RomanNumberTest, ConvertsOneToFullWidthLowerStyle) {
   std::string output =
       RomanNumbers::ConvertFromInt(1, RomanNumbersStyle::FULL_WIDTH_LOWER);
   EXPECT_EQ(output, "ⅰ");
 }
 
-TEST(RomanNumberTest, Test3_1) {
+TEST(RomanNumberTest, Converts3999ToAlphabetStyle) {
   std::string output =
       RomanNumbers::ConvertFromInt(3999, RomanNumbersStyle::ALPHABETS);
   EXPECT_EQ(output, "MMMCMXCIX");
 }
 
-TEST(RomanNumberTest, Test3_2) {
+TEST(RomanNumberTest, Converts3999ToFullWidthUpperStyle) {
   std::string output =
       RomanNumbers::ConvertFromInt(3999, RomanNumbersStyle::FULL_WIDTH_UPPER);
   EXPECT_EQ(output, "ⅯⅯⅯⅭⅯⅩⅭⅨ");
 }
 
-TEST(RomanNumberTest, Test3_3) {
+TEST(RomanNumberTest, Converts3999ToFullWidthLowerStyle) {
   std::string output =
       RomanNumbers::ConvertFromInt(3999, RomanNumbersStyle::FULL_WIDTH_LOWER);
   EXPECT_EQ(output, "ⅿⅿⅿⅽⅿⅹⅽⅸ");
