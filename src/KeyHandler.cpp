@@ -33,6 +33,7 @@
 
 #include "ChineseNumbers/ChineseNumbers.h"
 #include "ChineseNumbers/SuzhouNumbers.h"
+#include "RomanNumbers/RomanNumbers.h"
 #include "UTF8Helper.h"
 
 namespace McBopomofo {
@@ -48,6 +49,7 @@ constexpr char kNumPadPrefix[] = "_numpad_";
 constexpr size_t kMinValidMarkingReadingCount = 2;
 constexpr size_t kMaxValidMarkingReadingCount = 8;
 constexpr size_t kMaxChineseNumberConversionDigits = 20;
+constexpr size_t kMaxRomanNumberConversionDigits = 4;
 
 constexpr int kUserOverrideModelCapacity = 500;
 constexpr double kObservedOverrideHalfLife = 5400.0;  // 1.5 hr.
@@ -130,6 +132,11 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   if (chineseNumber != nullptr) {
     return handleChineseNumber(key, chineseNumber, stateCallback,
                                errorCallback);
+  }
+
+  auto* romanNumber = dynamic_cast<InputStates::RomanNumber*>(state);
+  if (romanNumber != nullptr) {
+    return handleRomanNumber(key, romanNumber, stateCallback, errorCallback);
   }
 
   auto* enclosingNumber = dynamic_cast<InputStates::EnclosingNumber*>(state);
@@ -564,7 +571,6 @@ void KeyHandler::candidateSelected(
         []() {}, true);
   }
 }
-
 void KeyHandler::candidateAssociatedPhraseSelected(
     size_t cursorIndex,
     const InputStates::ChoosingCandidate::Candidate& candidate,
@@ -1112,23 +1118,23 @@ bool KeyHandler::handleChineseNumber(
     }
     std::string intPart = intStream.str();
     std::string decPart = decStream.str();
-    std::string commitSting;
+    std::string commitString;
     switch (state->style) {
       case ChineseNumberStyle::LOWER:
-        commitSting = ChineseNumbers::Generate(
+        commitString = ChineseNumbers::Generate(
             intPart, decPart, ChineseNumbers::ChineseNumberCase::LOWERCASE);
         break;
       case ChineseNumberStyle::UPPER:
-        commitSting = ChineseNumbers::Generate(
+        commitString = ChineseNumbers::Generate(
             intPart, decPart, ChineseNumbers::ChineseNumberCase::UPPERCASE);
         break;
       case ChineseNumberStyle::SUZHOU:
-        commitSting = SuzhouNumbers::Generate(intPart, decPart, "單位", true);
+        commitString = SuzhouNumbers::Generate(intPart, decPart, "單位", true);
         break;
       default:
         break;
     }
-    auto newState = std::make_unique<InputStates::Committing>(commitSting);
+    auto newState = std::make_unique<InputStates::Committing>(commitString);
     stateCallback(std::move(newState));
     return true;
   }
@@ -1156,6 +1162,70 @@ bool KeyHandler::handleChineseNumber(
         std::make_unique<InputStates::ChineseNumber>(newNumber, state->style);
     stateCallback(std::move(newState));
 
+  } else {
+    errorCallback();
+  }
+
+  return true;
+}
+
+bool KeyHandler::handleRomanNumber(Key key,
+                                   McBopomofo::InputStates::RomanNumber* state,
+                                   StateCallback stateCallback,
+                                   KeyHandler::ErrorCallback errorCallback) {
+  if (key.ascii == Key::ESC) {
+    stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+    return true;
+  }
+  if (key.isDeleteKeys()) {
+    std::string number = state->number;
+    if (!number.empty()) {
+      number = number.substr(0, number.length() - 1);
+    } else {
+      errorCallback();
+      return true;
+    }
+    auto newState =
+        std::make_unique<InputStates::RomanNumber>(number, state->style);
+    stateCallback(std::move(newState));
+    return true;
+  }
+  if (key.ascii == Key::RETURN) {
+    RomanNumbers::RomanNumbersStyle style =
+        RomanNumbers::RomanNumbersStyle::ALPHABETS;
+    switch (state->style) {
+      case RomanNumberStyle::ALPHABETS:
+        style = RomanNumbers::RomanNumbersStyle::ALPHABETS;
+        break;
+      case RomanNumberStyle::FULL_WIDTH_UPPER:
+        style = RomanNumbers::RomanNumbersStyle::FULL_WIDTH_UPPER;
+        break;
+      case RomanNumberStyle::FULL_WIDTH_LOWER:
+        style = RomanNumbers::RomanNumbersStyle::FULL_WIDTH_LOWER;
+        break;
+      default:
+        break;
+    }
+    std::string commitString =
+        RomanNumbers::ConvertFromString(state->number, style);
+    if (commitString.empty()) {
+      errorCallback();
+      return true;
+    }
+
+    auto newState = std::make_unique<InputStates::Committing>(commitString);
+    stateCallback(std::move(newState));
+    return true;
+  }
+  if (key.ascii >= '0' && key.ascii <= '9') {
+    if (state->number.length() >= kMaxRomanNumberConversionDigits) {
+      errorCallback();
+      return true;
+    }
+    std::string newNumber = state->number + key.ascii;
+    auto newState =
+        std::make_unique<InputStates::RomanNumber>(newNumber, state->style);
+    stateCallback(std::move(newState));
   } else {
     errorCallback();
   }

@@ -1130,6 +1130,44 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     return true;
   }
 
+  bool isAdditionalPageUp = false;
+  bool isAdditionalPageDown = false;
+
+  if (movingCursorOption == MovingCursorOption::UseJK) {
+    isAdditionalPageUp = key.check(FcitxKey_h);
+    isAdditionalPageDown = key.check(FcitxKey_l);
+  } else if (movingCursorOption == MovingCursorOption::UseHL) {
+    isAdditionalPageUp = key.check(FcitxKey_j);
+    isAdditionalPageDown = key.check(FcitxKey_k);
+  }
+
+  if (isAdditionalPageDown) {
+    if (candidateList->hasNext()) {
+      candidateList->next();
+      candidateList->toCursorMovable()->nextCandidate();
+    } else if (candidateList->currentPage() > 0) {
+      candidateList->setPage(0);
+      candidateList->toCursorMovable()->nextCandidate();
+    }
+    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+    return true;
+  }
+
+  if (isAdditionalPageUp) {
+    if (candidateList->hasPrev()) {
+      candidateList->prev();
+      candidateList->toCursorMovable()->nextCandidate();
+    } else {
+      int totalPages = candidateList->totalPages();
+      if (totalPages > 0) {
+        candidateList->setPage(totalPages - 1);
+      }
+      candidateList->toCursorMovable()->nextCandidate();
+    }
+    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+    return true;
+  }
+
   bool isVertical = (layoutHint == fcitx::CandidateLayoutHint::Vertical);
 
   if (isVertical) {
@@ -1224,44 +1262,6 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
   }
 
-  bool isAdditionalPageUp = false;
-  bool isAdditionalPageDown = false;
-
-  if (movingCursorOption == MovingCursorOption::UseJK) {
-    isAdditionalPageUp = key.check(FcitxKey_h);
-    isAdditionalPageDown = key.check(FcitxKey_l);
-  } else if (movingCursorOption == MovingCursorOption::UseHL) {
-    isAdditionalPageUp = key.check(FcitxKey_j);
-    isAdditionalPageDown = key.check(FcitxKey_k);
-  }
-
-  if (isAdditionalPageDown) {
-    if (candidateList->hasNext()) {
-      candidateList->next();
-      candidateList->toCursorMovable()->nextCandidate();
-    } else if (candidateList->currentPage() > 0) {
-      candidateList->setPage(0);
-      candidateList->toCursorMovable()->nextCandidate();
-    }
-    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-    return true;
-  }
-
-  if (isAdditionalPageUp) {
-    if (candidateList->hasPrev()) {
-      candidateList->prev();
-      candidateList->toCursorMovable()->nextCandidate();
-    } else {
-      int totalPages = candidateList->totalPages();
-      if (totalPages > 0) {
-        candidateList->setPage(totalPages - 1);
-      }
-      candidateList->toCursorMovable()->nextCandidate();
-    }
-    context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-    return true;
-  }
-
   if (associatedPhrases != nullptr) {
     if (!origKey.isModifier()) {
       return false;
@@ -1352,6 +1352,9 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
   } else if (auto* chineseNumber =
                  dynamic_cast<InputStates::ChineseNumber*>(currentPtr)) {
     handleChineseNumberState(context, prevPtr, chineseNumber);
+  } else if (auto* romanNumber =
+                 dynamic_cast<InputStates::RomanNumber*>(currentPtr)) {
+    handleRomanNumberState(context, prevPtr, romanNumber);
   } else if (auto* enclosingNumber =
                  dynamic_cast<InputStates::EnclosingNumber*>(currentPtr)) {
     handleEnclosingNumberState(context, prevPtr, enclosingNumber);
@@ -1601,6 +1604,29 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
 void McBopomofoEngine::handleChineseNumberState(
     fcitx::InputContext* context, InputState* /*unused*/,
     InputStates::ChineseNumber* current) {
+  context->inputPanel().reset();
+  context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+
+  bool useClientPreedit =
+      context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
+  fcitx::TextFormatFlags normalFormat{useClientPreedit
+                                          ? fcitx::TextFormatFlag::Underline
+                                          : fcitx::TextFormatFlag::NoFlag};
+  fcitx::Text preedit;
+  preedit.append(current->composingBuffer(), normalFormat);
+  preedit.setCursor(static_cast<int>(current->composingBuffer().length()));
+
+  if (useClientPreedit) {
+    context->inputPanel().setClientPreedit(preedit);
+  } else {
+    context->inputPanel().setPreedit(preedit);
+  }
+  context->updatePreedit();
+}
+
+void McBopomofoEngine::handleRomanNumberState(
+    fcitx::InputContext* context, InputState* /*unused*/,
+    InputStates::RomanNumber* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
 

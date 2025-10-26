@@ -26,43 +26,43 @@
 #include "ChineseNumbers.h"
 #include "gtest/gtest.h"
 
-TEST(ChineseNumberTest, Test0_lower) {
+TEST(ChineseNumberTest, GeneratesLowercaseZero) {
   std::string output = ChineseNumbers::Generate(
       "0000", "0", ChineseNumbers::ChineseNumberCase::LOWERCASE);
   EXPECT_EQ(output, "〇");
 }
 
-TEST(ChineseNumberTest, Test0_uipper) {
+TEST(ChineseNumberTest, GeneratesUppercaseZero) {
   std::string output = ChineseNumbers::Generate(
       "0000", "0", ChineseNumbers::ChineseNumberCase::UPPERCASE);
   EXPECT_EQ(output, "零");
 }
 
-TEST(ChineseNumberTest, Test1) {
+TEST(ChineseNumberTest, GeneratesLowercaseOne) {
   std::string output = ChineseNumbers::Generate(
       "0001", "0", ChineseNumbers::ChineseNumberCase::LOWERCASE);
   EXPECT_EQ(output, "一");
 }
 
-TEST(ChineseNumberTest, Test11) {
+TEST(ChineseNumberTest, GeneratesLowercaseEleven) {
   std::string output = ChineseNumbers::Generate(
       "0011", "0", ChineseNumbers::ChineseNumberCase::LOWERCASE);
   EXPECT_EQ(output, "一十一");
 }
 
-TEST(ChineseNumberTest, Test1234) {
+TEST(ChineseNumberTest, GeneratesLowercaseFourDigitNumber) {
   std::string output = ChineseNumbers::Generate(
       "1234", "0", ChineseNumbers::ChineseNumberCase::LOWERCASE);
   EXPECT_EQ(output, "一千二百三十四");
 }
 
-TEST(ChineseNumberTest, Test12345) {
+TEST(ChineseNumberTest, GeneratesLowercaseFiveDigitNumber) {
   std::string output = ChineseNumbers::Generate(
       "12345", "0", ChineseNumbers::ChineseNumberCase::LOWERCASE);
   EXPECT_EQ(output, "一萬二千三百四十五");
 }
 
-TEST(ChineseNumberTest, Test10001) {
+TEST(ChineseNumberTest, GeneratesLowercaseTenThousandOne) {
   std::string output = ChineseNumbers::Generate(
       "10001", "0", ChineseNumbers::ChineseNumberCase::LOWERCASE);
   EXPECT_EQ(output, "一萬〇一");

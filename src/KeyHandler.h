@@ -210,6 +210,11 @@ class KeyHandler {
                            McBopomofo::InputStates::ChineseNumber* state,
                            StateCallback stateCallback,
                            ErrorCallback errorCallback);
+
+  bool handleRomanNumber(Key key, McBopomofo::InputStates::RomanNumber* state,
+                         StateCallback stateCallback,
+                         ErrorCallback errorCallback);
+
   bool handleEnclosingNumber(Key key,
                              McBopomofo::InputStates::EnclosingNumber* state,
                              StateCallback stateCallback,
