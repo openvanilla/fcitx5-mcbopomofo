@@ -52,7 +52,7 @@ include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cma
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(src)
-add_subdirectory(data)
+# add_subdirectory(data)
 add_subdirectory(po)
 
 message(STATUS "CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}")

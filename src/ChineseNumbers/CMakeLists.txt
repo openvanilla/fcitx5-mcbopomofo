@@ -13,7 +13,7 @@ add_library(ChineseNumbersLib
         SuzhouNumbers.cpp)
 
 if (ENABLE_CLANG_TIDY)
-    set_target_properties(McBopomofoLMLib PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+    set_target_properties(ChineseNumbersLib PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
 endif ()
 
 if (ENABLE_TEST)

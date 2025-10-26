@@ -39,6 +39,12 @@ enum class ChineseNumberStyle {
   SUZHOU,
 };
 
+enum class RomanNumberStyle {
+  ALPHABETS,
+  FULL_WIDTH_UPPER,
+  FULL_WIDTH_LOWER,
+};
+
 struct InputState {
   virtual ~InputState() = default;
 };
@@ -279,6 +285,27 @@ struct ChineseNumber : InputState {
   ChineseNumberStyle style;
 };
 
+struct RomanNumber : InputState {
+  RomanNumber(std::string number, RomanNumberStyle style)
+      : number(std::move(number)), style(style) {}
+  RomanNumber(RomanNumber const& number)
+      : number(number.number), style(number.style) {}
+
+  std::string composingBuffer() const {
+    if (style == RomanNumberStyle::ALPHABETS) {
+      return "[羅馬數字 (字母)] " + number;
+    } else if (style == RomanNumberStyle::FULL_WIDTH_UPPER) {
+      return "[羅馬數字 (全形大寫)] " + number;
+    } else if (style == RomanNumberStyle::FULL_WIDTH_LOWER) {
+      return "[羅馬數字 (全形小寫)] " + number;
+    }
+    return number;
+  }
+
+  std::string number;
+  RomanNumberStyle style;
+};
+
 struct SelectingDateMacro : InputState {
   explicit SelectingDateMacro(
       const std::function<std::string(std::string)>& converter);
@@ -310,6 +337,17 @@ struct SelectingFeature : InputState {
     });
     features.emplace_back("蘇州碼", []() {
       return std::make_unique<ChineseNumber>("", ChineseNumberStyle::SUZHOU);
+    });
+    features.emplace_back("羅馬數字 (字母)", []() {
+      return std::make_unique<RomanNumber>("", RomanNumberStyle::ALPHABETS);
+    });
+    features.emplace_back("羅馬數字 (全形大寫)", []() {
+      return std::make_unique<RomanNumber>("",
+                                           RomanNumberStyle::FULL_WIDTH_UPPER);
+    });
+    features.emplace_back("羅馬數字 (全形小寫)", []() {
+      return std::make_unique<RomanNumber>("",
+                                           RomanNumberStyle::FULL_WIDTH_LOWER);
     });
   }
 
