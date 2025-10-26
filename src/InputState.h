@@ -271,12 +271,13 @@ struct ChineseNumber : InputState {
       : number(number.number), style(number.style) {}
 
   std::string composingBuffer() const {
-    if (style == ChineseNumberStyle::LOWER) {
-      return "[中文數字] " + number;
-    } else if (style == ChineseNumberStyle::UPPER) {
-      return "[大寫數字] " + number;
-    } else if (style == ChineseNumberStyle::SUZHOU) {
-      return "[蘇州碼] " + number;
+    switch (style) {
+      case ChineseNumberStyle::LOWER:
+        return "[中文數字] " + number;
+      case ChineseNumberStyle::UPPER:
+        return "[大寫數字] " + number;
+      case ChineseNumberStyle::SUZHOU:
+        return "[蘇州碼] " + number;
     }
     return number;
   }
@@ -292,12 +293,13 @@ struct RomanNumber : InputState {
       : number(number.number), style(number.style) {}
 
   std::string composingBuffer() const {
-    if (style == RomanNumberStyle::ALPHABETS) {
-      return "[羅馬數字 (字母)] " + number;
-    } else if (style == RomanNumberStyle::FULL_WIDTH_UPPER) {
-      return "[羅馬數字 (全形大寫)] " + number;
-    } else if (style == RomanNumberStyle::FULL_WIDTH_LOWER) {
-      return "[羅馬數字 (全形小寫)] " + number;
+    switch (style) {
+      case RomanNumberStyle::ALPHABETS:
+        return "[羅馬數字 (字母)] " + number;
+      case RomanNumberStyle::FULL_WIDTH_UPPER:
+        return "[羅馬數字 (全形大寫)] " + number;
+      case RomanNumberStyle::FULL_WIDTH_LOWER:
+        return "[羅馬數字 (全形小寫)] " + number;
     }
     return number;
   }

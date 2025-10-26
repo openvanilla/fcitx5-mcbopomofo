@@ -21,11 +21,10 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef ROMANNUMBERS
-#define ROMANNUMBERS
+#ifndef MCBOPOMOFO_ROMANNUMBERS_H_
+#define MCBOPOMOFO_ROMANNUMBERS_H_
 
 #include <string>
-#include <unordered_map>
 
 namespace RomanNumbers {
 enum class RomanNumbersStyle { ALPHABETS, FULL_WIDTH_UPPER, FULL_WIDTH_LOWER };
@@ -36,4 +35,4 @@ std::string ConvertFromString(const std::string& number,
 
 };  // namespace RomanNumbers
 
-#endif /* ROMANNUMBERS */
+#endif /* MCBOPOMOFO_ROMANNUMBERS_H_ */
