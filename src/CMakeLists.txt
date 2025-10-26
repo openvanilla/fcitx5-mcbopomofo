@@ -68,11 +68,6 @@ include_directories(ChineseNumbers)
 include_directories(RomanNumbers)
 
 add_library(mcbopomofo MODULE McBopomofo.cpp)
-# Use this to build McBopomofo on, for example, Ubuntu 20.04 LTS
-if (USE_LEGACY_FCITX5_API)
-    MESSAGE(STATUS "Using legacy (pre-2021) Fcitx5 API")
-    add_compile_definitions(USE_LEGACY_FCITX5_API=1)
-endif()
 target_compile_options(mcbopomofo PRIVATE -Wno-unknown-pragmas)
 target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core Fcitx5::Module::Notifications McBopomofoLib fmt::fmt ${JSONC_LIBRARIES})
 target_include_directories(mcbopomofo PRIVATE Fcitx5::Core Fcitx5::Module::Notifications fmt::fmt)

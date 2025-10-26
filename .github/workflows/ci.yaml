@@ -51,35 +51,6 @@ jobs:
           cd build
           ctest --output-on-failure
 
-  build_debian_based_legacy:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu:20.04", "linuxmintd/mint20-amd64"]
-    runs-on: ubuntu-latest
-    container: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v5
-      - name: Install dependencies
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update
-          apt install -y pkg-config
-          apt install -y clang
-          apt install -y cmake extra-cmake-modules gettext libfmt-dev
-          apt install -y fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev fcitx5-modules-dev
-          apt install -y libicu-dev libjson-c-dev
-      - name: Build
-        run: |
-          mkdir -p build
-          cd build
-          cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DUSE_LEGACY_FCITX5_API=1 -DCMAKE_BUILD_TYPE=Debug
-          make -j
-      - name: Test
-        run: |
-          cd build
-          ctest --output-on-failure
-
   build_archlinux:
     runs-on: ubuntu-latest
     container: archlinux:base-devel
