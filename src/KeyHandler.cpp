@@ -1118,23 +1118,23 @@ bool KeyHandler::handleChineseNumber(
     }
     std::string intPart = intStream.str();
     std::string decPart = decStream.str();
-    std::string commitSting;
+    std::string commitString;
     switch (state->style) {
       case ChineseNumberStyle::LOWER:
-        commitSting = ChineseNumbers::Generate(
+        commitString = ChineseNumbers::Generate(
             intPart, decPart, ChineseNumbers::ChineseNumberCase::LOWERCASE);
         break;
       case ChineseNumberStyle::UPPER:
-        commitSting = ChineseNumbers::Generate(
+        commitString = ChineseNumbers::Generate(
             intPart, decPart, ChineseNumbers::ChineseNumberCase::UPPERCASE);
         break;
       case ChineseNumberStyle::SUZHOU:
-        commitSting = SuzhouNumbers::Generate(intPart, decPart, "單位", true);
+        commitString = SuzhouNumbers::Generate(intPart, decPart, "單位", true);
         break;
       default:
         break;
     }
-    auto newState = std::make_unique<InputStates::Committing>(commitSting);
+    auto newState = std::make_unique<InputStates::Committing>(commitString);
     stateCallback(std::move(newState));
     return true;
   }
@@ -1206,14 +1206,14 @@ bool KeyHandler::handleRomanNumber(Key key,
       default:
         break;
     }
-    std::string commitSting =
+    std::string commitString =
         RomanNumbers::ConvertFromString(state->number, style);
-    if (commitSting.empty()) {
+    if (commitString.empty()) {
       errorCallback();
       return true;
     }
 
-    auto newState = std::make_unique<InputStates::Committing>(commitSting);
+    auto newState = std::make_unique<InputStates::Committing>(commitString);
     stateCallback(std::move(newState));
     return true;
   }
