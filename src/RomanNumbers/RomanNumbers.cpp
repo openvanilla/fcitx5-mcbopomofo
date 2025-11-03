@@ -1,4 +1,4 @@
-// Copyright (c) 2023 and onwards The McBopomofo Authors.
+// Copyright (c) 2025 and onwards The McBopomofo Authors.
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -115,7 +115,9 @@ std::string RomanNumbers::ConvertFromString(const std::string& s,
                                             RomanNumbersStyle style) {
   if (s.empty()) return {};
   for (unsigned char ch : s) {
-    if (ch < '0' || ch > '9') return {};
+    if (!std::isdigit(ch)) {
+      return {};
+    }
   }
   int value = std::atoi(s.c_str());
   if (value <= 0 || value > 3999) return {};
