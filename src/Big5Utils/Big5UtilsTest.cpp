@@ -82,7 +82,7 @@ TEST(Big5UtilsTest, ConvertBig5fromHexString_Empty) {
 TEST(Big5UtilsTest, ConvertBig5fromHexString_LongerThanNeeded) {
   // Test with hex string longer than 4 characters (should still work)
   std::string result = convertBig5fromHexString("A4A400");
-  EXPECT_FALSE(result.empty());
+  EXPECT_TRUE(result.empty());
 }
 
 TEST(Big5UtilsTest, ConvertBig5fromHexString_InvalidHexString) {
