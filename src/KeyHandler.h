@@ -219,6 +219,9 @@ class KeyHandler {
                              McBopomofo::InputStates::EnclosingNumber* state,
                              StateCallback stateCallback,
                              ErrorCallback errorCallback);
+  bool handleBig5(Key key, McBopomofo::InputStates::Big5* state,
+                  StateCallback stateCallback,
+                  KeyHandler::ErrorCallback errorCallback);
 
   bool handleTabKey(bool isShiftPressed, McBopomofo::InputState* state,
                     const StateCallback& stateCallback,
