@@ -1326,11 +1326,13 @@ bool KeyHandler::handleBig5(Key key, McBopomofo::InputStates::Big5* state,
 
   if ((key.ascii >= '0' && key.ascii <= '9') ||
       (key.ascii >= 'a' && key.ascii <= 'f')) {
-    std::string newHexCode = state->hexCode + key.ascii;
+    std::string newHexCode =
+        state->hexCode + static_cast<char>(std::tolower(key.ascii));
+
     if (newHexCode.length() == 4)  // Big5 code is 4 hex digits.
     {
       std::string result = Big5Utils::convertBig5fromHexString(newHexCode);
-      if (result.length() == 0) {
+      if (result.empty()) {
         errorCallback();
         stateCallback(std::make_unique<InputStates::Empty>());
       } else {

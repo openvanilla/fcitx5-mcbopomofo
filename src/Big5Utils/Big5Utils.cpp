@@ -99,11 +99,15 @@ std::string convertBig5fromUint16(uint16_t codePoint) {
 }
 
 std::string convertBig5fromHexString(std::string hexString) {
-  if (hexString.length() < 4) {
+  if (hexString.length() != 4) {
     return "";
   }
 
-  uint16_t codePoint = std::stoul(hexString, nullptr, 16);
-  return convertBig5fromUint16(codePoint);
+  try {
+    uint16_t codePoint = std::stoul(hexString, nullptr, 16);
+    return convertBig5fromUint16(codePoint);
+  } catch (const std::exception&) {
+    return "";
+  }
 }
 }  // namespace Big5Utils
