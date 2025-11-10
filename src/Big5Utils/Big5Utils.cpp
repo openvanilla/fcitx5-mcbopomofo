@@ -46,7 +46,9 @@ static bool IsValidSingleUtf8Character(const char* str, int32_t length) {
 
 std::string ConvertBig5fromUint16(uint16_t codePoint) {
   UErrorCode status = U_ZERO_ERROR;
-  UConverter* conv = ucnv_open("windows-950-2000", &status);
+  // Note: BIG5-HKSCS is BIG5-HKSCS:20043 standard which includes more
+  // characters
+  UConverter* conv = ucnv_open("BIG5-HKSCS", &status);
   if (U_FAILURE(status)) {
     return "";
   }

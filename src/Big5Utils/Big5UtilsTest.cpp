@@ -91,4 +91,10 @@ TEST(Big5UtilsTest, ConvertBig5fromHexString_InvalidHexString) {
   EXPECT_TRUE(result.empty());
 }
 
+TEST(Big5UtilsTest, ConvertBig5fromHexString_Big5HKSCS) {
+  // Test with invalid Big5 hex string
+  std::string result = ConvertBig5fromHexString("9DEE");
+  EXPECT_EQ(result, "㗎");
+}
+
 }  // namespace Big5Utils
