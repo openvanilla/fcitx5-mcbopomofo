@@ -1331,7 +1331,7 @@ bool KeyHandler::handleBig5(Key key, McBopomofo::InputStates::Big5* state,
 
     if (newHexCode.length() == 4)  // Big5 code is 4 hex digits.
     {
-      std::string result = Big5Utils::convertBig5fromHexString(newHexCode);
+      std::string result = Big5Utils::ConvertBig5fromHexString(newHexCode);
       if (result.empty()) {
         errorCallback();
         stateCallback(std::make_unique<InputStates::Empty>());

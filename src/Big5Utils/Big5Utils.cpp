@@ -1,4 +1,4 @@
-// Copyright (c) 2023 and onwards The McBopomofo Authors.
+// Copyright (c) 2025 and onwards The McBopomofo Authors.
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -25,11 +25,12 @@
 
 #include <unicode/ucnv.h>
 
+#include <charconv>
 #include <cstdint>
 
 namespace Big5Utils {
 
-bool isValidSingleUtf8Character(const char* str, int32_t length) {
+static bool IsValidSingleUtf8Character(const char* str, int32_t length) {
   if (str == nullptr || length <= 0) {
     return false;
   }
@@ -43,9 +44,9 @@ bool isValidSingleUtf8Character(const char* str, int32_t length) {
   return i == length;  // Check if we consumed the whole string
 }
 
-std::string convertBig5fromUint16(uint16_t codePoint) {
+std::string ConvertBig5fromUint16(uint16_t codePoint) {
   UErrorCode status = U_ZERO_ERROR;
-  UConverter* conv = ucnv_open("Big5", &status);
+  UConverter* conv = ucnv_open("windows-950-2000", &status);
   if (U_FAILURE(status)) {
     return "";
   }
@@ -64,23 +65,25 @@ std::string convertBig5fromUint16(uint16_t codePoint) {
     return "";
   }
   // Check if the result contains exactly one valid UTF-8 character
-  if (!isValidSingleUtf8Character(utf8Buffer, utf8Length)) {
+  if (!IsValidSingleUtf8Character(utf8Buffer, utf8Length)) {
     return "";
   }
 
   return std::string(utf8Buffer, utf8Length);
 }
 
-std::string convertBig5fromHexString(std::string hexString) {
+std::string ConvertBig5fromHexString(std::string hexString) {
   if (hexString.length() != 4) {
     return "";
   }
 
-  try {
-    uint16_t codePoint = std::stoul(hexString, nullptr, 16);
-    return convertBig5fromUint16(codePoint);
-  } catch (const std::exception&) {
+  uint16_t codePoint = 0;
+  auto [ptr, ec] = std::from_chars(
+      hexString.data(), hexString.data() + hexString.size(), codePoint, 16);
+  if (ec != std::errc()) {
     return "";
   }
+
+  return ConvertBig5fromUint16(codePoint);
 }
 }  // namespace Big5Utils

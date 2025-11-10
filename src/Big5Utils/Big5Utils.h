@@ -29,8 +29,8 @@
 
 namespace Big5Utils {
 
-std::string convertBig5fromUint16(uint16_t codePoint);
-std::string convertBig5fromHexString(std::string hexString);
+std::string ConvertBig5fromUint16(uint16_t codePoint);
+std::string ConvertBig5fromHexString(std::string hexString);
 
 }  // namespace Big5Utils
 
