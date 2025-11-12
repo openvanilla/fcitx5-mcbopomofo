@@ -308,6 +308,13 @@ struct RomanNumber : InputState {
   RomanNumberStyle style;
 };
 
+struct Big5 : InputState {
+  explicit Big5(std::string hexCode = "") : hexCode(std::move(hexCode)) {}
+  Big5(Big5 const& code) : hexCode(code.hexCode) {}
+  std::string composingBuffer() const { return "[Big5碼] " + hexCode; }
+  std::string hexCode;
+};
+
 struct SelectingDateMacro : InputState {
   explicit SelectingDateMacro(
       const std::function<std::string(std::string)>& converter);
@@ -326,6 +333,9 @@ struct SelectingFeature : InputState {
 
   explicit SelectingFeature(std::function<std::string(std::string)> converter)
       : converter(std::move(converter)) {
+    features.emplace_back("Big5 輸入",
+                          [this]() { return std::make_unique<Big5>(""); });
+
     features.emplace_back("日期與時間", [this]() {
       return std::make_unique<SelectingDateMacro>(this->converter);
     });

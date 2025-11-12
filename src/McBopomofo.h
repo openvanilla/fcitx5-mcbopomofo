@@ -272,11 +272,13 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
                               InputStates::RomanNumber* current);
   void handleEnclosingNumberState(fcitx::InputContext* context, InputState*,
                                   InputStates::EnclosingNumber* current);
+  void handleBig5State(fcitx::InputContext* context, InputState* /*unused*/,
+                       InputStates::Big5* current);
 
   // Helpers.
 
-  // Updates the preedit with a not-empty state's composing buffer and cursor
-  // index.
+  // Updates the preedit with a not-empty state's composing buffer and
+  // cursor index.
   void updatePreedit(fcitx::InputContext* context,
                      InputStates::NotEmpty* state);
 

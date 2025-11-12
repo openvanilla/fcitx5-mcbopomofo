@@ -31,6 +31,7 @@
 #include <utility>
 #include <vector>
 
+#include "Big5Utils/Big5Utils.h"
 #include "ChineseNumbers/ChineseNumbers.h"
 #include "ChineseNumbers/SuzhouNumbers.h"
 #include "RomanNumbers/RomanNumbers.h"
@@ -143,6 +144,11 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   if (enclosingNumber != nullptr) {
     return handleEnclosingNumber(key, enclosingNumber, stateCallback,
                                  errorCallback);
+  }
+
+  auto* big5 = dynamic_cast<InputStates::Big5*>(state);
+  if (big5 != nullptr) {
+    return handleBig5(key, big5, stateCallback, errorCallback);
   }
 
   // From Key's definition, if shiftPressed is true, it can't be a simple key
@@ -1291,6 +1297,51 @@ bool KeyHandler::handleEnclosingNumber(
     }
     std::string newNumber = state->number + key.ascii;
     auto newState = std::make_unique<InputStates::EnclosingNumber>(newNumber);
+    stateCallback(std::move(newState));
+  } else {
+    errorCallback();
+  }
+  return true;
+}
+
+bool KeyHandler::handleBig5(Key key, McBopomofo::InputStates::Big5* state,
+                            StateCallback stateCallback,
+                            KeyHandler::ErrorCallback errorCallback) {
+  if (key.ascii == Key::ESC) {
+    stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+    return true;
+  }
+  if (key.isDeleteKeys()) {
+    std::string hexCode = state->hexCode;
+    if (!hexCode.empty()) {
+      hexCode = hexCode.substr(0, hexCode.length() - 1);
+    } else {
+      errorCallback();
+      return true;
+    }
+    auto newState = std::make_unique<InputStates::Big5>(hexCode);
+    stateCallback(std::move(newState));
+    return true;
+  }
+
+  if ((key.ascii >= '0' && key.ascii <= '9') ||
+      (key.ascii >= 'a' && key.ascii <= 'f')) {
+    std::string newHexCode =
+        state->hexCode + static_cast<char>(std::tolower(key.ascii));
+
+    if (newHexCode.length() == 4)  // Big5 code is 4 hex digits.
+    {
+      std::string result = Big5Utils::ConvertBig5fromHexString(newHexCode);
+      if (result.empty()) {
+        errorCallback();
+        stateCallback(std::make_unique<InputStates::Empty>());
+      } else {
+        stateCallback(std::make_unique<InputStates::Committing>(result));
+      }
+      return true;
+    }
+
+    auto newState = std::make_unique<InputStates::Big5>(newHexCode);
     stateCallback(std::move(newState));
   } else {
     errorCallback();

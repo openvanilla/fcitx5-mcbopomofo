@@ -27,6 +27,7 @@ endif()
 add_subdirectory(Engine)
 add_subdirectory(ChineseNumbers)
 add_subdirectory(RomanNumbers)
+add_subdirectory(Big5Utils)
 
 set(MCBOPOMOFO_LIB_SOURCES
     DictionaryService.cpp
@@ -53,7 +54,7 @@ include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cma
 
 add_library(McBopomofoLib ${MCBOPOMOFO_LIB_SOURCES})
 target_compile_options(McBopomofoLib PRIVATE -Wno-unknown-pragmas)
-target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils ICU::uc ICU::i18n ${JSONC_LIBRARIES} gramambular2_lib McBopomofoLMLib MandarinLib ChineseNumbersLib RomanNumbersLib)
+target_link_libraries(McBopomofoLib PRIVATE Fcitx5::Utils ICU::uc ICU::i18n ${JSONC_LIBRARIES} gramambular2_lib McBopomofoLMLib MandarinLib ChineseNumbersLib RomanNumbersLib Big5UtilsLib)
 target_include_directories(McBopomofoLib PRIVATE Fcitx5::Utils)
 target_compile_definitions(McBopomofoLib PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
 
@@ -66,6 +67,7 @@ include_directories(Engine/Gramambular)
 include_directories(Engine/Mandarin)
 include_directories(ChineseNumbers)
 include_directories(RomanNumbers)
+include_directories(Big5Utils)
 
 add_library(mcbopomofo MODULE McBopomofo.cpp)
 target_compile_options(mcbopomofo PRIVATE -Wno-unknown-pragmas)
