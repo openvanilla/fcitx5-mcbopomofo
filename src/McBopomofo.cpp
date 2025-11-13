@@ -1351,15 +1351,15 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
     handleCandidatesState(context, prevPtr, selectingDateMacro);
   } else if (auto* chineseNumber =
                  dynamic_cast<InputStates::ChineseNumber*>(currentPtr)) {
-    handleChineseNumberState(context, prevPtr, chineseNumber);
+    handleChineseNumberState(context, chineseNumber);
   } else if (auto* romanNumber =
                  dynamic_cast<InputStates::RomanNumber*>(currentPtr)) {
-    handleRomanNumberState(context, prevPtr, romanNumber);
+    handleRomanNumberState(context, romanNumber);
   } else if (auto* enclosingNumber =
                  dynamic_cast<InputStates::EnclosingNumber*>(currentPtr)) {
-    handleEnclosingNumberState(context, prevPtr, enclosingNumber);
+    handleEnclosingNumberState(context, enclosingNumber);
   } else if (auto* big5 = dynamic_cast<InputStates::Big5*>(currentPtr)) {
-    handleBig5State(context, prevPtr, big5);
+    handleBig5State(context, big5);
   } else if (auto* customMenu =
                  dynamic_cast<InputStates::CustomMenu*>(currentPtr)) {
     handleCandidatesState(context, prevPtr, customMenu);
@@ -1604,77 +1604,27 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
 }
 
 void McBopomofoEngine::handleChineseNumberState(
-    fcitx::InputContext* context, InputState* /*unused*/,
-    InputStates::ChineseNumber* current) {
-  context->inputPanel().reset();
-  context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-
-  bool useClientPreedit =
-      context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
-  fcitx::TextFormatFlags normalFormat{useClientPreedit
-                                          ? fcitx::TextFormatFlag::Underline
-                                          : fcitx::TextFormatFlag::NoFlag};
-  fcitx::Text preedit;
-  preedit.append(current->composingBuffer(), normalFormat);
-  preedit.setCursor(static_cast<int>(current->composingBuffer().length()));
-
-  if (useClientPreedit) {
-    context->inputPanel().setClientPreedit(preedit);
-  } else {
-    context->inputPanel().setPreedit(preedit);
-  }
-  context->updatePreedit();
+    fcitx::InputContext* context, InputStates::ChineseNumber* current) {
+  handleStateWithCustomInput(context, current->composingBuffer());
 }
 
 void McBopomofoEngine::handleRomanNumberState(
-    fcitx::InputContext* context, InputState* /*unused*/,
-    InputStates::RomanNumber* current) {
-  context->inputPanel().reset();
-  context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-
-  bool useClientPreedit =
-      context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
-  fcitx::TextFormatFlags normalFormat{useClientPreedit
-                                          ? fcitx::TextFormatFlag::Underline
-                                          : fcitx::TextFormatFlag::NoFlag};
-  fcitx::Text preedit;
-  preedit.append(current->composingBuffer(), normalFormat);
-  preedit.setCursor(static_cast<int>(current->composingBuffer().length()));
-
-  if (useClientPreedit) {
-    context->inputPanel().setClientPreedit(preedit);
-  } else {
-    context->inputPanel().setPreedit(preedit);
-  }
-  context->updatePreedit();
+    fcitx::InputContext* context, InputStates::RomanNumber* current) {
+  handleStateWithCustomInput(context, current->composingBuffer());
 }
 
 void McBopomofoEngine::handleEnclosingNumberState(
-    fcitx::InputContext* context, InputState* /*unused*/,
-    InputStates::EnclosingNumber* current) {
-  context->inputPanel().reset();
-  context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
-
-  bool useClientPreedit =
-      context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
-  fcitx::TextFormatFlags normalFormat{useClientPreedit
-                                          ? fcitx::TextFormatFlag::Underline
-                                          : fcitx::TextFormatFlag::NoFlag};
-  fcitx::Text preedit;
-  preedit.append(current->composingBuffer(), normalFormat);
-  preedit.setCursor(static_cast<int>(current->composingBuffer().length()));
-
-  if (useClientPreedit) {
-    context->inputPanel().setClientPreedit(preedit);
-  } else {
-    context->inputPanel().setPreedit(preedit);
-  }
-  context->updatePreedit();
+    fcitx::InputContext* context, InputStates::EnclosingNumber* current) {
+  handleStateWithCustomInput(context, current->composingBuffer());
 }
 
 void McBopomofoEngine::handleBig5State(fcitx::InputContext* context,
-                                       InputState* /*unused*/,
                                        InputStates::Big5* current) {
+  handleStateWithCustomInput(context, current->composingBuffer());
+}
+
+void McBopomofoEngine::handleStateWithCustomInput(fcitx::InputContext* context,
+                                                  std::string composingBuffer) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
 
@@ -1684,8 +1634,8 @@ void McBopomofoEngine::handleBig5State(fcitx::InputContext* context,
                                           ? fcitx::TextFormatFlag::Underline
                                           : fcitx::TextFormatFlag::NoFlag};
   fcitx::Text preedit;
-  preedit.append(current->composingBuffer(), normalFormat);
-  preedit.setCursor(static_cast<int>(current->composingBuffer().length()));
+  preedit.append(composingBuffer, normalFormat);
+  preedit.setCursor(static_cast<int>(composingBuffer.length()));
 
   if (useClientPreedit) {
     context->inputPanel().setClientPreedit(preedit);

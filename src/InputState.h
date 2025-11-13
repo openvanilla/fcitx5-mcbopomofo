@@ -334,8 +334,7 @@ struct SelectingFeature : InputState {
   explicit SelectingFeature(std::function<std::string(std::string)> converter)
       : converter(std::move(converter)) {
     features.emplace_back("Big5 輸入",
-                          [this]() { return std::make_unique<Big5>(""); });
-
+                          []() { return std::make_unique<Big5>(""); });
     features.emplace_back("日期與時間", [this]() {
       return std::make_unique<SelectingDateMacro>(this->converter);
     });
