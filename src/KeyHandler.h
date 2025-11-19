@@ -72,6 +72,8 @@ class KeyHandler {
                                StateCallback stateCallback,
                                ErrorCallback errorCallback, bool useShiftKey);
 
+  void handleForceCommitAndReset(StateCallback stateCallback);
+
   // Candidate selected. Can assume the context is in a candidate state.
   void candidateSelected(
       const InputStates::ChoosingCandidate::Candidate& candidate,

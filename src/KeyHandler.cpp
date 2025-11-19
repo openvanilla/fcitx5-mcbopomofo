@@ -837,6 +837,15 @@ bool KeyHandler::handleAssociatedPhrases(InputStates::Inputting* state,
   return true;
 }
 
+void KeyHandler::handleForceCommitAndReset(StateCallback stateCallback) {
+  reading_.clear();
+  auto inputtingState = buildInputtingState();
+  auto committingState = std::make_unique<InputStates::Committing>(
+      inputtingState->composingBuffer);
+  stateCallback(std::move(committingState));
+  reset();
+}
+
 bool KeyHandler::handleTabKey(bool isShiftPressed,
                               McBopomofo::InputState* state,
                               const StateCallback& stateCallback,
