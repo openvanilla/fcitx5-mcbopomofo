@@ -389,4 +389,17 @@ TEST_F(
   ASSERT_TRUE(emptyState != nullptr);
 }
 
+TEST_F(KeyHandlerTest, ForceCommitStringContainsNoReading) {
+  auto keys = asciiKeys("5j/ jp6");
+  keys.emplace_back(Key::namedKey(Key::KeyName::LEFT));
+  keys.emplace_back(Key::asciiKey('g'));  // ㄕ
+  keys.emplace_back(Key::asciiKey('j'));  // ㄨ
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer, "中ㄕㄨ文");
+  ASSERT_EQ(inputtingState->cursorIndex, strlen("中ㄕㄨ"));
+  ASSERT_EQ(keyHandler_->getForceCommitComposingBufferWithoutReading(), "中文");
+}
+
 }  // namespace McBopomofo

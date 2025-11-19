@@ -95,6 +95,11 @@ class KeyHandler {
       Key key, SelectCurrentCandidateCallback SelectCurrentCandidateCallback,
       StateCallback stateCallback, ErrorCallback errorCallback);
 
+  // Get the remnant of the composing buffer if a force-commit is needed. This
+  // provides the input method engine a way to quickly reset itself by
+  // disregarding its current internal state.
+  std::string getForceCommitComposingBufferWithoutReading();
+
   void boostPhrase(const std::string& reading, const std::string& value);
 
   void excludePhrase(const std::string& reading, const std::string& value);

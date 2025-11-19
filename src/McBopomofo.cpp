@@ -647,8 +647,6 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
 
 void McBopomofoEngine::reset(const fcitx::InputMethodEntry& /*unused*/,
                              fcitx::InputContextEvent& event) {
-  keyHandler_->reset();
-
   if (event.type() == fcitx::EventType::InputContextFocusOut ||
       event.type() == fcitx::EventType::InputContextReset) {
     // If this is a FocusOutEvent, we let fcitx5 do its own clean up, and so we
@@ -662,8 +660,21 @@ void McBopomofoEngine::reset(const fcitx::InputMethodEntry& /*unused*/,
     // enterNewState() with Empty state, either, because that would trigger
     // commit of existing preedit buffer, resulting in double commit of the same
     // text.
+    keyHandler_->reset();
     state_ = std::make_unique<InputStates::Empty>();
   } else {
+    // If we are in the NotEmpty state, all we care is to force commit whatever
+    // is left in the key handle. The reason: since we are going to reset the UI
+    // anyway, it doesn't matter which NotEmpty sub-state we are in. Also,
+    // we don't want to give the key handler another chance to call the state
+    // transition function because apps don't handle the side effects from such
+    // transition consistently, and so we choose to build a simple NotEmpty
+    // state that contains the string to be force-committed.
+    if (dynamic_cast<InputStates::NotEmpty*>(state_.get()) != nullptr) {
+      state_ = std::make_unique<InputStates::NotEmpty>(
+          keyHandler_->getForceCommitComposingBufferWithoutReading(), 0);
+    }
+    keyHandler_->reset();
     enterNewState(event.inputContext(), std::make_unique<InputStates::Empty>());
   }
 }

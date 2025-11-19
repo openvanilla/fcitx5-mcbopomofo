@@ -645,6 +645,11 @@ bool KeyHandler::handleCandidateKeyForTraditionalBopomofoIfRequired(
   return false;
 }
 
+std::string KeyHandler::getForceCommitComposingBufferWithoutReading() {
+  auto composedString = getComposedString(grid_.cursor());
+  return composedString.head + composedString.tail;
+}
+
 void KeyHandler::boostPhrase(const std::string& reading,
                              const std::string& value) {
   userPhraseAdder_->addUserPhrase(reading, value);
