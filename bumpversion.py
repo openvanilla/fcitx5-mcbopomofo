@@ -2,7 +2,7 @@
 import argparse
 import re
 import sys
-from datetime import date
+from datetime import datetime, timezone
 
 
 def bump_cmakelist(filename, vername):
@@ -23,7 +23,7 @@ def bump_cmakelist(filename, vername):
 
 
 def bump_metainfo(filename, vername):
-    today_str = date.today().strftime("%Y-%m-%d")
+    today_str = datetime.now(timezone.utc).date().isoformat()
 
     with open(filename, "r") as file:
         content = file.read()
