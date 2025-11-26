@@ -701,6 +701,30 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
     }
   }
 
+  InputStates::NumberInput* maybeNumberInput =
+      dynamic_cast<InputStates::NumberInput*>(state_.get());
+  if (maybeNumberInput != nullptr) {
+    bool handled = keyHandler_->handleNumberInput(
+        MapFcitxKey(key, origKey), maybeNumberInput,
+        [this, context](std::unique_ptr<InputState> next) {
+          enterNewState(context, std::move(next));
+        },
+        []() {
+          // TODO(unassigned): beep?
+        });
+    if (handled) {
+      keyEvent.filterAndAccept();
+      return;
+    }
+    InputStates::NumberInput* currentNumberInput =
+        dynamic_cast<InputStates::NumberInput*>(state_.get());
+    if (currentNumberInput != nullptr) {
+      if (currentNumberInput->candidates.empty()) {
+        return;
+      }
+    }
+  }
+
   if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr ||
       dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
           nullptr ||
@@ -710,7 +734,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
           nullptr ||
       dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr ||
       dynamic_cast<InputStates::SelectingDateMacro*>(state_.get()) != nullptr ||
-      dynamic_cast<InputStates::CustomMenu*>(state_.get()) != nullptr) {
+      dynamic_cast<InputStates::CustomMenu*>(state_.get()) != nullptr ||
+      dynamic_cast<InputStates::NumberInput*>(state_.get()) != nullptr) {
     // Absorb all keys when the candidate panel is on.
     keyEvent.filterAndAccept();
 
@@ -778,13 +803,16 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       dynamic_cast<InputStates::AssociatedPhrases*>(state_.get());
   InputStates::AssociatedPhrasesPlain* associatedPhrasesPlain =
       dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get());
+  InputStates::NumberInput* numberInput =
+      dynamic_cast<InputStates::NumberInput*>(state_.get());
+
   bool shouldUseShiftKey =
       associatedPhrasesPlain != nullptr ||
       (associatedPhrases != nullptr && associatedPhrases->useShiftKey &&
        config_.shiftEnterEnabled.value());
 
   // Plain Bopomofo and Associated Phrases.
-  if (shouldUseShiftKey) {
+  if (shouldUseShiftKey || numberInput != nullptr) {
     int code = origKey.code();
     // Shift-[1-9] keys can only be checked via raw key codes. The Key objects
     // in the selectionKeys_ do not carry such information.
@@ -1347,23 +1375,17 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
                  dynamic_cast<InputStates::AssociatedPhrasesPlain*>(
                      currentPtr)) {
     handleCandidatesState(context, prevPtr, associatePhrasePlain);
+  } else if (auto* numberInput =
+                 dynamic_cast<InputStates::NumberInput*>(currentPtr)) {
+    handleCandidatesState(context, prevPtr, numberInput);
   } else if (auto* selectingFeature =
                  dynamic_cast<InputStates::SelectingFeature*>(currentPtr)) {
     handleCandidatesState(context, prevPtr, selectingFeature);
   } else if (auto* selectingDateMacro =
                  dynamic_cast<InputStates::SelectingDateMacro*>(currentPtr)) {
     handleCandidatesState(context, prevPtr, selectingDateMacro);
-  } else if (auto* chineseNumber =
-                 dynamic_cast<InputStates::ChineseNumber*>(currentPtr)) {
-    handleChineseNumberState(context, chineseNumber);
-  } else if (auto* romanNumber =
-                 dynamic_cast<InputStates::RomanNumber*>(currentPtr)) {
-    handleRomanNumberState(context, romanNumber);
-  } else if (auto* enclosingNumber =
-                 dynamic_cast<InputStates::EnclosingNumber*>(currentPtr)) {
-    handleEnclosingNumberState(context, enclosingNumber);
   } else if (auto* big5 = dynamic_cast<InputStates::Big5*>(currentPtr)) {
-    handleBig5State(context, big5);
+    handleStateWithCustomInput(context, big5->composingBuffer());
   } else if (auto* customMenu =
                  dynamic_cast<InputStates::CustomMenu*>(currentPtr)) {
     handleCandidatesState(context, prevPtr, customMenu);
@@ -1421,8 +1443,11 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       dynamic_cast<InputStates::AssociatedPhrases*>(state_.get());
   InputStates::AssociatedPhrasesPlain* associatedPhrasesPlain =
       dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get());
+  InputStates::NumberInput* numberInput =
+      dynamic_cast<InputStates::NumberInput*>(state_.get());
+
   bool useShiftKey =
-      associatedPhrasesPlain != nullptr ||
+      numberInput != nullptr || associatedPhrasesPlain != nullptr ||
       (associatedPhrases != nullptr && associatedPhrases->useShiftKey);
 
   if (useShiftKey) {
@@ -1576,6 +1601,13 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
                                                        displayText, callback);
       candidateList->append(std::move(candidate));
     }
+  } else if (numberInput != nullptr) {
+    for (const auto& displayText : numberInput->candidates) {
+      std::unique_ptr<fcitx::CandidateWord> candidate =
+          std::make_unique<McBopomofoDirectInsertWord>(fcitx::Text(displayText),
+                                                       displayText, callback);
+      candidateList->append(std::move(candidate));
+    }
   } else if (customMenu != nullptr) {
     size_t index = 0;
     for (const auto& entry : customMenu->entries) {
@@ -1607,26 +1639,6 @@ void McBopomofoEngine::handleMarkingState(fcitx::InputContext* context,
   updatePreedit(context, current);
 }
 
-void McBopomofoEngine::handleChineseNumberState(
-    fcitx::InputContext* context, InputStates::ChineseNumber* current) {
-  handleStateWithCustomInput(context, current->composingBuffer());
-}
-
-void McBopomofoEngine::handleRomanNumberState(
-    fcitx::InputContext* context, InputStates::RomanNumber* current) {
-  handleStateWithCustomInput(context, current->composingBuffer());
-}
-
-void McBopomofoEngine::handleEnclosingNumberState(
-    fcitx::InputContext* context, InputStates::EnclosingNumber* current) {
-  handleStateWithCustomInput(context, current->composingBuffer());
-}
-
-void McBopomofoEngine::handleBig5State(fcitx::InputContext* context,
-                                       InputStates::Big5* current) {
-  handleStateWithCustomInput(context, current->composingBuffer());
-}
-
 void McBopomofoEngine::handleStateWithCustomInput(fcitx::InputContext* context,
                                                   std::string composingBuffer) {
   context->inputPanel().reset();
@@ -1652,7 +1664,8 @@ void McBopomofoEngine::handleStateWithCustomInput(fcitx::InputContext* context,
 fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
   fcitx::CandidateLayoutHint layoutHint = fcitx::CandidateLayoutHint::NotSet;
 
-  if (dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
+  if (dynamic_cast<InputStates::NumberInput*>(state_.get()) != nullptr ||
+      dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
           nullptr ||
       dynamic_cast<InputStates::ShowingCharInfo*>(state_.get()) != nullptr ||
       dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr ||
