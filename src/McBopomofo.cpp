@@ -647,8 +647,6 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
 
 void McBopomofoEngine::reset(const fcitx::InputMethodEntry& /*unused*/,
                              fcitx::InputContextEvent& event) {
-  keyHandler_->reset();
-
   if (event.type() == fcitx::EventType::InputContextFocusOut ||
       event.type() == fcitx::EventType::InputContextReset) {
     // If this is a FocusOutEvent, we let fcitx5 do its own clean up, and so we
@@ -663,8 +661,14 @@ void McBopomofoEngine::reset(const fcitx::InputMethodEntry& /*unused*/,
     // commit of existing preedit buffer, resulting in double commit of the same
     // text.
     state_ = std::make_unique<InputStates::Empty>();
+    keyHandler_->reset();
   } else {
-    enterNewState(event.inputContext(), std::make_unique<InputStates::Empty>());
+    fcitx::InputContext* context = event.inputContext();
+    keyHandler_->handleForceCommitAndReset(
+        [this, context](std::unique_ptr<InputState> next) {
+          enterNewState(context, std::move(next));
+        });
+    state_ = std::make_unique<InputStates::Empty>();
   }
 }
 

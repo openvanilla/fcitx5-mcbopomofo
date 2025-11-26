@@ -837,6 +837,15 @@ bool KeyHandler::handleAssociatedPhrases(InputStates::Inputting* state,
   return true;
 }
 
+void KeyHandler::handleForceCommitAndReset(StateCallback stateCallback) {
+  reading_.clear();
+  auto inputtingState = buildInputtingState();
+  auto committingState = std::make_unique<InputStates::Committing>(
+      inputtingState->composingBuffer);
+  stateCallback(std::move(committingState));
+  reset();
+}
+
 bool KeyHandler::handleTabKey(bool isShiftPressed,
                               McBopomofo::InputState* state,
                               const StateCallback& stateCallback,
@@ -1455,9 +1464,13 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
     runningCursor += distance;
 
     // Create a tooltip to warn the user that their cursor is between two
-    // readings (syllables) even if the cursor is not in the middle of a
-    // composed string due to its being shorter than the number of readings.
-    if (valueCodePointCount < readingLength) {
+    // readings (syllables) either because the composed string's code point
+    // count is shorter than the number of readings (in such cases the cursor
+    // may move within the same code point more than once) or because the
+    // composed string's code point count is longer than the number of
+    // readings (in such cases a cursor movement may skip over more than one
+    // code point in the composed string).
+    if (valueCodePointCount != readingLength) {
       // builderCursor is guaranteed to be > 0. If it was 0, we wouldn't even
       // reach here due to runningCursor having already "caught up" with
       // builderCursor. It is also guaranteed to be less than the size of the
