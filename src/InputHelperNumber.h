@@ -1,5 +1,5 @@
-#ifndef INPUTHELPERNUMBER
-#define INPUTHELPERNUMBER
+#ifndef MCBOPOMOFO_SRC_INPUTHELPERNUMBER_H_
+#define MCBOPOMOFO_SRC_INPUTHELPERNUMBER_H_
 
 #include <memory>
 #include <string>
@@ -17,4 +17,4 @@ std::vector<std::string> FillCandidatesWithNumber(
 }  // namespace InputHelperNumber
 }  // namespace McBopomofo
 
-#endif /* INPUTHELPERNUMBER */
+#endif /* MCBOPOMOFO_SRC_INPUTHELPERNUMBER_H_ */
