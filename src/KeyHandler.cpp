@@ -32,7 +32,7 @@
 #include <vector>
 
 #include "Big5Utils/Big5Utils.h"
-#include "InputHelperNumber.h"
+#include "NumberInputHelper.h"
 #include "UTF8Helper.h"
 
 namespace McBopomofo {
@@ -1085,7 +1085,7 @@ bool KeyHandler::handleNumberInput(Key key,
     if (!number.empty()) {
       number = number.substr(0, number.length() - 1);
       auto candidates =
-          InputHelperNumber::FillCandidatesWithNumber(number, lm_);
+          NumberInputHelper::FillCandidatesWithNumber(number, lm_);
       auto newState =
           std::make_unique<InputStates::NumberInput>(number, candidates);
       stateCallback(std::move(newState));
@@ -1103,7 +1103,7 @@ bool KeyHandler::handleNumberInput(Key key,
     }
     std::string newNumber = state->number + key.ascii;
     auto candidates =
-        InputHelperNumber::FillCandidatesWithNumber(newNumber, lm_);
+        NumberInputHelper::FillCandidatesWithNumber(newNumber, lm_);
     auto newState =
         std::make_unique<InputStates::NumberInput>(newNumber, candidates);
     stateCallback(std::move(newState));
@@ -1120,7 +1120,7 @@ bool KeyHandler::handleNumberInput(Key key,
     }
     std::string newNumber = state->number + key.ascii;
     auto candidates =
-        InputHelperNumber::FillCandidatesWithNumber(newNumber, lm_);
+        NumberInputHelper::FillCandidatesWithNumber(newNumber, lm_);
     auto newState =
         std::make_unique<InputStates::NumberInput>(newNumber, candidates);
     stateCallback(std::move(newState));

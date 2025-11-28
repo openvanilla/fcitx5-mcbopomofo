@@ -1,4 +1,4 @@
-#include "InputHelperNumber.h"
+#include "NumberInputHelper.h"
 
 #include <algorithm>
 #include <sstream>
@@ -10,7 +10,7 @@
 #include "RomanNumbers/RomanNumbers.h"
 
 namespace McBopomofo {
-namespace InputHelperNumber {
+namespace NumberInputHelper {
 
 std::vector<std::string> FillCandidatesWithNumber(
     std::string number,
@@ -54,7 +54,6 @@ std::vector<std::string> FillCandidatesWithNumber(
     }
   }
 
-  // zonble
   std::string key = "_number_" + number;
   if (languageModel->hasUnigrams(key)) {
     auto unigrams = languageModel->getUnigrams(key);
@@ -72,5 +71,5 @@ std::vector<std::string> FillCandidatesWithNumber(
   return candidates;
 }
 
-}  // namespace InputHelperNumber
+}  // namespace NumberInputHelper
 }  // namespace McBopomofo
