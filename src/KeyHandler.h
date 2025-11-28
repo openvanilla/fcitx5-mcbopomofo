@@ -74,6 +74,9 @@ class KeyHandler {
 
   void handleForceCommitAndReset(StateCallback stateCallback);
 
+  bool handleNumberInput(Key key, InputStates::NumberInput* state,
+                         StateCallback stateCallback,
+                         KeyHandler::ErrorCallback errorCallback);
   // Candidate selected. Can assume the context is in a candidate state.
   void candidateSelected(
       const InputStates::ChoosingCandidate::Candidate& candidate,
@@ -208,19 +211,6 @@ class KeyHandler {
 #pragma endregion Settings
 
  private:
-  bool handleChineseNumber(Key key,
-                           McBopomofo::InputStates::ChineseNumber* state,
-                           StateCallback stateCallback,
-                           ErrorCallback errorCallback);
-
-  bool handleRomanNumber(Key key, McBopomofo::InputStates::RomanNumber* state,
-                         StateCallback stateCallback,
-                         ErrorCallback errorCallback);
-
-  bool handleEnclosingNumber(Key key,
-                             McBopomofo::InputStates::EnclosingNumber* state,
-                             StateCallback stateCallback,
-                             ErrorCallback errorCallback);
   bool handleBig5(Key key, McBopomofo::InputStates::Big5* state,
                   StateCallback stateCallback,
                   KeyHandler::ErrorCallback errorCallback);

@@ -44,6 +44,8 @@ set(MCBOPOMOFO_LIB_SOURCES
     Log.h
     TimestampedPath.h
     TimestampedPath.cpp
+    NumberInputHelper.h
+    NumberInputHelper.cpp
 )
 
 # https://stackoverflow.com/questions/26549137/shared-library-on-linux-and-fpic-error
