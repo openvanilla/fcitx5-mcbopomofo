@@ -44,7 +44,7 @@ std::vector<std::string> FillCandidatesWithNumber(
       intPart, decPart, ChineseNumbers::ChineseNumberCase::UPPERCASE));
   if (decPart.empty()) {
     int value = std::atoi(intPart.c_str());
-    if (value > 0 || value <= 3999) {
+    if (value > 0 && value <= 3999) {
       candidates.emplace_back(RomanNumbers::ConvertFromInt(
           value, RomanNumbers::RomanNumbersStyle::ALPHABETS));
       candidates.emplace_back(RomanNumbers::ConvertFromInt(
