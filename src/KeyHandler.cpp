@@ -32,9 +32,7 @@
 #include <vector>
 
 #include "Big5Utils/Big5Utils.h"
-#include "ChineseNumbers/ChineseNumbers.h"
-#include "ChineseNumbers/SuzhouNumbers.h"
-#include "RomanNumbers/RomanNumbers.h"
+#include "NumberInputHelper.h"
 #include "UTF8Helper.h"
 
 namespace McBopomofo {
@@ -127,23 +125,6 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         }));
     reset();
     return true;
-  }
-
-  auto* chineseNumber = dynamic_cast<InputStates::ChineseNumber*>(state);
-  if (chineseNumber != nullptr) {
-    return handleChineseNumber(key, chineseNumber, stateCallback,
-                               errorCallback);
-  }
-
-  auto* romanNumber = dynamic_cast<InputStates::RomanNumber*>(state);
-  if (romanNumber != nullptr) {
-    return handleRomanNumber(key, romanNumber, stateCallback, errorCallback);
-  }
-
-  auto* enclosingNumber = dynamic_cast<InputStates::EnclosingNumber*>(state);
-  if (enclosingNumber != nullptr) {
-    return handleEnclosingNumber(key, enclosingNumber, stateCallback,
-                                 errorCallback);
   }
 
   auto* big5 = dynamic_cast<InputStates::Big5*>(state);
@@ -1091,9 +1072,10 @@ bool KeyHandler::handlePunctuation(const std::string& punctuationUnigramKey,
   return true;
 }
 
-bool KeyHandler::handleChineseNumber(
-    Key key, McBopomofo::InputStates::ChineseNumber* state,
-    StateCallback stateCallback, KeyHandler::ErrorCallback errorCallback) {
+bool KeyHandler::handleNumberInput(Key key,
+                                   McBopomofo::InputStates::NumberInput* state,
+                                   StateCallback stateCallback,
+                                   KeyHandler::ErrorCallback errorCallback) {
   if (key.ascii == Key::ESC) {
     stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
     return true;
@@ -1102,66 +1084,30 @@ bool KeyHandler::handleChineseNumber(
     std::string number = state->number;
     if (!number.empty()) {
       number = number.substr(0, number.length() - 1);
+      auto candidates =
+          NumberInputHelper::FillCandidatesWithNumber(number, lm_);
+      auto newState =
+          std::make_unique<InputStates::NumberInput>(number, candidates);
+      stateCallback(std::move(newState));
+      return true;
     } else {
       errorCallback();
       return true;
     }
-    auto newState =
-        std::make_unique<InputStates::ChineseNumber>(number, state->style);
-    stateCallback(std::move(newState));
-    return true;
   }
-  if (key.ascii == Key::RETURN) {
-    if (state->number.empty()) {
-      stateCallback(std::make_unique<InputStates::Empty>());
-      return true;
-    }
-    bool commonFound = false;
-    std::stringstream intStream;
-    std::stringstream decStream;
 
-    for (char c : state->number) {
-      if (c == '.') {
-        commonFound = true;
-        continue;
-      }
-      if (commonFound) {
-        decStream << c;
-      } else {
-        intStream << c;
-      }
-    }
-    std::string intPart = intStream.str();
-    std::string decPart = decStream.str();
-    std::string commitString;
-    switch (state->style) {
-      case ChineseNumberStyle::LOWER:
-        commitString = ChineseNumbers::Generate(
-            intPart, decPart, ChineseNumbers::ChineseNumberCase::LOWERCASE);
-        break;
-      case ChineseNumberStyle::UPPER:
-        commitString = ChineseNumbers::Generate(
-            intPart, decPart, ChineseNumbers::ChineseNumberCase::UPPERCASE);
-        break;
-      case ChineseNumberStyle::SUZHOU:
-        commitString = SuzhouNumbers::Generate(intPart, decPart, "單位", true);
-        break;
-      default:
-        break;
-    }
-    auto newState = std::make_unique<InputStates::Committing>(commitString);
-    stateCallback(std::move(newState));
-    return true;
-  }
   if (key.ascii >= '0' && key.ascii <= '9') {
     if (state->number.length() > kMaxChineseNumberConversionDigits) {
       errorCallback();
       return true;
     }
     std::string newNumber = state->number + key.ascii;
+    auto candidates =
+        NumberInputHelper::FillCandidatesWithNumber(newNumber, lm_);
     auto newState =
-        std::make_unique<InputStates::ChineseNumber>(newNumber, state->style);
+        std::make_unique<InputStates::NumberInput>(newNumber, candidates);
     stateCallback(std::move(newState));
+    return true;
   } else if (key.ascii == '.') {
     if (state->number.find('.') != std::string::npos) {
       errorCallback();
@@ -1173,144 +1119,15 @@ bool KeyHandler::handleChineseNumber(
       return true;
     }
     std::string newNumber = state->number + key.ascii;
+    auto candidates =
+        NumberInputHelper::FillCandidatesWithNumber(newNumber, lm_);
     auto newState =
-        std::make_unique<InputStates::ChineseNumber>(newNumber, state->style);
-    stateCallback(std::move(newState));
-
-  } else {
-    errorCallback();
-  }
-
-  return true;
-}
-
-bool KeyHandler::handleRomanNumber(Key key,
-                                   McBopomofo::InputStates::RomanNumber* state,
-                                   StateCallback stateCallback,
-                                   KeyHandler::ErrorCallback errorCallback) {
-  if (key.ascii == Key::ESC) {
-    stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
-    return true;
-  }
-  if (key.isDeleteKeys()) {
-    std::string number = state->number;
-    if (!number.empty()) {
-      number = number.substr(0, number.length() - 1);
-    } else {
-      errorCallback();
-      return true;
-    }
-    auto newState =
-        std::make_unique<InputStates::RomanNumber>(number, state->style);
+        std::make_unique<InputStates::NumberInput>(newNumber, candidates);
     stateCallback(std::move(newState));
     return true;
   }
-  if (key.ascii == Key::RETURN) {
-    RomanNumbers::RomanNumbersStyle style =
-        RomanNumbers::RomanNumbersStyle::ALPHABETS;
-    switch (state->style) {
-      case RomanNumberStyle::ALPHABETS:
-        style = RomanNumbers::RomanNumbersStyle::ALPHABETS;
-        break;
-      case RomanNumberStyle::FULL_WIDTH_UPPER:
-        style = RomanNumbers::RomanNumbersStyle::FULL_WIDTH_UPPER;
-        break;
-      case RomanNumberStyle::FULL_WIDTH_LOWER:
-        style = RomanNumbers::RomanNumbersStyle::FULL_WIDTH_LOWER;
-        break;
-      default:
-        break;
-    }
-    std::string commitString =
-        RomanNumbers::ConvertFromString(state->number, style);
-    if (commitString.empty()) {
-      errorCallback();
-      return true;
-    }
 
-    auto newState = std::make_unique<InputStates::Committing>(commitString);
-    stateCallback(std::move(newState));
-    return true;
-  }
-  if (key.ascii >= '0' && key.ascii <= '9') {
-    if (state->number.length() >= kMaxRomanNumberConversionDigits) {
-      errorCallback();
-      return true;
-    }
-    std::string newNumber = state->number + key.ascii;
-    auto newState =
-        std::make_unique<InputStates::RomanNumber>(newNumber, state->style);
-    stateCallback(std::move(newState));
-  } else {
-    errorCallback();
-  }
-
-  return true;
-}
-
-bool KeyHandler::handleEnclosingNumber(
-    Key key, McBopomofo::InputStates::EnclosingNumber* state,
-    StateCallback stateCallback, KeyHandler::ErrorCallback errorCallback) {
-  if (key.ascii == Key::ESC) {
-    stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
-    return true;
-  }
-  if (key.isDeleteKeys()) {
-    std::string number = state->number;
-    if (!number.empty()) {
-      number = number.substr(0, number.length() - 1);
-    } else {
-      errorCallback();
-      return true;
-    }
-    auto newState = std::make_unique<InputStates::EnclosingNumber>(number);
-    stateCallback(std::move(newState));
-    return true;
-  }
-  if (key.ascii == Key::RETURN || key.ascii == Key::SPACE) {
-    if (state->number.empty()) {
-      stateCallback(std::make_unique<InputStates::Empty>());
-      return true;
-    }
-    std::string unigramKey = "_number_" + state->number;
-    if (!lm_->hasUnigrams(unigramKey)) {
-      errorCallback();
-      return true;
-    }
-    auto unigrams = lm_->getUnigrams(unigramKey);
-    if (unigrams.size() == 1) {
-      auto firstUnigram = unigrams[0];
-      std::string value = firstUnigram.value();
-      stateCallback(std::make_unique<InputStates::Committing>(value));
-      stateCallback(std::make_unique<InputStates::Empty>());
-      return true;
-    }
-
-    grid_.insertReading(unigramKey);
-    walk();
-    size_t originalCursor = grid_.cursor();
-    if (selectPhraseAfterCursorAsCandidate_) {
-      grid_.setCursor(originalCursor - 1);
-    }
-    auto inputtingState = buildInputtingState();
-    auto choosingCandidateState =
-        buildChoosingCandidateState(inputtingState.get(), originalCursor);
-    stateCallback(std::move(inputtingState));
-    stateCallback(std::move(choosingCandidateState));
-    return true;
-  }
-  if (key.ascii >= '0' && key.ascii <= '9') {
-    if (state->number.length() > 2) {
-      errorCallback();
-      return true;
-    }
-    std::string newNumber = state->number + key.ascii;
-    auto newState = std::make_unique<InputStates::EnclosingNumber>(newNumber);
-    stateCallback(std::move(newState));
-  } else {
-    errorCallback();
-  }
-  return true;
+  return false;
 }
 
 bool KeyHandler::handleBig5(Key key, McBopomofo::InputStates::Big5* state,

@@ -256,56 +256,19 @@ struct AssociatedPhrasesPlain : InputState {
   const std::vector<ChoosingCandidate::Candidate> candidates;
 };
 
-struct EnclosingNumber : InputState {
-  explicit EnclosingNumber(std::string number = "")
-      : number(std::move(number)) {}
-  EnclosingNumber(EnclosingNumber const& number) : number(number.number) {}
-  std::string composingBuffer() const { return "[標題數字] " + number; }
-  std::string number;
-};
-
-struct ChineseNumber : InputState {
-  ChineseNumber(std::string number, ChineseNumberStyle style)
-      : number(std::move(number)), style(style) {}
-  ChineseNumber(ChineseNumber const& number)
-      : number(number.number), style(number.style) {}
-
-  std::string composingBuffer() const {
-    switch (style) {
-      case ChineseNumberStyle::LOWER:
-        return "[中文數字] " + number;
-      case ChineseNumberStyle::UPPER:
-        return "[大寫數字] " + number;
-      case ChineseNumberStyle::SUZHOU:
-        return "[蘇州碼] " + number;
-    }
-    return number;
-  }
+struct NumberInput : NotEmpty {
+  explicit NumberInput(const std::string& number, std::vector<std::string> cs)
+      : NotEmpty("[數字] " + number, ("[數字] " + number).length(), ""),
+        number(number),
+        candidates(std::move(cs)) {}
+  NumberInput(const NumberInput& other)
+      : NotEmpty("[數字] " + other.number, ("[數字] " + other.number).length(),
+                 ""),
+        number(other.number),
+        candidates(other.candidates) {}
 
   std::string number;
-  ChineseNumberStyle style;
-};
-
-struct RomanNumber : InputState {
-  RomanNumber(std::string number, RomanNumberStyle style)
-      : number(std::move(number)), style(style) {}
-  RomanNumber(RomanNumber const& number)
-      : number(number.number), style(number.style) {}
-
-  std::string composingBuffer() const {
-    switch (style) {
-      case RomanNumberStyle::ALPHABETS:
-        return "[羅馬數字 (字母)] " + number;
-      case RomanNumberStyle::FULL_WIDTH_UPPER:
-        return "[羅馬數字 (全形大寫)] " + number;
-      case RomanNumberStyle::FULL_WIDTH_LOWER:
-        return "[羅馬數字 (全形小寫)] " + number;
-    }
-    return number;
-  }
-
-  std::string number;
-  RomanNumberStyle style;
+  std::vector<std::string> candidates;
 };
 
 struct Big5 : InputState {
@@ -334,32 +297,12 @@ struct SelectingFeature : InputState {
   explicit SelectingFeature(std::function<std::string(std::string)> converter)
       : converter(std::move(converter)) {
     features.emplace_back("Big5 輸入",
-                          [this]() { return std::make_unique<Big5>(""); });
-
+                          []() { return std::make_unique<Big5>(""); });
     features.emplace_back("日期與時間", [this]() {
       return std::make_unique<SelectingDateMacro>(this->converter);
     });
-    features.emplace_back("標題數字",
-                          []() { return std::make_unique<EnclosingNumber>(); });
-    features.emplace_back("中文數字", []() {
-      return std::make_unique<ChineseNumber>("", ChineseNumberStyle::LOWER);
-    });
-    features.emplace_back("大寫數字", []() {
-      return std::make_unique<ChineseNumber>("", ChineseNumberStyle::UPPER);
-    });
-    features.emplace_back("蘇州碼", []() {
-      return std::make_unique<ChineseNumber>("", ChineseNumberStyle::SUZHOU);
-    });
-    features.emplace_back("羅馬數字 (字母)", []() {
-      return std::make_unique<RomanNumber>("", RomanNumberStyle::ALPHABETS);
-    });
-    features.emplace_back("羅馬數字 (全形大寫)", []() {
-      return std::make_unique<RomanNumber>("",
-                                           RomanNumberStyle::FULL_WIDTH_UPPER);
-    });
-    features.emplace_back("羅馬數字 (全形小寫)", []() {
-      return std::make_unique<RomanNumber>("",
-                                           RomanNumberStyle::FULL_WIDTH_LOWER);
+    features.emplace_back("數字輸入", []() {
+      return std::make_unique<NumberInput>("", std::vector<std::string>());
     });
   }
 

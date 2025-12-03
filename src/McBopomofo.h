@@ -266,14 +266,8 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
                              InputState* current);
   void handleMarkingState(fcitx::InputContext* context, InputState* prev,
                           InputStates::Marking* current);
-  void handleChineseNumberState(fcitx::InputContext* context, InputState*,
-                                InputStates::ChineseNumber* current);
-  void handleRomanNumberState(fcitx::InputContext* context, InputState*,
-                              InputStates::RomanNumber* current);
-  void handleEnclosingNumberState(fcitx::InputContext* context, InputState*,
-                                  InputStates::EnclosingNumber* current);
-  void handleBig5State(fcitx::InputContext* context, InputState* /*unused*/,
-                       InputStates::Big5* current);
+  void handleStateWithCustomInput(fcitx::InputContext* context,
+                                  std::string composingBuffer);
 
   // Helpers.
 
