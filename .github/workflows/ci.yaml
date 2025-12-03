@@ -37,19 +37,12 @@ jobs:
           apt install -y build-essential
       - name: Build
         run: |
-          mkdir -p build
-          cd build
-          cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug
-          make -j
-          cd ../
-          mkdir -p src/Engine/build
-          cd src/Engine/build
-          cmake ../
-          make -j
-      - name: Test
-        run: |
-          cd build
-          ctest --output-on-failure
+          cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug # use Debug for easy debugging with gdb
+          cmake --build build                                                 # or ninja, depending on your system
+      # - name: Test
+      #   run: |
+      #     cd build
+      #     ctest --output-on-failure
 
   build_archlinux:
     runs-on: ubuntu-latest

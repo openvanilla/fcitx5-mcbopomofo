@@ -21,8 +21,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef SRC_MCBOPOMOFO_H_
-#define SRC_MCBOPOMOFO_H_
+#ifndef MCBOPOMOFO
+#define MCBOPOMOFO
 
 #include <fcitx-config/configuration.h>
 #include <fcitx-config/enum.h>
@@ -303,4 +303,4 @@ class McBopomofoEngineFactory : public fcitx::AddonFactory {
 
 }  // namespace McBopomofo
 
-#endif  // SRC_MCBOPOMOFO_H_
+#endif /* MCBOPOMOFO */
