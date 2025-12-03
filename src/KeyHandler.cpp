@@ -1125,6 +1125,9 @@ bool KeyHandler::handleNumberInput(Key key,
         std::make_unique<InputStates::NumberInput>(newNumber, candidates);
     stateCallback(std::move(newState));
     return true;
+  } else if (std::isprint(key.ascii)) {
+    errorCallback();
+    return true;
   }
 
   return false;
