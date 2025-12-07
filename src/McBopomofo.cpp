@@ -1653,11 +1653,7 @@ void McBopomofoEngine::handleStateWithCustomInput(fcitx::InputContext* context,
   preedit.append(composingBuffer, normalFormat);
   preedit.setCursor(static_cast<int>(composingBuffer.length()));
 
-  if (useClientPreedit) {
-    context->inputPanel().setClientPreedit(preedit);
-  } else {
-    context->inputPanel().setPreedit(preedit);
-  }
+  setPreeditText(context, preedit);
   context->updatePreedit();
 }
 
@@ -1702,6 +1698,15 @@ fcitx::CandidateLayoutHint McBopomofoEngine::getCandidateLayoutHint() const {
   return layoutHint;
 }
 
+void McBopomofoEngine::setPreeditText(fcitx::InputContext* context,
+                                      const fcitx::Text& preedit) {
+  // Set both client and server preedit to ensure visibility across all
+  // applications, including those that don't properly support the Preedit
+  // capability (e.g., terminal applications).
+  context->inputPanel().setClientPreedit(preedit);
+  context->inputPanel().setPreedit(preedit);
+}
+
 void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
                                      InputStates::NotEmpty* state) {
   bool useClientPreedit =
@@ -1722,11 +1727,7 @@ void McBopomofoEngine::updatePreedit(fcitx::InputContext* context,
   }
   preedit.setCursor(static_cast<int>(state->cursorIndex));
 
-  if (useClientPreedit) {
-    context->inputPanel().setClientPreedit(preedit);
-  } else {
-    context->inputPanel().setPreedit(preedit);
-  }
+  setPreeditText(context, preedit);
 
   context->inputPanel().setAuxDown(fcitx::Text(state->tooltip));
   context->updatePreedit();

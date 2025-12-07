@@ -271,6 +271,10 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
 
   // Helpers.
 
+  // Sets both client and server preedit to ensure visibility across all
+  // applications.
+  void setPreeditText(fcitx::InputContext* context, const fcitx::Text& preedit);
+
   // Updates the preedit with a not-empty state's composing buffer and
   // cursor index.
   void updatePreedit(fcitx::InputContext* context,
