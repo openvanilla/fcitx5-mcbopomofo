@@ -176,7 +176,7 @@ static Key MapFcitxKey(const fcitx::Key& key, const fcitx::Key& origKey) {
     case FcitxKey_KP_8:
       return Key::asciiKey('8', shiftPressed, ctrlPressed, true);
     case FcitxKey_KP_9:
-      return Key::asciiKey('4', shiftPressed, ctrlPressed, true);
+      return Key::asciiKey('9', shiftPressed, ctrlPressed, true);
     case FcitxKey_KP_Decimal:
       return Key::asciiKey('.', shiftPressed, ctrlPressed, true);
     case FcitxKey_KP_Add:
