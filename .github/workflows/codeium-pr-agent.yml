@@ -1,3 +1,5 @@
+name: Qode Merge PR-Agent (OpenAI)
+
 on:
   pull_request:
     types: [opened, reopened, ready_for_review]
@@ -15,7 +17,7 @@ jobs:
     steps:
       - name: PR Agent action step
         id: pragent
-        uses: Codium-ai/pr-agent@main
+        uses: docker://codiumai/pr-agent:latest
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
