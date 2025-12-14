@@ -28,10 +28,8 @@ pkgver() {
 
 build() {
     cd "$srcdir/$_pkgname"
-    mkdir -p build
-    cd build
-    cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_TEST=Off
-    make
+    cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_TEST=Off -DCMAKE_BUILD_TYPE=Release
+    cmake --build build
 }
 
 package() {
