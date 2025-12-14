@@ -39,10 +39,10 @@ jobs:
         run: |
           cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug # use Debug for easy debugging with gdb
           cmake --build build                                                 # or ninja, depending on your system
-      # - name: Test
-      #   run: |
-      #     cd build
-      #     ctest --output-on-failure
+      - name: Test
+        run: |
+          cd build
+          ctest --output-on-failure
 
   build_archlinux:
     runs-on: ubuntu-latest
