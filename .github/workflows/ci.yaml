@@ -37,15 +37,8 @@ jobs:
           apt install -y build-essential
       - name: Build
         run: |
-          mkdir -p build
-          cd build
-          cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug
-          make -j
-          cd ../
-          mkdir -p src/Engine/build
-          cd src/Engine/build
-          cmake ../
-          make -j
+          cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug 
+          cmake --build build
       - name: Test
         run: |
           cd build
