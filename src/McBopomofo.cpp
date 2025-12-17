@@ -750,7 +750,6 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       return;
     }
 
-
     bool handled = handleCandidateKeyEvent(
         context, key, origKey, maybeCandidateList,
         [this, context](std::unique_ptr<InputState> next) {
