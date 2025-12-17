@@ -808,10 +808,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 
   bool shouldUseShiftKey =
       associatedPhrasesPlain != nullptr ||
-      (associatedPhrases != nullptr && associatedPhrases->useShiftKey &&
-       config_.shiftEnterEnabled.value());
+      (associatedPhrases != nullptr && associatedPhrases->useShiftKey);
 
-  // Plain Bopomofo and Associated Phrases.
+  // Plain Bopomofo, Associated Phrases, and Number Input.
   if (shouldUseShiftKey || numberInput != nullptr) {
     int code = origKey.code();
     // Shift-[1-9] keys can only be checked via raw key codes. The Key objects
