@@ -1125,12 +1125,18 @@ bool KeyHandler::handleNumberInput(Key key,
         std::make_unique<InputStates::NumberInput>(newNumber, candidates);
     stateCallback(std::move(newState));
     return true;
+  } else if (!state->candidates.empty()) {
+    // If the candidate panel is visible, let it handle the key.
+    return false;
   } else if (std::isprint(key.ascii)) {
+    // Reject all other printable, non-numeric keys.
     errorCallback();
     return true;
   }
 
-  return false;
+  // If the buffer is empty, all other keys (e.g. cursor keys) exit the state.
+  stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+  return true;
 }
 
 bool KeyHandler::handleBig5(Key key, McBopomofo::InputStates::Big5* state,

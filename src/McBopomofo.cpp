@@ -716,13 +716,6 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       keyEvent.filterAndAccept();
       return;
     }
-    InputStates::NumberInput* currentNumberInput =
-        dynamic_cast<InputStates::NumberInput*>(state_.get());
-    if (currentNumberInput != nullptr) {
-      if (currentNumberInput->candidates.empty()) {
-        return;
-      }
-    }
   }
 
   if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr ||
