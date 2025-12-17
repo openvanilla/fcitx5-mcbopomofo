@@ -808,8 +808,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 
   bool shouldUseShiftKey =
       associatedPhrasesPlain != nullptr ||
-      (associatedPhrases != nullptr && associatedPhrases->useShiftKey &&
-       config_.shiftEnterEnabled.value());
+      (associatedPhrases != nullptr && associatedPhrases->useShiftKey) ||
+      numberInput != nullptr;
 
   // Plain Bopomofo and Associated Phrases.
   if (shouldUseShiftKey || numberInput != nullptr) {
