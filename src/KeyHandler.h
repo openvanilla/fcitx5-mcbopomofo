@@ -53,6 +53,7 @@ class KeyHandler {
 
   explicit KeyHandler(
       std::shared_ptr<Formosa::Gramambular2::LanguageModel> languageModel,
+      std::shared_ptr<VariantAnnotator> variantAnnotator,
       std::shared_ptr<UserPhraseAdder> userPhraseAdder,
       std::unique_ptr<LocalizedStrings> localizedStrings);
 
@@ -162,6 +163,13 @@ class KeyHandler {
 
   // Sets whether the space key should be used to choose candidates.
   void setChooseCandidateUsingSpace(bool enabled);
+
+  // Sets whether to enable the Bopomofo variant annotator.
+  void setBopomofoFontAnnotationSupportEnabled(bool enabled);
+
+  bool bopomofoFontAnnotationSupportEnabled() const {
+    return bopomofoFontAnnotationSupportEnabled_;
+  }
 
   // Compute the actual candidate cursor index based on the current index.
   size_t actualCandidateCursorIndex();
@@ -274,6 +282,7 @@ class KeyHandler {
   void walk();
 
   std::shared_ptr<Formosa::Gramambular2::LanguageModel> lm_;
+  std::shared_ptr<VariantAnnotator> variantAnnotator_;
   Formosa::Gramambular2::ReadingGrid grid_;
   std::shared_ptr<UserPhraseAdder> userPhraseAdder_;
   std::unique_ptr<LocalizedStrings> localizedStrings_;
@@ -295,6 +304,7 @@ class KeyHandler {
   bool halfWidthPunctuationEnabled_ = false;
   bool repeatedPunctuationToSelectCandidateEnabled_ = false;
   bool chooseCandidateUsingSpace_ = true;
+  bool bopomofoFontAnnotationSupportEnabled_ = false;
   KeyHandlerCtrlEnter ctrlEnterKey_ = KeyHandlerCtrlEnter::Disabled;
   std::function<void(const std::string&)> onAddNewPhrase_;
 
@@ -323,6 +333,16 @@ class KeyHandler {
     virtual std::string markedWithSyllablesAndStatus(
         const std::string& marked, const std::string& readingUiText,
         const std::string& status) = 0;
+    // This returns any of the four possible strings when Bopomofo Font
+    // Annotation Mode is on. Reference strings:
+    // - "Bopomofo annotation: variant selectors and PUA blocks in text"
+    // - "Bopomofo annotation: variant selectors in text"
+    // - "Bopomofo annotation: PUA blocks in text"
+    // - "Bopomofo annotation support on"
+    virtual std::string bopomofoFontAnnotationModeTooltip(
+        bool hasUnicodeVariantSelectors, bool hasPUABlocks) = 0;
+    // Reference string: "cannot add new phrases when Bopomofo annotation is on"
+    virtual std::string markingNotAvailableInFontAnnotationMode() = 0;
   };
 };
 

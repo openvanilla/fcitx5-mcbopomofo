@@ -376,6 +376,23 @@ class KeyHandlerLocalizedString : public KeyHandler::LocalizedStrings {
     return fmt::format(FmtRuntime(_("Marked: {0}, syllables: {1}, {2}")),
                        marked, readingUiText, status);
   }
+
+  std::string bopomofoFontAnnotationModeTooltip(bool hasUnicodeVariantSelectors,
+                                                bool hasPUABlocks) override {
+    if (hasUnicodeVariantSelectors && hasPUABlocks) {
+      return _("Bopomofo annotation: variant selectors and PUA blocks in text");
+    } else if (hasUnicodeVariantSelectors) {
+      return _("Bopomofo annotation: variant selectors in text");
+    } else if (hasPUABlocks) {
+      return _("Bopomofo annotation: PUA blocks in text");
+    } else {
+      return _("Bopomofo annotation support on");
+    }
+  }
+
+  std::string markingNotAvailableInFontAnnotationMode() override {
+    return _("cannot add new phrases when Bopomofo annotation is on");
+  }
 };
 
 class LanguageModelLoaderLocalizedStrings
@@ -432,7 +449,8 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
       std::make_unique<LanguageModelLoaderLocalizedStrings>());
   userFileIssues_ = languageModelLoader_->getUserFileIssues();
   keyHandler_ = std::make_shared<KeyHandler>(
-      languageModelLoader_->getLM(), languageModelLoader_,
+      languageModelLoader_->getLM(),
+      languageModelLoader_->getVariantAnnotator(), languageModelLoader_,
       std::make_unique<KeyHandlerLocalizedString>());
   keyHandler_->setOnAddNewPhrase([this](std::string newPhrase) {
     auto addScriptHookEnabled = config_.addScriptHookEnabled.value();
@@ -511,6 +529,35 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
   instance_->userInterfaceManager().registerAction(
       "mcbopomofo-associated-phrases", associatedPhrasesAction_.get());
 
+  bopomofoFontAnnotationSupportAction_ =
+      std::make_unique<fcitx::SimpleAction>();
+  bopomofoFontAnnotationSupportAction_->connect<fcitx::SimpleAction::Activated>(
+      [this](fcitx::InputContext* context) {
+        bool enabled = config_.bopomofoFontAnnotationSupportEnabled.value();
+        enabled = !enabled;
+        config_.bopomofoFontAnnotationSupportEnabled.setValue(enabled);
+        keyHandler_->setBopomofoFontAnnotationSupportEnabled(enabled);
+        fcitx::safeSaveAsIni(config_, kConfigPath);
+        bopomofoFontAnnotationSupportAction_->setShortText(
+            enabled ? _("Bopomofo Font Annotation Support - On")
+                    : _("Bopomofo Font Annotation Support - Off"));
+        bopomofoFontAnnotationSupportAction_->update(context);
+
+        if (notifications()) {
+          notifications()->call<fcitx::INotifications::showTip>(
+              "mcbopomofo-bopomofo-font-annotation-support-toggle",
+              _("McBopomofo"), "fcitx_mcbopomofo",
+              _("Bopomofo Font Annotation Support"),
+              enabled ? _("Additional Unicode characters are used to "
+                          "support Bopomofo annotations")
+                      : _("Bopomofo font annotation support now disabled"),
+              kFcitx5NotificationTimeoutInMs);
+        }
+      });
+  instance_->userInterfaceManager().registerAction(
+      "mcbopomofo-bopomofo-font-annotation-support-toggle",
+      bopomofoFontAnnotationSupportAction_.get());
+
   editUserPhrasesAction_ = std::make_unique<fcitx::SimpleAction>();
   editUserPhrasesAction_->setShortText(_("Edit User Phrases"));
   editUserPhrasesAction_->connect<fcitx::SimpleAction::Activated>(
@@ -582,6 +629,24 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
   inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
                                        associatedPhrasesAction_.get());
 
+  // Even if the toggle is disabled by
+  // showBopomofoFontAnnotationSupportInMenu, we'll still want to show the
+  // item if bopomofoFontAnnotationSupportEnabled is on, so that the user has
+  // a chance to disable it. We never show this menu item in Plain Bopomofo,
+  // since we don't support annotation there.
+  if (mode == McBopomofo::InputMode::McBopomofo &&
+      (config_.showBopomofoFontAnnotationSupportInMenu.value() ||
+       config_.bopomofoFontAnnotationSupportEnabled.value())) {
+    bopomofoFontAnnotationSupportAction_->setShortText(
+        config_.bopomofoFontAnnotationSupportEnabled.value()
+            ? _("Bopomofo Font Annotation Support - On")
+            : _("Bopomofo Font Annotation Support - Off"));
+    bopomofoFontAnnotationSupportAction_->update(inputContext);
+    inputContext->statusArea().addAction(
+        fcitx::StatusGroup::InputMethod,
+        bopomofoFontAnnotationSupportAction_.get());
+  }
+
   if (mode == McBopomofo::InputMode::McBopomofo) {
     inputContext->statusArea().addAction(fcitx::StatusGroup::InputMethod,
                                          editUserPhrasesAction_.get());
@@ -634,6 +699,14 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
       config_.repeatedPunctuationToSelectCandidateEnabled.value());
   keyHandler_->setChooseCandidateUsingSpace(
       config_.chooseCandidateUsingSpace.value());
+
+  if (mode == McBopomofo::InputMode::McBopomofo) {
+    // Font annotation is only supported in McBopomofo, not Plain McBopomofo.
+    keyHandler_->setBopomofoFontAnnotationSupportEnabled(
+        config_.bopomofoFontAnnotationSupportEnabled.value());
+  } else {
+    keyHandler_->setBopomofoFontAnnotationSupportEnabled(false);
+  }
 
   bool didReload = languageModelLoader_->reloadUserModelsIfNeeded();
   if (didReload) {

@@ -31,8 +31,8 @@
 #include "Engine/McBopomofoLM.h"
 #include "InputMacro.h"
 #include "InputMode.h"
-#include "PathCompat.h"
 #include "TimestampedPath.h"
+#include "VariantAnnotator.h"
 
 namespace McBopomofo {
 
@@ -53,6 +53,10 @@ class LanguageModelLoader : public UserPhraseAdder {
       std::unique_ptr<LocalizedStrings> localizedStrings);
 
   std::shared_ptr<McBopomofoLM> getLM() { return lm_; }
+
+  std::shared_ptr<VariantAnnotator> getVariantAnnotator() {
+    return variantAnnotator_;
+  }
 
   void loadModelForMode(McBopomofo::InputMode mode);
 
@@ -89,6 +93,7 @@ class LanguageModelLoader : public UserPhraseAdder {
   std::unique_ptr<LocalizedStrings> localizedStrings_;
 
   std::shared_ptr<McBopomofoLM> lm_;
+  std::shared_ptr<VariantAnnotator> variantAnnotator_;
 
   std::string userDataPath_;
   TimestampedPath userPhrasesPath_;

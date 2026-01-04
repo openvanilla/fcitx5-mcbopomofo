@@ -27,7 +27,9 @@ add_library(McBopomofoLMLib
         UserOverrideModel.h
         UserOverrideModel.cpp
         UserPhrasesLM.h
-        UserPhrasesLM.cpp)
+        UserPhrasesLM.cpp
+        VariantAnnotator.h
+        VariantAnnotator.cpp)
 
 if (ENABLE_CLANG_TIDY)
     set_target_properties(McBopomofoLMLib PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
@@ -61,7 +63,8 @@ if (ENABLE_TEST)
                 PhraseReplacementMapTest.cpp
                 UTF8HelperTest.cpp
                 UserOverrideModelTest.cpp
-                UserPhrasesLMTest.cpp)
+                UserPhrasesLMTest.cpp
+                VariantAnnotatorTest.cpp)
         target_link_libraries(McBopomofoLMLibTest GTest::gtest_main McBopomofoLMLib gramambular2_lib)
         include(GoogleTest)
         gtest_discover_tests(McBopomofoLMLibTest)

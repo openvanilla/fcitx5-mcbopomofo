@@ -34,6 +34,32 @@ namespace McBopomofo {
 
 constexpr char kTestDataPath[] = "mcbopomofo-test-data.txt";
 
+constexpr char kTestVariantsData[] =
+    u8"# format org.openvanilla.mcbopomofo.sorted\n"
+    u8"一-na 一\U000E01E0\n"
+    u8"一-ㄧ 一\n"
+    u8"一-ㄧˊ 一\U000E01E1\n"
+    u8"一-ㄧˋ 一\U000E01E2\n"
+    u8"個-na 個\U000E01E0\n"
+    u8"個-ㄍㄜˇ 個\U000E01E2\n"
+    u8"個-ㄍㄜˋ 個\n"
+    u8"個-ㄍㄜ˙ 個\U000E01E1";
+
+constexpr char kTestPUAData[] =
+    u8"# format org.openvanilla.mcbopomofo.sorted\n"
+    u8"ㄍㄚˋ \uF145\n"
+    u8"ㄧㄚˊ \uF4BB";
+
+static std::shared_ptr<VariantAnnotator> CreateLoadedAnnotator() {
+  auto annotator = std::make_shared<VariantAnnotator>();
+  annotator->loadVariantsMap(ParselessPhraseDB::CreateValidatedDB(
+      kTestVariantsData, strlen(kTestVariantsData)));
+  annotator->loadPUAMap(
+      ParselessPhraseDB::CreateValidatedDB(kTestPUAData, strlen(kTestPUAData)));
+  EXPECT_TRUE(annotator->loaded());
+  return annotator;
+}
+
 class MockUserPhraseAdder : public UserPhraseAdder {
  public:
   void addUserPhrase(const std::string_view&,
@@ -69,6 +95,17 @@ class MockLocalizedString : public KeyHandler::LocalizedStrings {
     return std::string("Marked: ") + marked + ", syllables: " + readingUiText +
            ", " + status;
   }
+
+  std::string bopomofoFontAnnotationModeTooltip(bool hasUnicodeVariantSelectors,
+                                                bool hasPUABlocks) override {
+    return std::string("Bopomofo font annotation mode, has variants: ") +
+           (hasUnicodeVariantSelectors ? "yes" : "no") +
+           ", has PUA: " + (hasPUABlocks ? "yes" : "no");
+  }
+
+  std::string markingNotAvailableInFontAnnotationMode() override {
+    return "Cannot add new phrases when Bopomofo annotation is on";
+  }
 };
 
 class KeyHandlerTest : public ::testing::Test {
@@ -78,10 +115,11 @@ class KeyHandlerTest : public ::testing::Test {
     bool result = languageModel_->open(kTestDataPath);
     ASSERT_TRUE(result);
     userPhraseAdder_ = std::make_shared<MockUserPhraseAdder>();
+    variantAnnotator_ = CreateLoadedAnnotator();
 
-    keyHandler_ =
-        std::make_unique<KeyHandler>(languageModel_, userPhraseAdder_,
-                                     std::make_unique<MockLocalizedString>());
+    keyHandler_ = std::make_unique<KeyHandler>(
+        languageModel_, variantAnnotator_, userPhraseAdder_,
+        std::make_unique<MockLocalizedString>());
   }
 
   std::vector<Key> asciiKeys(const std::string& keyString) {
@@ -125,6 +163,7 @@ class KeyHandlerTest : public ::testing::Test {
   std::shared_ptr<ParselessLM> languageModel_;
   std::shared_ptr<UserPhraseAdder> userPhraseAdder_;
   std::unique_ptr<KeyHandler> keyHandler_;
+  std::shared_ptr<VariantAnnotator> variantAnnotator_;
 };
 
 TEST_F(KeyHandlerTest, EmptyKeyNotHandled) {
@@ -387,6 +426,17 @@ TEST_F(
                                     /*expectErrorCallbackAtEnd=*/false);
   auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
   ASSERT_TRUE(emptyState != nullptr);
+}
+
+TEST_F(KeyHandlerTest, BopomofoAnnotation) {
+  keyHandler_->setBopomofoFontAnnotationSupportEnabled(true);
+  auto endState = handleKeySequence(asciiKeys("u u <u6ek7"));
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  ASSERT_EQ(inputtingState->composingBuffer,
+            std::string(reinterpret_cast<const char*>(
+                u8"一一，一\U000E01E1個\U000E01E1")));
+  keyHandler_->setBopomofoFontAnnotationSupportEnabled(false);
 }
 
 }  // namespace McBopomofo
