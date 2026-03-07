@@ -647,29 +647,44 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
 
 void McBopomofoEngine::reset(const fcitx::InputMethodEntry& /*unused*/,
                              fcitx::InputContextEvent& event) {
+  fcitx::InputContext* context = event.inputContext();
+  if (context == nullptr) {
+    state_ = std::make_unique<InputStates::Empty>();
+    return;
+  }
+
+  // Reset the UI.
+  context->inputPanel().reset();
+  context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
+
+  // Explicitly reset the preedit when it's focus-out or reset. Force-commit
+  // any residue upon all other reset events. McBopomofo users expect residue
+  // to be committed upon IME switch. It would be ideal if focus-out or reset
+  // also force-commits, but unfortunately different apps handle those two
+  // events differently. Gnome Terminal force-commits any residue by itself but
+  // Chrome clears everything. Some apps (e.g. Firefox) even rely on an explicit
+  // preedit for those events to be handled correctly. Given how this is beyond
+  // our control, the approach here is likely the most sensible.
   if (event.type() == fcitx::EventType::InputContextFocusOut ||
       event.type() == fcitx::EventType::InputContextReset) {
-    // If this is a FocusOutEvent, we let fcitx5 do its own clean up, and so we
-    // just force the state machine to go back to the empty state. The
-    // FocusOutEvent will cause the preedit buffer to be force-committed anyway.
-    //
-    // Note: We don't want to call enterNewState() with EmptyIgnoringPrevious
-    // state because we don't want to clean the preedit ourselves (which would
-    // cause nothing to be force-committed as the focus is switched, and that
-    // would cause user to lose what they've entered). We don't want to call
-    // enterNewState() with Empty state, either, because that would trigger
-    // commit of existing preedit buffer, resulting in double commit of the same
-    // text.
-    state_ = std::make_unique<InputStates::Empty>();
     keyHandler_->reset();
+
+    bool useClientPreedit =
+        context->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
+    if (useClientPreedit) {
+      context->inputPanel().setClientPreedit(fcitx::Text{});
+    } else {
+      context->inputPanel().setPreedit(fcitx::Text{});
+    }
+    context->inputPanel().setAuxDown(fcitx::Text{});
+    context->updatePreedit();
   } else {
-    fcitx::InputContext* context = event.inputContext();
     keyHandler_->handleForceCommitAndReset(
         [this, context](std::unique_ptr<InputState> next) {
           enterNewState(context, std::move(next));
         });
-    state_ = std::make_unique<InputStates::Empty>();
   }
+  state_ = std::make_unique<InputStates::Empty>();
 }
 
 void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
