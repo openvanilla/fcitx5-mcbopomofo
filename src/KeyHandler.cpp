@@ -98,9 +98,11 @@ static double GetEpochNowInSeconds() {
 
 KeyHandler::KeyHandler(
     std::shared_ptr<Formosa::Gramambular2::LanguageModel> languageModel,
+    std::shared_ptr<VariantAnnotator> variantAnnotator,
     std::shared_ptr<UserPhraseAdder> userPhraseAdder,
     std::unique_ptr<LocalizedStrings> localizedStrings)
     : lm_(std::move(languageModel)),
+      variantAnnotator_(std::move(variantAnnotator)),
       grid_(lm_),
       userPhraseAdder_(std::move(userPhraseAdder)),
       localizedStrings_(std::move(localizedStrings)),
@@ -698,6 +700,10 @@ void KeyHandler::setChooseCandidateUsingSpace(bool enabled) {
   chooseCandidateUsingSpace_ = enabled;
 }
 
+void KeyHandler::setBopomofoFontAnnotationSupportEnabled(bool enabled) {
+  bopomofoFontAnnotationSupportEnabled_ = enabled;
+}
+
 #pragma endregion Settings
 
 #pragma region Key_Handling
@@ -1261,9 +1267,43 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
 
   std::string tooltip;
 
+  bool bpmfAnnotationUsed = false;
+  bool annotationsHasVariants = false;
+  bool annotationsHasPUAs = false;
+
   for (const auto& node : latestWalk_.nodes) {
     std::string value = node->value();
-    composed += value;
+    size_t composedValueLength = value.length();
+
+    bool hasAnnotationsInCurrentNode = false;
+    VariantAnnotator::CombinedResult bopomofoAnnotation;
+    if (bopomofoFontAnnotationSupportEnabled_ && variantAnnotator_ != nullptr) {
+      size_t valueCodePointCount = CodePointCount(value);
+      if (valueCodePointCount != node->spanningLength()) {
+        composed += value;
+      } else {
+        std::vector<std::string> characters = Split(value);
+        std::vector<std::string> readings =
+            AssociatedPhrasesV2::SplitReadings(node->reading());
+
+        // Let's be safe and check the invariant once again.
+        if (characters.size() != readings.size()) {
+          composed += value;
+        } else {
+          bopomofoAnnotation =
+              variantAnnotator_->annotate(characters, readings);
+          hasAnnotationsInCurrentNode = true;
+          bpmfAnnotationUsed = true;
+          annotationsHasVariants |= bopomofoAnnotation.hasVariantSelectors;
+          annotationsHasPUAs |= bopomofoAnnotation.hasPUACodePoints;
+
+          composedValueLength = bopomofoAnnotation.annotatedString.length();
+          composed += bopomofoAnnotation.annotatedString;
+        }
+      }
+    } else {
+      composed += value;
+    }
 
     // No work if runningCursor has already caught up with builderCursor.
     if (runningCursor == builderCursor) {
@@ -1273,7 +1313,7 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
 
     // Simple case: if the running cursor is behind, add the spanning length.
     if (runningCursor + readingLength <= builderCursor) {
-      composedCursor += value.length();
+      composedCursor += composedValueLength;
       runningCursor += readingLength;
       continue;
     }
@@ -1286,7 +1326,16 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
     // distance and the value's code point count.
     size_t cpLen = std::min(distance, valueCodePointCount);
     std::string actualValue = SubstringToCodePoints(value, cpLen);
-    composedCursor += actualValue.length();
+
+    if (hasAnnotationsInCurrentNode) {
+      // We'll need the length of the annotated string up to the point where
+      // this "partial" string has been annotated.
+      composedValueLength = bopomofoAnnotation.accumulatedStringLength[cpLen];
+    } else {
+      composedValueLength = actualValue.length();
+    }
+
+    composedCursor += composedValueLength;
     runningCursor += distance;
 
     // Create a tooltip to warn the user that their cursor is between two
@@ -1307,6 +1356,17 @@ KeyHandler::ComposedString KeyHandler::getComposedString(size_t builderCursor) {
 
       tooltip =
           localizedStrings_->cursorIsBetweenSyllables(prevReading, nextReading);
+    }
+  }
+
+  if (bpmfAnnotationUsed) {
+    std::string annotationTooltip =
+        localizedStrings_->bopomofoFontAnnotationModeTooltip(
+            annotationsHasVariants, annotationsHasPUAs);
+    if (tooltip.empty()) {
+      tooltip = annotationTooltip;
+    } else {
+      tooltip = tooltip + " / " + annotationTooltip;
     }
   }
 
@@ -1390,7 +1450,9 @@ std::unique_ptr<InputStates::Marking> KeyHandler::buildMarkingState(
   bool isValid = false;
   std::string status;
   // Validate the marking.
-  if (readings.size() < kMinValidMarkingReadingCount) {
+  if (bopomofoFontAnnotationSupportEnabled_) {
+    status = localizedStrings_->markingNotAvailableInFontAnnotationMode();
+  } else if (readings.size() < kMinValidMarkingReadingCount) {
     status = localizedStrings_->syllablesRequired(kMinValidMarkingReadingCount);
   } else if (readings.size() > kMaxValidMarkingReadingCount) {
     status = localizedStrings_->syllablesMaximum(kMaxValidMarkingReadingCount);

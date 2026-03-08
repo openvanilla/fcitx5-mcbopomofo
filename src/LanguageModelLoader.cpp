@@ -32,6 +32,7 @@
 #include <utility>
 
 #include "Log.h"
+#include "PathCompat.h"
 
 namespace McBopomofo {
 
@@ -42,17 +43,31 @@ constexpr char kExcludedPhraseFilename[] = "exclude-phrases.txt";  // ditto
 constexpr char kAssociatedPhrasesV2Path[] =
     "data/mcbopomofo-associated-phrases-v2.txt";
 constexpr char kPhrasesReplacementFilename[] = "phrases-replacement.txt";
+constexpr char kBpmfvPUAFilename[] = "data/mcbopomofo-bpmfvs-pua.txt";
+constexpr char kBpmfvVariantsFilename[] = "data/mcbopomofo-bpmfvs-variants.txt";
 
 LanguageModelLoader::LanguageModelLoader(
     std::unique_ptr<LocalizedStrings> localizedStrings)
     : localizedStrings_(std::move(localizedStrings)),
-      lm_(std::make_shared<McBopomofoLM>()) {
+      lm_(std::make_shared<McBopomofoLM>()),
+      variantAnnotator_(std::make_shared<VariantAnnotator>()) {
   std::string buildInLMPath = McBopomofo::fcitx5_compat::locate(kDataPath);
   FCITX_MCBOPOMOFO_INFO() << "Built-in LM: " << buildInLMPath;
   lm_->loadLanguageModel(buildInLMPath.c_str());
   if (!lm_->isDataModelLoaded()) {
     FCITX_MCBOPOMOFO_INFO() << "Failed to open built-in LM";
   }
+
+  std::string puaFilePath =
+      McBopomofo::fcitx5_compat::locate(kBpmfvPUAFilename);
+  std::string variantsFilePath =
+      McBopomofo::fcitx5_compat::locate(kBpmfvVariantsFilename);
+  bool puaLoaded = variantAnnotator_->loadPUAFile(puaFilePath);
+  bool variantsLoaded = variantAnnotator_->loadVariantsFile(variantsFilePath);
+  FCITX_MCBOPOMOFO_INFO() << "Bopomofo annotation PUA db path: " << puaFilePath
+                          << ", loaded: " << puaLoaded;
+  FCITX_MCBOPOMOFO_INFO() << "Bopomofo variants db path: " << variantsFilePath
+                          << ", loaded: " << variantsLoaded;
 
   // Load associated phrases v2.
   std::string associatedPhrasesV2Path =

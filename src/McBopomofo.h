@@ -35,14 +35,11 @@
 #include <fcitx/candidatelist.h>
 #include <fcitx/inputmethodengine.h>
 #include <fcitx/instance.h>
-#include <fcitx/menu.h>
-#include <fcitx/statusarea.h>
 
 #include <memory>
 #include <string>
 #include <type_traits>
 
-#include "InputMode.h"
 #include "InputState.h"
 #include "KeyHandler.h"
 #include "LanguageModelLoader.h"
@@ -180,6 +177,12 @@ FCITX_CONFIGURATION(
         ctrlEnterKeys{this, "KeyHandlerCtrlEnter", _("Control + Enter Key"),
                       KeyHandlerCtrlEnter::Disabled};
 
+    // Whether to show "Turn On/Off Bopomofo Font Annotation Support" in the
+    // menu.
+    fcitx::Option<bool> showBopomofoFontAnnotationSupportInMenu{
+        this, "ShowBopomofoFontAnnotationSupportInMenu",
+        _("Show the Bopomofo Font Annotation Support toggle in menu"), false};
+
     // The app to open custom phrase text files.
     fcitx::Option<std::string> openUserPhraseFilesWith{
         this, "OpenUserPhraseFilesWith", _("Open User Phrase Files With"),
@@ -204,6 +207,11 @@ FCITX_CONFIGURATION(
     fcitx::HiddenOption<bool> associatedPhrasesEnabled{
         this, "AssociatedPhrasesEnabled", _("Enable Associated Phrases"),
         false};
+
+    // Whether Bopomofo Font Annotation Support is enabled.
+    fcitx::HiddenOption<bool> bopomofoFontAnnotationSupportEnabled{
+        this, "BopomofoFontAnnotationSupportEnabled",
+        _("Enable Bopomofo Font Annotation Support"), false};
 
     // Helps to open the user data directory.
     //
@@ -290,6 +298,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
 
   std::unique_ptr<fcitx::SimpleAction> halfWidthPunctuationAction_;
   std::unique_ptr<fcitx::SimpleAction> associatedPhrasesAction_;
+  std::unique_ptr<fcitx::SimpleAction> bopomofoFontAnnotationSupportAction_;
   std::unique_ptr<fcitx::SimpleAction> editUserPhrasesAction_;
   std::unique_ptr<fcitx::SimpleAction> excludedPhrasesAction_;
 };
