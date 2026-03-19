@@ -1240,12 +1240,11 @@ bool KeyHandler::handleIroha(Key key, McBopomofo::InputStates::Iroha* state,
     std::string code = state->code;
     if (!code.empty()) {
       code = code.substr(0, code.length() - 1);
+      auto newState = std::make_unique<InputStates::Iroha>(code);
+      stateCallback(std::move(newState));
     } else {
-      errorCallback();
-      return true;
+      stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
     }
-    auto newState = std::make_unique<InputStates::Iroha>(code);
-    stateCallback(std::move(newState));
     return true;
   }
 

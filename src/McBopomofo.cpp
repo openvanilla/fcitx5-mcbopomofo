@@ -337,22 +337,6 @@ class McBopomofoDirectInsertWord : public fcitx::CandidateWord {
   KeyHandler::StateCallback callback;
 };
 
-class McBopomofoIrohaWord : public fcitx::CandidateWord {
- public:
-  explicit McBopomofoIrohaWord(fcitx::Text displayText, std::string text,
-                               KeyHandler::StateCallback callback)
-      : fcitx::CandidateWord(std::move(displayText)),
-        text(std::move(text)),
-        callback(std::move(callback)) {}
-  void select(fcitx::InputContext* /*unused*/) const override {
-    callback(std::make_unique<InputStates::Committing>(text));
-    callback(std::make_unique<InputStates::Iroha>());
-  }
-
-  std::string text;
-  KeyHandler::StateCallback callback;
-};
-
 class McBopomofoTextOnlyCandidateWord : public fcitx::CandidateWord {
  public:
   explicit McBopomofoTextOnlyCandidateWord(fcitx::Text displayText)
@@ -1515,7 +1499,7 @@ void McBopomofoEngine::handleEmptyIgnoringPreviousState(
 }
 
 void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
-                                             InputState* /*unused*/,
+                                             InputState* prev,
                                              InputStates::Committing* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
@@ -1523,6 +1507,12 @@ void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
     context->commitString(current->text);
   }
   context->updatePreedit();
+
+  // If prev is an Iroha candidate state, transition to Iroha state.
+  if (auto* irohaCandidates =
+          dynamic_cast<InputStates::IrohaCandidate*>(prev)) {
+    enterNewState(context, std::make_unique<InputStates::Iroha>(""));
+  }
 }
 
 void McBopomofoEngine::handleInputtingState(fcitx::InputContext* context,
@@ -1716,8 +1706,8 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
   } else if (irohaCandidates != nullptr) {
     for (const auto& displayText : irohaCandidates->candidates) {
       std::unique_ptr<fcitx::CandidateWord> candidate =
-          std::make_unique<McBopomofoIrohaWord>(fcitx::Text(displayText),
-                                                displayText, callback);
+          std::make_unique<McBopomofoDirectInsertWord>(fcitx::Text(displayText),
+                                                       displayText, callback);
       candidateList->append(std::move(candidate));
     }
   } else if (customMenu != nullptr) {
