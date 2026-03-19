@@ -337,6 +337,22 @@ class McBopomofoDirectInsertWord : public fcitx::CandidateWord {
   KeyHandler::StateCallback callback;
 };
 
+class McBopomofoIrohaWord : public fcitx::CandidateWord {
+ public:
+  explicit McBopomofoIrohaWord(fcitx::Text displayText, std::string text,
+                               KeyHandler::StateCallback callback)
+      : fcitx::CandidateWord(std::move(displayText)),
+        text(std::move(text)),
+        callback(std::move(callback)) {}
+  void select(fcitx::InputContext* /*unused*/) const override {
+    callback(std::make_unique<InputStates::Committing>(text));
+    callback(std::make_unique<InputStates::Iroha>());
+  }
+
+  std::string text;
+  KeyHandler::StateCallback callback;
+};
+
 class McBopomofoTextOnlyCandidateWord : public fcitx::CandidateWord {
  public:
   explicit McBopomofoTextOnlyCandidateWord(fcitx::Text displayText)
@@ -816,7 +832,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr ||
       dynamic_cast<InputStates::SelectingDateMacro*>(state_.get()) != nullptr ||
       dynamic_cast<InputStates::CustomMenu*>(state_.get()) != nullptr ||
-      dynamic_cast<InputStates::NumberInput*>(state_.get()) != nullptr) {
+      dynamic_cast<InputStates::NumberInput*>(state_.get()) != nullptr ||
+      dynamic_cast<InputStates::IrohaCandidate*>(state_.get()) != nullptr) {
     // Absorb all keys when the candidate panel is on.
     keyEvent.filterAndAccept();
 
@@ -851,6 +868,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
         dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr ||
         dynamic_cast<InputStates::SelectingDateMacro*>(state_.get()) !=
             nullptr ||
+        dynamic_cast<InputStates::IrohaCandidate*>(state_.get()) != nullptr ||
         dynamic_cast<InputStates::CustomMenu*>(state_.get()) != nullptr) {
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       context->updatePreedit();
@@ -1466,6 +1484,11 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
     handleCandidatesState(context, prevPtr, selectingDateMacro);
   } else if (auto* big5 = dynamic_cast<InputStates::Big5*>(currentPtr)) {
     handleStateWithCustomInput(context, big5->composingBuffer());
+  } else if (auto* iroha = dynamic_cast<InputStates::Iroha*>(currentPtr)) {
+    handleStateWithCustomInput(context, iroha->composingBuffer());
+  } else if (auto* irohaCandidates =
+                 dynamic_cast<InputStates::IrohaCandidate*>(currentPtr)) {
+    handleCandidatesState(context, prevPtr, irohaCandidates);
   } else if (auto* customMenu =
                  dynamic_cast<InputStates::CustomMenu*>(currentPtr)) {
     handleCandidatesState(context, prevPtr, customMenu);
@@ -1525,6 +1548,8 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get());
   InputStates::NumberInput* numberInput =
       dynamic_cast<InputStates::NumberInput*>(state_.get());
+  InputStates::IrohaCandidate* irohaCandidates =
+      dynamic_cast<InputStates::IrohaCandidate*>(state_.get());
 
   bool useShiftKey =
       numberInput != nullptr || associatedPhrasesPlain != nullptr ||
@@ -1686,6 +1711,13 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       std::unique_ptr<fcitx::CandidateWord> candidate =
           std::make_unique<McBopomofoDirectInsertWord>(fcitx::Text(displayText),
                                                        displayText, callback);
+      candidateList->append(std::move(candidate));
+    }
+  } else if (irohaCandidates != nullptr) {
+    for (const auto& displayText : irohaCandidates->candidates) {
+      std::unique_ptr<fcitx::CandidateWord> candidate =
+          std::make_unique<McBopomofoIrohaWord>(fcitx::Text(displayText),
+                                                displayText, callback);
       candidateList->append(std::move(candidate));
     }
   } else if (customMenu != nullptr) {
