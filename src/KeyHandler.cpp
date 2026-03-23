@@ -1698,6 +1698,7 @@ void KeyHandler::pinNodeWithAssociatedPhrase(
   if (!grid_.overrideCandidate(actualPrefixCursorIndex, prefixCandidate)) {
     return;
   }
+  Formosa::Gramambular2::ReadingGrid::WalkResult prevWalk = latestWalk_;
   walk();
 
   // Now we've set ourselves up. Because associated phrases require the strict
@@ -1740,9 +1741,23 @@ void KeyHandler::pinNodeWithAssociatedPhrase(
   }
 
   walk();
+
+  // Update the user override model for the prefix selection, mirroring the
+  // logic in pinNode().
+  userOverrideModel_.observe(prevWalk, latestWalk_, actualPrefixCursorIndex,
+                             GetEpochNowInSeconds());
+
   // Cursor is already at accumulatedCursor, so no more work here.
 }
 
 void KeyHandler::walk() { latestWalk_ = grid_.walk(); }
+
+bool KeyHandler::saveUserOverrideModel(const std::filesystem::path& path) {
+  return userOverrideModel_.save(path);
+}
+
+bool KeyHandler::loadUserOverrideModel(const std::filesystem::path& path) {
+  return userOverrideModel_.load(path);
+}
 
 }  // namespace McBopomofo

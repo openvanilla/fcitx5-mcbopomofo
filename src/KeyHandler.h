@@ -24,6 +24,7 @@
 #ifndef SRC_KEYHANDLER_H_
 #define SRC_KEYHANDLER_H_
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <string>
@@ -166,6 +167,10 @@ class KeyHandler {
 
   // Sets whether to enable the Bopomofo variant annotator.
   void setBopomofoFontAnnotationSupportEnabled(bool enabled);
+
+  // Persistence for user override model.
+  bool saveUserOverrideModel(const std::filesystem::path& path);
+  bool loadUserOverrideModel(const std::filesystem::path& path);
 
   bool bopomofoFontAnnotationSupportEnabled() const {
     return bopomofoFontAnnotationSupportEnabled_;

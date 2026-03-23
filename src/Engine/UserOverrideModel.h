@@ -24,6 +24,7 @@
 #ifndef SRC_ENGINE_USEROVERRIDEMODEL_H_
 #define SRC_ENGINE_USEROVERRIDEMODEL_H_
 
+#include <filesystem>
 #include <list>
 #include <map>
 #include <string>
@@ -61,6 +62,10 @@ class UserOverrideModel {
                double timestamp, bool forceHighScoreOverride = false);
 
   Suggestion suggest(const std::string& key, double timestamp);
+
+  // Persistence: save/load the model to/from a file.
+  bool save(const std::filesystem::path& path) const;
+  bool load(const std::filesystem::path& path);
 
  private:
   struct Override {

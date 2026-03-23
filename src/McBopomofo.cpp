@@ -31,6 +31,7 @@
 #include <fmt/format.h>
 #include <notifications_public.h>  // from fcitx-module/notifications
 
+#include <filesystem>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -46,6 +47,7 @@
 namespace McBopomofo {
 
 constexpr char kConfigPath[] = "conf/mcbopomofo.conf";
+constexpr char kUserOverrideModelFilename[] = "user-override-model.dat";
 
 // These two are used to determine whether Shift-[1-9] is pressed.
 constexpr int kFcitxRawKeycode_1 = 10;
@@ -581,6 +583,14 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
   // Required by convention of fcitx5 modules to load config on its own.
   // NOLINTNEXTLINE(clang-analyzer-optin.cplusplus.VirtualCall)
   reloadConfig();
+
+  // Load persisted user override model if available.
+  auto uomPath = languageModelLoader_->userDataPath() + "/" +
+                  kUserOverrideModelFilename;
+  if (std::filesystem::exists(uomPath)) {
+    keyHandler_->loadUserOverrideModel(uomPath);
+    FCITX_MCBOPOMOFO_INFO() << "Loaded user override model: " << uomPath;
+  }
 }
 
 const fcitx::Configuration* McBopomofoEngine::getConfig() const {
@@ -740,6 +750,11 @@ void McBopomofoEngine::reset(const fcitx::InputMethodEntry& /*unused*/,
   // our control, the approach here is likely the most sensible.
   if (event.type() == fcitx::EventType::InputContextFocusOut ||
       event.type() == fcitx::EventType::InputContextReset) {
+    // Persist user override model on focus-out / reset.
+    auto uomPath = languageModelLoader_->userDataPath() + "/" +
+                    kUserOverrideModelFilename;
+    keyHandler_->saveUserOverrideModel(uomPath);
+
     keyHandler_->reset();
 
     bool useClientPreedit =

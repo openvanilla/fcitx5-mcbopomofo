@@ -26,7 +26,9 @@
 
 #include <cassert>
 #include <cmath>
+#include <fstream>
 #include <list>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -295,6 +297,118 @@ static std::string FormObservationKey(
   }
 
   return anteriorStr + "-" + prevStr + "-" + headStr;
+}
+
+static constexpr char kFileHeader[] = "mcbopomofo-user-override-model-v1";
+
+bool UserOverrideModel::save(const std::filesystem::path& path) const {
+  std::ofstream ofs(path, std::ios::out | std::ios::trunc);
+  if (!ofs.is_open()) {
+    return false;
+  }
+
+  ofs << kFileHeader << "\n";
+
+  // Write entries in LRU order (front = most recently used).
+  for (const auto& [key, observation] : lruList_) {
+    // ENTRY line: key <TAB> observation_count
+    ofs << "E\t" << key << "\t" << observation.count << "\n";
+    // OVERRIDE lines: candidate <TAB> count <TAB> timestamp <TAB> forceHigh
+    for (const auto& [candidate, override_] : observation.overrides) {
+      ofs << "O\t" << candidate << "\t" << override_.count << "\t"
+          << std::fixed << override_.timestamp << "\t"
+          << (override_.forceHighScoreOverride ? 1 : 0) << "\n";
+    }
+  }
+
+  return ofs.good();
+}
+
+bool UserOverrideModel::load(const std::filesystem::path& path) {
+  std::ifstream ifs(path);
+  if (!ifs.is_open()) {
+    return false;
+  }
+
+  std::string header;
+  if (!std::getline(ifs, header) || header != kFileHeader) {
+    return false;
+  }
+
+  // Clear existing data.
+  lruList_.clear();
+  lruMap_.clear();
+
+  // We read entries in file order (front of file = most recently used in LRU).
+  // To reconstruct the LRU in the same order, we push_back (so the first entry
+  // read ends up at the front after we reverse, or we just push_back and accept
+  // that the LRU order is preserved as-is since we read front-to-back).
+  std::string line;
+  std::string currentKey;
+  Observation currentObservation;
+  bool hasEntry = false;
+
+  auto commitEntry = [&]() {
+    if (!hasEntry) {
+      return;
+    }
+    if (lruList_.size() >= capacity_) {
+      return;  // Respect capacity.
+    }
+    auto pair = KeyObservationPair(currentKey, currentObservation);
+    lruList_.push_back(pair);
+    auto it = lruList_.end();
+    --it;
+    lruMap_[currentKey] = it;
+    hasEntry = false;
+    currentObservation = Observation();
+  };
+
+  while (std::getline(ifs, line)) {
+    if (line.empty() || line[0] == '#') {
+      continue;
+    }
+
+    std::istringstream iss(line);
+    std::string type;
+    if (!std::getline(iss, type, '\t')) {
+      continue;
+    }
+
+    if (type == "E") {
+      // Commit previous entry if any.
+      commitEntry();
+
+      std::string obsCountStr;
+      if (!std::getline(iss, currentKey, '\t') ||
+          !std::getline(iss, obsCountStr, '\t')) {
+        continue;
+      }
+      currentObservation.count = std::stoull(obsCountStr);
+      hasEntry = true;
+    } else if (type == "O" && hasEntry) {
+      std::string candidate;
+      std::string countStr;
+      std::string tsStr;
+      std::string forceStr;
+      if (!std::getline(iss, candidate, '\t') ||
+          !std::getline(iss, countStr, '\t') ||
+          !std::getline(iss, tsStr, '\t') ||
+          !std::getline(iss, forceStr, '\t')) {
+        continue;
+      }
+      Override o;
+      o.count = std::stoull(countStr);
+      o.timestamp = std::stod(tsStr);
+      o.forceHighScoreOverride = (forceStr == "1");
+      currentObservation.overrides[candidate] = o;
+    }
+  }
+
+  // Commit the last entry.
+  commitEntry();
+
+  return true;
 }
 
 }  // namespace McBopomofo
