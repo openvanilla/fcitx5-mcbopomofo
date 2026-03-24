@@ -337,6 +337,24 @@ class McBopomofoDirectInsertWord : public fcitx::CandidateWord {
   KeyHandler::StateCallback callback;
 };
 
+class McBopomofoIrohaWord : public fcitx::CandidateWord {
+ public:
+  explicit McBopomofoIrohaWord(fcitx::Text displayText, std::string text,
+                               KeyHandler::StateCallback callback)
+      : fcitx::CandidateWord(std::move(displayText)),
+        text(std::move(text)),
+        callback(std::move(callback)) {}
+  void select(fcitx::InputContext* /*unused*/) const override {
+    std::vector<std::unique_ptr<InputState>> states;
+    states.emplace_back(std::make_unique<InputStates::Committing>(text));
+    states.emplace_back(std::make_unique<InputStates::Iroha>(""));
+    callback(std::make_unique<InputStates::StateSequence>(std::move(states)));
+  }
+
+  std::string text;
+  KeyHandler::StateCallback callback;
+};
+
 class McBopomofoTextOnlyCandidateWord : public fcitx::CandidateWord {
  public:
   explicit McBopomofoTextOnlyCandidateWord(fcitx::Text displayText)
@@ -1711,18 +1729,9 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
     }
   } else if (irohaCandidates != nullptr) {
     for (const auto& displayText : irohaCandidates->candidates) {
-      KeyHandler::StateCallback irohaCallback =
-          [callback](std::unique_ptr<InputState> next) {
-            std::vector<std::unique_ptr<InputState>> states;
-            states.emplace_back(std::move(next));
-            states.emplace_back(std::make_unique<InputStates::Iroha>(""));
-            callback(std::make_unique<InputStates::StateSequence>(
-                std::move(states)));
-          };
       std::unique_ptr<fcitx::CandidateWord> candidate =
-          std::make_unique<McBopomofoDirectInsertWord>(fcitx::Text(displayText),
-                                                       displayText,
-                                                       irohaCallback);
+          std::make_unique<McBopomofoIrohaWord>(fcitx::Text(displayText),
+                                               displayText, callback);
       candidateList->append(std::move(candidate));
     }
   } else if (customMenu != nullptr) {
