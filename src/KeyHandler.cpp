@@ -1216,8 +1216,8 @@ bool KeyHandler::handleIroha(Key key, McBopomofo::InputStates::Iroha* state,
       if (unigrams.size() == 1) {
         std::string value = unigrams[0].value();
         std::vector<std::unique_ptr<InputState>> states;
-        states.push_back(std::make_unique<InputStates::Committing>(value));
-        states.push_back(std::make_unique<InputStates::Iroha>(""));
+        states.emplace_back(std::make_unique<InputStates::Committing>(value));
+        states.emplace_back(std::make_unique<InputStates::Iroha>(""));
         stateCallback(
             std::make_unique<InputStates::StateSequence>(std::move(states)));
       } else {

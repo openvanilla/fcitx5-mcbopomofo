@@ -1714,8 +1714,8 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       KeyHandler::StateCallback irohaCallback =
           [callback](std::unique_ptr<InputState> next) {
             std::vector<std::unique_ptr<InputState>> states;
-            states.push_back(std::move(next));
-            states.push_back(std::make_unique<InputStates::Iroha>(""));
+            states.emplace_back(std::move(next));
+            states.emplace_back(std::make_unique<InputStates::Iroha>(""));
             callback(std::make_unique<InputStates::StateSequence>(
                 std::move(states)));
           };
