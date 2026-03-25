@@ -345,10 +345,10 @@ class McBopomofoIrohaWord : public fcitx::CandidateWord {
         text(std::move(text)),
         callback(std::move(callback)) {}
   void select(fcitx::InputContext* /*unused*/) const override {
-    std::vector<std::unique_ptr<InputState>> states;
-    states.emplace_back(std::make_unique<InputStates::Committing>(text));
-    states.emplace_back(std::make_unique<InputStates::Iroha>(""));
-    callback(std::make_unique<InputStates::StateSequence>(std::move(states)));
+    auto seq = std::make_unique<InputStates::StateSequence>();
+    seq->push_back(std::make_unique<InputStates::Committing>(text));
+    seq->push_back(std::make_unique<InputStates::Iroha>(""));
+    callback(std::move(seq));
   }
 
   std::string text;

@@ -357,10 +357,17 @@ struct CustomMenu : NotEmpty {
 
 // A sequence of states to be processed in order. This allows a single key
 // event to trigger multiple state transitions without calling the state
-// callback more than once.
+// callback more than once. StateSequence states are not allowed to be added
+// to prevent recursive sequences.
 struct StateSequence : InputState {
-  explicit StateSequence(std::vector<std::unique_ptr<InputState>> states)
-      : states(std::move(states)) {}
+  StateSequence() = default;
+
+  void push_back(std::unique_ptr<InputState> state) {
+    if (dynamic_cast<StateSequence*>(state.get()) != nullptr) {
+      return;
+    }
+    states.emplace_back(std::move(state));
+  }
 
   std::vector<std::unique_ptr<InputState>> states;
 };
