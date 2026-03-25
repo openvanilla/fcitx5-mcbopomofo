@@ -260,6 +260,12 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void enterNewState(fcitx::InputContext* context,
                      std::unique_ptr<InputState> newState);
 
+  // Handles a single state or a StateSequence. If the incoming state is a
+  // StateSequence, each state in the sequence is processed via enterNewState
+  // in order.
+  void handleStateOrSequence(fcitx::InputContext* context,
+                              std::unique_ptr<InputState> newState);
+
   // Methods below enterNewState raw pointers as they don't affect ownership.
   void handleEmptyState(fcitx::InputContext* context, InputState* prev,
                         InputStates::Empty* current);

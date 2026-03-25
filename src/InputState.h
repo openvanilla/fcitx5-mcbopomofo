@@ -355,6 +355,16 @@ struct CustomMenu : NotEmpty {
   std::vector<MenuEntry> entries;
 };
 
+// A sequence of states to be processed in order. This allows a single key
+// event to trigger multiple state transitions without calling the state
+// callback more than once.
+struct StateSequence : InputState {
+  explicit StateSequence(std::vector<std::unique_ptr<InputState>> states)
+      : states(std::move(states)) {}
+
+  std::vector<std::unique_ptr<InputState>> states;
+};
+
 }  // namespace InputStates
 
 }  // namespace McBopomofo
