@@ -134,6 +134,11 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     return handleBig5(key, big5, stateCallback, errorCallback);
   }
 
+  auto* iroha = dynamic_cast<InputStates::Iroha*>(state);
+  if (iroha != nullptr) {
+    return handleIroha(key, iroha, stateCallback, errorCallback);
+  }
+
   // From Key's definition, if shiftPressed is true, it can't be a simple key
   // that can be represented by ASCII.
   char simpleAscii =
@@ -1184,6 +1189,78 @@ bool KeyHandler::handleBig5(Key key, McBopomofo::InputStates::Big5* state,
 
     auto newState = std::make_unique<InputStates::Big5>(newHexCode);
     stateCallback(std::move(newState));
+  } else {
+    errorCallback();
+  }
+  return true;
+}
+
+bool KeyHandler::handleIroha(Key key, McBopomofo::InputStates::Iroha* state,
+                             StateCallback stateCallback,
+                             KeyHandler::ErrorCallback errorCallback) {
+  if (key.ascii == Key::ESC) {
+    stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+    return true;
+  }
+
+  if (key.ascii == Key::RETURN || key.ascii == Key::SPACE) {
+    std::string code = state->code;
+    if (code.empty()) {
+      stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+      return true;
+    }
+
+    std::string unigram = "_kana_" + code;
+    if (lm_->hasUnigrams(unigram)) {
+      auto unigrams = lm_->getUnigrams(unigram);
+      if (unigrams.size() == 1) {
+        std::string value = unigrams[0].value();
+        auto seq = std::make_unique<InputStates::StateSequence>();
+        seq->push_back(std::make_unique<InputStates::Committing>(value));
+        seq->push_back(std::make_unique<InputStates::Iroha>(""));
+        stateCallback(std::move(seq));
+      } else {
+        std::vector<std::string> candidates;
+        for (const auto& unigram : unigrams) {
+          candidates.emplace_back(unigram.value());
+        }
+        auto newState =
+            std::make_unique<InputStates::IrohaCandidate>(code, candidates);
+        stateCallback(std::move(newState));
+      }
+      return true;
+    } else {
+      errorCallback();
+      auto newState = std::make_unique<InputStates::Iroha>("");
+      stateCallback(std::move(newState));
+      return true;
+    }
+  }
+
+  if (key.isDeleteKeys()) {
+    std::string code = state->code;
+    if (!code.empty()) {
+      code = code.substr(0, code.length() - 1);
+      auto newState = std::make_unique<InputStates::Iroha>(code);
+      stateCallback(std::move(newState));
+    } else {
+      stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+    }
+    return true;
+  }
+
+  if ((key.ascii >= 'a' && key.ascii <= 'z') ||
+      (key.ascii >= 'A' && key.ascii <= 'Z')) {
+    std::string code = state->code;
+    if (code.length() <= 4)  // Iroha code is 4 hex digits.
+    {
+      std::string code =
+          state->code + static_cast<char>(std::tolower(key.ascii));
+      auto newState = std::make_unique<InputStates::Iroha>(code);
+      stateCallback(std::move(newState));
+    } else {
+      errorCallback();
+    }
   } else {
     errorCallback();
   }

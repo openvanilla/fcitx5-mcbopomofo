@@ -337,6 +337,24 @@ class McBopomofoDirectInsertWord : public fcitx::CandidateWord {
   KeyHandler::StateCallback callback;
 };
 
+class McBopomofoIrohaWord : public fcitx::CandidateWord {
+ public:
+  explicit McBopomofoIrohaWord(fcitx::Text displayText, std::string text,
+                               KeyHandler::StateCallback callback)
+      : fcitx::CandidateWord(std::move(displayText)),
+        text(std::move(text)),
+        callback(std::move(callback)) {}
+  void select(fcitx::InputContext* /*unused*/) const override {
+    auto seq = std::make_unique<InputStates::StateSequence>();
+    seq->push_back(std::make_unique<InputStates::Committing>(text));
+    seq->push_back(std::make_unique<InputStates::Iroha>(""));
+    callback(std::move(seq));
+  }
+
+  std::string text;
+  KeyHandler::StateCallback callback;
+};
+
 class McBopomofoTextOnlyCandidateWord : public fcitx::CandidateWord {
  public:
   explicit McBopomofoTextOnlyCandidateWord(fcitx::Text displayText)
@@ -816,7 +834,8 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr ||
       dynamic_cast<InputStates::SelectingDateMacro*>(state_.get()) != nullptr ||
       dynamic_cast<InputStates::CustomMenu*>(state_.get()) != nullptr ||
-      dynamic_cast<InputStates::NumberInput*>(state_.get()) != nullptr) {
+      dynamic_cast<InputStates::NumberInput*>(state_.get()) != nullptr ||
+      dynamic_cast<InputStates::IrohaCandidate*>(state_.get()) != nullptr) {
     // Absorb all keys when the candidate panel is on.
     keyEvent.filterAndAccept();
 
@@ -834,7 +853,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
     bool handled = handleCandidateKeyEvent(
         context, key, origKey, maybeCandidateList,
         [this, context](std::unique_ptr<InputState> next) {
-          enterNewState(context, std::move(next));
+          handleStateOrSequence(context, std::move(next));
         },
         []() {
           // TODO(unassigned): beep?
@@ -851,6 +870,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
         dynamic_cast<InputStates::SelectingFeature*>(state_.get()) != nullptr ||
         dynamic_cast<InputStates::SelectingDateMacro*>(state_.get()) !=
             nullptr ||
+        dynamic_cast<InputStates::IrohaCandidate*>(state_.get()) != nullptr ||
         dynamic_cast<InputStates::CustomMenu*>(state_.get()) != nullptr) {
       context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
       context->updatePreedit();
@@ -863,7 +883,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
   bool accepted = keyHandler_->handle(
       MapFcitxKey(key, origKey), state_.get(),
       [this, context](std::unique_ptr<InputState> next) {
-        enterNewState(context, std::move(next));
+        handleStateOrSequence(context, std::move(next));
       },
       []() {
         // TODO(unassigned): beep?
@@ -1466,9 +1486,26 @@ void McBopomofoEngine::enterNewState(fcitx::InputContext* context,
     handleCandidatesState(context, prevPtr, selectingDateMacro);
   } else if (auto* big5 = dynamic_cast<InputStates::Big5*>(currentPtr)) {
     handleStateWithCustomInput(context, big5->composingBuffer());
+  } else if (auto* iroha = dynamic_cast<InputStates::Iroha*>(currentPtr)) {
+    handleStateWithCustomInput(context, iroha->composingBuffer());
+  } else if (auto* irohaCandidates =
+                 dynamic_cast<InputStates::IrohaCandidate*>(currentPtr)) {
+    handleCandidatesState(context, prevPtr, irohaCandidates);
   } else if (auto* customMenu =
                  dynamic_cast<InputStates::CustomMenu*>(currentPtr)) {
     handleCandidatesState(context, prevPtr, customMenu);
+  }
+}
+
+void McBopomofoEngine::handleStateOrSequence(
+    fcitx::InputContext* context, std::unique_ptr<InputState> newState) {
+  if (auto* stateSeq =
+          dynamic_cast<InputStates::StateSequence*>(newState.get())) {
+    for (auto& s : stateSeq->states) {
+      enterNewState(context, std::move(s));
+    }
+  } else {
+    enterNewState(context, std::move(newState));
   }
 }
 
@@ -1492,7 +1529,7 @@ void McBopomofoEngine::handleEmptyIgnoringPreviousState(
 }
 
 void McBopomofoEngine::handleCommittingState(fcitx::InputContext* context,
-                                             InputState* /*unused*/,
+                                             InputState* /*prev*/,
                                              InputStates::Committing* current) {
   context->inputPanel().reset();
   context->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
@@ -1525,6 +1562,8 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get());
   InputStates::NumberInput* numberInput =
       dynamic_cast<InputStates::NumberInput*>(state_.get());
+  InputStates::IrohaCandidate* irohaCandidates =
+      dynamic_cast<InputStates::IrohaCandidate*>(state_.get());
 
   bool useShiftKey =
       numberInput != nullptr || associatedPhrasesPlain != nullptr ||
@@ -1571,7 +1610,7 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
 
   KeyHandler::StateCallback callback =
       [this, context](std::unique_ptr<InputState> next) {
-        enterNewState(context, std::move(next));
+        handleStateOrSequence(context, std::move(next));
       };
 
   auto* choosing = dynamic_cast<InputStates::ChoosingCandidate*>(current);
@@ -1686,6 +1725,13 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       std::unique_ptr<fcitx::CandidateWord> candidate =
           std::make_unique<McBopomofoDirectInsertWord>(fcitx::Text(displayText),
                                                        displayText, callback);
+      candidateList->append(std::move(candidate));
+    }
+  } else if (irohaCandidates != nullptr) {
+    for (const auto& displayText : irohaCandidates->candidates) {
+      std::unique_ptr<fcitx::CandidateWord> candidate =
+          std::make_unique<McBopomofoIrohaWord>(fcitx::Text(displayText),
+                                               displayText, callback);
       candidateList->append(std::move(candidate));
     }
   } else if (customMenu != nullptr) {

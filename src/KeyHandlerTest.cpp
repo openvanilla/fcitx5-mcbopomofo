@@ -144,12 +144,24 @@ class KeyHandlerTest : public ::testing::Test {
       handled = keyHandler_->handle(
           key, state.get(),
           [&state](std::unique_ptr<McBopomofo::InputState> newState) {
-            if (dynamic_cast<InputStates::EmptyIgnoringPrevious*>(
-                    newState.get()) != nullptr) {
-              // Transition required by the contract of EmptyIgnoringPrevious.
-              state = std::make_unique<InputStates::Empty>();
+            auto processState =
+                [&state](std::unique_ptr<McBopomofo::InputState> s) {
+                  if (dynamic_cast<InputStates::EmptyIgnoringPrevious*>(
+                          s.get()) != nullptr) {
+                    // Transition required by the contract of
+                    // EmptyIgnoringPrevious.
+                    state = std::make_unique<InputStates::Empty>();
+                  } else {
+                    state = std::move(s);
+                  }
+                };
+            if (auto* seq = dynamic_cast<InputStates::StateSequence*>(
+                    newState.get())) {
+              for (auto& s : seq->states) {
+                processState(std::move(s));
+              }
             } else {
-              state = std::move(newState);
+              processState(std::move(newState));
             }
           },
           [&errorCallbackInvoked]() { errorCallbackInvoked = true; });

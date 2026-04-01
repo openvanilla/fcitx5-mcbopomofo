@@ -278,6 +278,24 @@ struct Big5 : InputState {
   std::string hexCode;
 };
 
+struct Iroha : InputState {
+  explicit Iroha(std::string code = "") : code(std::move(code)) {}
+  Iroha(Iroha const& code) : code(code.code) {}
+  std::string composingBuffer() const { return "[伊呂波] " + code; }
+  std::string code;
+};
+
+struct IrohaCandidate : InputState {
+  explicit IrohaCandidate(std::string code = "",
+                          std::vector<std::string> candidates = {})
+      : code(std::move(code)), candidates(std::move(candidates)) {}
+  IrohaCandidate(IrohaCandidate const& other)
+      : code(other.code), candidates(other.candidates) {}
+  std::string composingBuffer() const { return "[伊呂波] " + code; }
+  std::string code;
+  std::vector<std::string> candidates;
+};
+
 struct SelectingDateMacro : InputState {
   explicit SelectingDateMacro(
       const std::function<std::string(std::string)>& converter);
@@ -304,6 +322,8 @@ struct SelectingFeature : InputState {
     features.emplace_back("數字輸入", []() {
       return std::make_unique<NumberInput>("", std::vector<std::string>());
     });
+    features.emplace_back("伊呂波假名輸入",
+                          []() { return std::make_unique<Iroha>(""); });
   }
 
   std::unique_ptr<InputState> nextState(size_t index) {
@@ -333,6 +353,23 @@ struct CustomMenu : NotEmpty {
 
   std::unique_ptr<NotEmpty> previousState;
   std::vector<MenuEntry> entries;
+};
+
+// A sequence of states to be processed in order. This allows a single key
+// event to trigger multiple state transitions without calling the state
+// callback more than once. StateSequence states are not allowed to be added
+// to prevent recursive sequences.
+struct StateSequence : InputState {
+  StateSequence() = default;
+
+  void push_back(std::unique_ptr<InputState> state) {
+    if (dynamic_cast<StateSequence*>(state.get()) != nullptr) {
+      return;
+    }
+    states.emplace_back(std::move(state));
+  }
+
+  std::vector<std::unique_ptr<InputState>> states;
 };
 
 }  // namespace InputStates
