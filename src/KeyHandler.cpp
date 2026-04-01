@@ -1228,6 +1228,7 @@ bool KeyHandler::handleIroha(Key key, McBopomofo::InputStates::Iroha* state,
             std::make_unique<InputStates::IrohaCandidate>(code, candidates);
         stateCallback(std::move(newState));
       }
+      return true;
     } else {
       errorCallback();
       auto newState = std::make_unique<InputStates::Iroha>("");
@@ -1251,7 +1252,7 @@ bool KeyHandler::handleIroha(Key key, McBopomofo::InputStates::Iroha* state,
   if ((key.ascii >= 'a' && key.ascii <= 'z') ||
       (key.ascii >= 'A' && key.ascii <= 'Z')) {
     std::string code = state->code;
-    if (code.length() <= 4)  // Big5 code is 4 hex digits.
+    if (code.length() <= 4)  // Iroha code is 4 hex digits.
     {
       std::string code =
           state->code + static_cast<char>(std::tolower(key.ascii));
