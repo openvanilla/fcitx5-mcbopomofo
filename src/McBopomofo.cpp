@@ -1254,8 +1254,6 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 
     size_t originalCursor = 0;
     if (choosingPunctuationList != nullptr) {
-      // FCITX_MCBOPOMOFO_INFO()
-      //     << "candidatePanelPunctuationListCancelled called";
       originalCursor = choosingPunctuationList->originalCursor;
       keyHandler_->candidatePanelPunctuationListCancelled(
           originalCursor, [stateCallback](std::unique_ptr<InputState> next) {
@@ -1275,6 +1273,17 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
           stateCallback(std::move(next));
         });
     return true;
+  }
+
+  if (choosingPunctuationList != nullptr) {
+    bool result = keyHandler_->candidatePanelPunctuationMaybeEntered(
+        MapFcitxKey(key, origKey), choosingPunctuationList->originalCursor,
+        [stateCallback](std::unique_ptr<InputState> newState) {
+          stateCallback(std::move(newState));
+        });
+    if (result) {
+      return true;
+    }
   }
 
   fcitx::CandidateLayoutHint layoutHint = getCandidateLayoutHint();

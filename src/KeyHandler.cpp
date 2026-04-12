@@ -586,8 +586,45 @@ void KeyHandler::dictionaryServiceSelected(std::string phrase, size_t index,
                               stateCallback);
 }
 
-/// Candidate panel for punctuation list canceled. Can assume the context is
-/// in a ChoosingPunctuationList state.
+bool KeyHandler::candidatePanelPunctuationMaybeEntered(
+    Key key, size_t originalCursor, StateCallback stateCallback) {
+  if (key.ascii == 0) {
+    return false;
+  }
+
+  std::string unigramKey =
+      std::string(kPunctuationListUnigramKey) + "_" + key.ascii;
+  if (!lm_->hasUnigrams(unigramKey)) {
+    return false;
+  }
+
+  if (selectPhraseAfterCursorAsCandidate_) {
+    grid_.deleteReadingAfterCursor();
+  } else {
+    grid_.deleteReadingBeforeCursor();
+  }
+
+  grid_.insertReading(unigramKey);
+  walk();
+
+  if (inputMode_ == InputMode::PlainBopomofo) {
+    auto inputtingState = buildInputtingState();
+    auto choosingCandidates =
+        buildChoosingCandidateState(inputtingState.get(), originalCursor);
+    if (choosingCandidates->candidates.size() == 1) {
+      reset();
+      std::string text = choosingCandidates->candidates[0].value;
+      auto committing = std::make_unique<InputStates::Committing>(text);
+      stateCallback(std::move(committing));
+    } else {
+      stateCallback(std::move(choosingCandidates));
+    }
+  } else {
+    stateCallback(buildInputtingState());
+  }
+  return true;
+}
+
 void KeyHandler::candidatePanelPunctuationListCancelled(
     size_t originalCursor, StateCallback stateCallback) {
   if (inputMode_ == InputMode::PlainBopomofo) {

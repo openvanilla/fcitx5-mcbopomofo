@@ -92,6 +92,9 @@ class KeyHandler {
                                  InputState* currentState,
                                  StateCallback stateCallback);
 
+  bool candidatePanelPunctuationMaybeEntered(Key key, size_t originalCursor,
+                                             StateCallback stateCallback);
+
   /// Candidate panel for punctuation list canceled. Can assume the context is
   /// in a ChoosingPunctuationList state.
   void candidatePanelPunctuationListCancelled(size_t originalCursor,
@@ -258,9 +261,9 @@ class KeyHandler {
   std::string getHTMLRubyText();
   std::string getHanyuPinyin();
 
-  // Build a Marking state, ranging from beginCursorIndex to the current builder
-  // cursor. It doesn't matter if the beginCursorIndex is behind or after the
-  // builder cursor.
+  // Build a Marking state, ranging from beginCursorIndex to the current
+  // builder cursor. It doesn't matter if the beginCursorIndex is behind or
+  // after the builder cursor.
   std::unique_ptr<InputStates::Marking> buildMarkingState(
       size_t beginCursorIndex);
 
@@ -278,7 +281,8 @@ class KeyHandler {
   //     case, the prefixReading is ㄉㄜˊ and prefixValue is 得, and the
   //     associated phrase's reading and value are ㄉㄜˊ-ㄉㄠˋ and 得到
   //     respectively.
-  // (2) the current walk is 得 but we want to pin the phrase 德性, coming from
+  // (2) the current walk is 得 but we want to pin the phrase 德性, coming
+  // from
   //     the choosing-candidate state; in this case, the prefix reading and
   //     value is now ㄉㄜˊ and 德, and the associated phrase is ㄉㄜˊ-ㄒㄧㄥˋ
   //     and 德性 respectively.
@@ -350,7 +354,8 @@ class KeyHandler {
     // - "Bopomofo annotation support on"
     virtual std::string bopomofoFontAnnotationModeTooltip(
         bool hasUnicodeVariantSelectors, bool hasPUABlocks) = 0;
-    // Reference string: "cannot add new phrases when Bopomofo annotation is on"
+    // Reference string: "cannot add new phrases when Bopomofo annotation is
+    // on"
     virtual std::string markingNotAvailableInFontAnnotationMode() = 0;
   };
 };
