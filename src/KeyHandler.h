@@ -92,7 +92,13 @@ class KeyHandler {
                                  InputState* currentState,
                                  StateCallback stateCallback);
 
-  // Candidate panel canceled. Can assume the context is in a candidate state.
+  /// Candidate panel for punctuation list canceled. Can assume the context is
+  /// in a ChoosingPunctuationList state.
+  void candidatePanelPunctuationListCancelled(size_t originalCursor,
+                                              StateCallback stateCallback);
+
+  // Candidate panel canceled. Can assume the context is in a candidate
+  // state.
   void candidatePanelCancelled(size_t originalCursor,
                                StateCallback stateCallback);
 
