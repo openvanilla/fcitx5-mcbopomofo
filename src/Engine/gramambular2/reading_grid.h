@@ -183,10 +183,8 @@ class ReadingGrid {
   WalkResult walk();
 
   struct Candidate {
-    Candidate(std::string r, std::string v, std::string rawValue)
-        : reading(std::move(r)),
-          value(std::move(v)),
-          rawValue(std::move(rawValue)) {}
+    Candidate(std::string r, std::string v, std::string rv = "")
+        : reading(std::move(r)), value(std::move(v)), rawValue(std::move(rv)) {}
     const std::string reading;
     const std::string value;
     const std::string rawValue;
