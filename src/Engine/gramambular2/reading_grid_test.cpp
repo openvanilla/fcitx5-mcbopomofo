@@ -738,14 +738,14 @@ TEST(ReadingGridTest, DisambiguateCandidates) {
 
   constexpr size_t loc = 2;  // after 高熱
 
-  ASSERT_TRUE(grid.overrideCandidate(
-      loc, ReadingGrid::Candidate("ㄏㄨㄛˇ", "🔥", "🔥")));
+  ASSERT_TRUE(
+      grid.overrideCandidate(loc, ReadingGrid::Candidate("ㄏㄨㄛˇ", "🔥")));
   result = grid.walk();
   ASSERT_EQ(result.valuesAsStrings(),
             (std::vector<std::string>{"高熱", "🔥", "焰", "危險"}));
 
   ASSERT_TRUE(grid.overrideCandidate(
-      loc, ReadingGrid::Candidate("ㄏㄨㄛˇㄧㄢˋ", "🔥", "🔥")));
+      loc, ReadingGrid::Candidate("ㄏㄨㄛˇㄧㄢˋ", "🔥")));
   result = grid.walk();
   ASSERT_EQ(result.valuesAsStrings(),
             (std::vector<std::string>{"高熱", "🔥", "危險"}));

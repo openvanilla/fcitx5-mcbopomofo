@@ -69,7 +69,8 @@ class ParselessPhraseDB {
 
   // Convenient function for validating and returning a DB instance. nullptr if
   // the block is empty or is not valid.
-  static std::unique_ptr<ParselessPhraseDB> CreateValidatedDB(const char* buf, size_t length);
+  static std::unique_ptr<ParselessPhraseDB> CreateValidatedDB(const char* buf,
+                                                              size_t length);
 
  private:
   const char* begin_;
