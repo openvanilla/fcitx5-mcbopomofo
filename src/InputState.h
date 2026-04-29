@@ -137,15 +137,25 @@ inline bool operator==(const ChoosingCandidate::Candidate& a,
   return a.reading == b.reading && a.value == b.value;
 }
 
-// Represents the Marking state where the user uses Shift-Left/Shift-Right to
-// mark a phrase to be added to their custom phrases. A Marking state still has
-// a composingBuffer, and the invariant is that composingBuffer = head +
-// markedText + tail. Unlike cursorIndex, which is UTF-8 based,
+struct ChoosingPunctuationList : ChoosingCandidate {
+  ChoosingPunctuationList(const std::string& buf, const size_t index,
+                          const size_t originalIndex, std::vector<Candidate> cs)
+      : ChoosingCandidate(buf, index, originalIndex, std::move(cs)) {}
+
+  ChoosingPunctuationList(const ChoosingCandidate& state)
+      : ChoosingCandidate(state.composingBuffer, state.cursorIndex,
+                          state.originalCursor, state.candidates) {}
+};
+
+// Represents the Marking state where the user uses Shift-Left/Shift-Right
+// to mark a phrase to be added to their custom phrases. A Marking state
+// still has a composingBuffer, and the invariant is that composingBuffer
+// = head + markedText + tail. Unlike cursorIndex, which is UTF-8 based,
 // markStartGridCursorIndex is in the same unit that a Gramambular's grid
 // builder uses. In other words, markStartGridCursorIndex is the beginning
-// position of the reading cursor. This makes it easy for a key handler to know
-// where the marked range is when combined with the grid builder's (reading)
-// cursor index.
+// position of the reading cursor. This makes it easy for a key handler to
+// know where the marked range is when combined with the grid builder's
+// (reading) cursor index.
 struct Marking : NotEmpty {
   Marking(const std::string& buf, const size_t composingBufferCursorIndex,
           const std::string& tooltipText, const size_t startCursorIndexInGrid,

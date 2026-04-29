@@ -906,6 +906,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       dynamic_cast<InputStates::AssociatedPhrasesPlain*>(state_.get());
   InputStates::NumberInput* numberInput =
       dynamic_cast<InputStates::NumberInput*>(state_.get());
+  InputStates::ChoosingPunctuationList* choosingPunctuationList =
+      dynamic_cast<InputStates::ChoosingPunctuationList*>(state_.get());
 
   bool shouldUseShiftKey =
       associatedPhrasesPlain != nullptr ||
@@ -941,39 +943,62 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   MovingCursorOption movingCursorOption =
       config_.allowMovingCursorWhenChoosingCandidates.value();
 
-  bool isCursorMovingLeft =
-      key.check(FcitxKey_Left, fcitx::KeyStates(fcitx::KeyState::Shift));
-  bool isCursorMovingRight =
-      key.check(FcitxKey_Right, fcitx::KeyStates(fcitx::KeyState::Shift));
+  bool isCursorMovingLeft = false;
+  bool isCursorMovingRight = false;
 
-  if (!isCursorMovingLeft && !isCursorMovingRight) {
-    if (movingCursorOption == MovingCursorOption::UseJK) {
-      isCursorMovingLeft = key.check(FcitxKey_j);
-      isCursorMovingRight = key.check(FcitxKey_k);
-    } else if (movingCursorOption == MovingCursorOption::UseHL) {
-      isCursorMovingLeft = key.check(FcitxKey_h);
-      isCursorMovingRight = key.check(FcitxKey_l);
+  if (choosingPunctuationList != nullptr) {
+    if (key.check(FcitxKey_grave)) {
+      keyHandler_->reset();
+      auto seq = std::make_unique<InputStates::StateSequence>();
+      seq->push_back(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+      seq->push_back(std::make_unique<InputStates::SelectingFeature>(
+          [this](std::string input) {
+            auto lm = languageModelLoader_->getLM();
+            return lm->convertMacro(input);
+          }));
+      stateCallback(std::move(seq));
+      return true;
     }
-  }
-
-  if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
-      dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) != nullptr &&
-      (isCursorMovingLeft || isCursorMovingRight)) {
-    size_t cursor = keyHandler_->candidateCursorIndex();
-
-    if (isCursorMovingLeft) {
-      if (cursor > 0) {
-        cursor--;
+  } else {
+    // Note:
+    // - We do not allow moving cursor in punctuation list.
+    // - Shift + Left/Right is the default keybinding for moving cursor in
+    //   candidate list. When movingCursorOption is enabled, we also allow using
+    //   H/J/K/L or Left/Right without modifiers
+    isCursorMovingLeft =
+        key.check(FcitxKey_Left, fcitx::KeyStates(fcitx::KeyState::Shift));
+    isCursorMovingRight =
+        key.check(FcitxKey_Right, fcitx::KeyStates(fcitx::KeyState::Shift));
+    if (!isCursorMovingLeft && !isCursorMovingRight) {
+      if (movingCursorOption == MovingCursorOption::UseJK) {
+        isCursorMovingLeft = key.check(FcitxKey_j);
+        isCursorMovingRight = key.check(FcitxKey_k);
+      } else if (movingCursorOption == MovingCursorOption::UseHL) {
+        isCursorMovingLeft = key.check(FcitxKey_h);
+        isCursorMovingRight = key.check(FcitxKey_l);
       }
-    } else if (isCursorMovingRight) {
-      cursor++;
     }
-    keyHandler_->setCandidateCursorIndex(cursor);
-    auto inputting = keyHandler_->buildInputtingState();
-    auto choosing = keyHandler_->buildChoosingCandidateState(
-        inputting.get(), keyHandler_->candidateCursorIndex());
-    stateCallback(std::move(choosing));
-    return true;
+
+    if (keyHandler_->inputMode() == McBopomofo::InputMode::McBopomofo &&
+        dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) !=
+            nullptr &&
+        (isCursorMovingLeft || isCursorMovingRight)) {
+      size_t cursor = keyHandler_->candidateCursorIndex();
+
+      if (isCursorMovingLeft) {
+        if (cursor > 0) {
+          cursor--;
+        }
+      } else if (isCursorMovingRight) {
+        cursor++;
+      }
+      keyHandler_->setCandidateCursorIndex(cursor);
+      auto inputting = keyHandler_->buildInputtingState();
+      auto choosing = keyHandler_->buildChoosingCandidateState(
+          inputting.get(), keyHandler_->candidateCursorIndex());
+      stateCallback(std::move(choosing));
+      return true;
+    }
   }
 
   bool keyIsCancel = false;
@@ -994,7 +1019,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     auto* showingCharInfo =
         dynamic_cast<InputStates::ShowingCharInfo*>(state_.get());
 
-    if (choosingCandidate != nullptr) {
+    if (choosingCandidate != nullptr && choosingPunctuationList == nullptr) {
       // Enter selecting dictionary service state.
       if (keyHandler_->hasDictionaryServices()) {
         int page = candidateList->currentPage();
@@ -1035,7 +1060,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     bool isPlusKey = key.check(FcitxKey_plus) || key.check(FcitxKey_equal);
     bool isMinusKey =
         key.check(FcitxKey_minus) || key.check(FcitxKey_underscore);
-    if (choosingCandidate != nullptr && (isPlusKey || isMinusKey)) {
+    if (choosingCandidate != nullptr && choosingPunctuationList == nullptr &&
+        (isPlusKey || isMinusKey)) {
       int page = candidateList->currentPage();
       int pageSize = candidateList->size();
       int index = candidateList->cursorIndex();
@@ -1227,6 +1253,15 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
 
     size_t originalCursor = 0;
+    if (choosingPunctuationList != nullptr) {
+      originalCursor = choosingPunctuationList->originalCursor;
+      keyHandler_->candidatePanelPunctuationListCancelled(
+          originalCursor, [stateCallback](std::unique_ptr<InputState> next) {
+            stateCallback(std::move(next));
+          });
+      return true;
+    }
+
     auto* choosing =
         dynamic_cast<InputStates::ChoosingCandidate*>(state_.get());
     if (choosing != nullptr) {
@@ -1238,6 +1273,17 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
           stateCallback(std::move(next));
         });
     return true;
+  }
+
+  if (choosingPunctuationList != nullptr) {
+    bool result = keyHandler_->candidatePanelPunctuationMaybeEntered(
+        MapFcitxKey(key, origKey), choosingPunctuationList->originalCursor,
+        [stateCallback](std::unique_ptr<InputState> newState) {
+          stateCallback(std::move(newState));
+        });
+    if (result) {
+      return true;
+    }
   }
 
   fcitx::CandidateLayoutHint layoutHint = getCandidateLayoutHint();
@@ -1731,7 +1777,7 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
     for (const auto& displayText : irohaCandidates->candidates) {
       std::unique_ptr<fcitx::CandidateWord> candidate =
           std::make_unique<McBopomofoIrohaWord>(fcitx::Text(displayText),
-                                               displayText, callback);
+                                                displayText, callback);
       candidateList->append(std::move(candidate));
     }
   } else if (customMenu != nullptr) {

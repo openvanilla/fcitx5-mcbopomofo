@@ -116,8 +116,9 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                         StateCallback stateCallback,
                         ErrorCallback errorCallback) {
   if (key.ascii == '\\' && key.ctrlPressed) {
-    stateCallback(std::make_unique<InputStates::Empty>());
-    stateCallback(std::make_unique<InputStates::SelectingFeature>(
+    auto seq = std::make_unique<InputStates::StateSequence>();
+    seq->push_back(std::make_unique<InputStates::Empty>());
+    seq->push_back(std::make_unique<InputStates::SelectingFeature>(
         [this](std::string input) {
           auto* lm = dynamic_cast<McBopomofoLM*>(this->lm_.get());
           if (lm != nullptr) {
@@ -125,6 +126,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
           }
           return input;
         }));
+    stateCallback(std::move(seq));
     reset();
     return true;
   }
@@ -431,8 +433,10 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       auto inputtingState = buildInputtingState();
       auto choosingCandidateState =
           buildChoosingCandidateState(inputtingState.get(), originalCursor);
-      stateCallback(std::move(inputtingState));
-      stateCallback(std::move(choosingCandidateState));
+      auto choosingPunctuationList =
+          std::make_unique<InputStates::ChoosingPunctuationList>(
+              *choosingCandidateState);
+      stateCallback(std::move(choosingPunctuationList));
     } else {
       // Punctuation ignored if a bopomofo reading is active..
       errorCallback();
@@ -580,6 +584,70 @@ void KeyHandler::dictionaryServiceSelected(std::string phrase, size_t index,
                                            StateCallback stateCallback) {
   dictionaryServices_->lookup(std::move(phrase), index, currentState,
                               stateCallback);
+}
+
+bool KeyHandler::candidatePanelPunctuationMaybeEntered(
+    Key key, size_t originalCursor, StateCallback stateCallback) {
+  if (key.ascii == 0) {
+    return false;
+  }
+
+  std::string unigramKey =
+      std::string(kPunctuationListUnigramKey) + "_" + key.ascii;
+  if (!lm_->hasUnigrams(unigramKey)) {
+    return false;
+  }
+
+  if (selectPhraseAfterCursorAsCandidate_) {
+    grid_.deleteReadingAfterCursor();
+  } else {
+    grid_.deleteReadingBeforeCursor();
+  }
+
+  grid_.insertReading(unigramKey);
+  walk();
+
+  if (inputMode_ == InputMode::PlainBopomofo) {
+    auto inputtingState = buildInputtingState();
+    auto choosingCandidates =
+        buildChoosingCandidateState(inputtingState.get(), originalCursor);
+    if (choosingCandidates->candidates.size() == 1) {
+      reset();
+      std::string text = choosingCandidates->candidates[0].value;
+      auto committing = std::make_unique<InputStates::Committing>(text);
+      stateCallback(std::move(committing));
+    } else {
+      stateCallback(std::move(choosingCandidates));
+    }
+  } else {
+    stateCallback(buildInputtingState());
+  }
+  return true;
+}
+
+void KeyHandler::candidatePanelPunctuationListCancelled(
+    size_t originalCursor, StateCallback stateCallback) {
+  if (inputMode_ == InputMode::PlainBopomofo) {
+    reset();
+    std::unique_ptr<InputStates::EmptyIgnoringPrevious>
+        emptyIgnorePreviousState =
+            std::make_unique<InputStates::EmptyIgnoringPrevious>();
+    stateCallback(std::move(emptyIgnorePreviousState));
+    return;
+  }
+  if (selectPhraseAfterCursorAsCandidate_) {
+    grid_.deleteReadingAfterCursor();
+  } else {
+    grid_.deleteReadingBeforeCursor();
+  }
+  walk();
+  grid_.setCursor(originalCursor > 0 ? originalCursor - 1 : 0);
+  if (grid_.length() == 0) {
+    reset();
+    stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
+  } else {
+    stateCallback(buildInputtingState());
+  }
 }
 
 void KeyHandler::candidatePanelCancelled(size_t originalCursor,
