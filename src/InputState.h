@@ -241,7 +241,7 @@ struct AssociatedPhrases : NotEmpty {
                     std::string pfxReading, std::string pfxValue,
                     size_t selIndex,
                     std::vector<ChoosingCandidate::Candidate> cs,
-                    bool useShiftKey = false)
+                    bool autoTriggered = false)
       : NotEmpty(prevState->composingBuffer, prevState->cursorIndex,
                  prevState->tooltip),
         previousState(std::move(prevState)),
@@ -250,14 +250,27 @@ struct AssociatedPhrases : NotEmpty {
         prefixValue(std::move(pfxValue)),
         selectedCandidateIndex(selIndex),
         candidates(std::move(cs)),
-        useShiftKey(useShiftKey) {}
+        autoTriggered(autoTriggered) {}
+
+  AssociatedPhrases(const AssociatedPhrases& other, bool autoTriggered = false)
+      : NotEmpty(other.previousState->composingBuffer,
+                 other.previousState->cursorIndex,
+                 other.previousState->tooltip),
+        previousState(std::make_unique<NotEmpty>(*other.previousState)),
+        prefixCursorIndex(other.prefixCursorIndex),
+        prefixReading(other.prefixReading),
+        prefixValue(other.prefixValue),
+        selectedCandidateIndex(other.selectedCandidateIndex),
+        candidates(other.candidates),
+        autoTriggered(autoTriggered) {}
+
   std::unique_ptr<NotEmpty> previousState;
   size_t prefixCursorIndex;
   std::string prefixReading;
   std::string prefixValue;
   size_t selectedCandidateIndex;
   const std::vector<ChoosingCandidate::Candidate> candidates;
-  bool useShiftKey;
+  bool autoTriggered;
 };
 
 struct AssociatedPhrasesPlain : InputState {
