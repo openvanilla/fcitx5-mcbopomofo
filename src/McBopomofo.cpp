@@ -858,6 +858,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
         []() {
           // TODO(unassigned): beep?
         });
+
     if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) !=
             nullptr ||
         dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
@@ -909,9 +910,27 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
   InputStates::ChoosingPunctuationList* choosingPunctuationList =
       dynamic_cast<InputStates::ChoosingPunctuationList*>(state_.get());
 
-  bool shouldUseShiftKey =
-      associatedPhrasesPlain != nullptr ||
-      (associatedPhrases != nullptr && associatedPhrases->useShiftKey);
+  if (associatedPhrases != nullptr && associatedPhrases->autoTriggered) {
+    if (key.check(FcitxKey_Tab)) {
+      auto expanded = std::make_unique<InputStates::AssociatedPhrases>(
+          *associatedPhrases, false);
+      stateCallback(std::move(expanded));
+      return true;
+    }
+    if (key.check(FcitxKey_Return, fcitx::KeyStates(fcitx::KeyState::Shift)) ||
+        key.check(FcitxKey_KP_Enter,
+                  fcitx::KeyStates(fcitx::KeyState::Shift))) {
+      int idx = candidateList->cursorIndex();
+      if (idx < candidateList->size()) {
+        candidateList->candidate(idx).select(context);
+      }
+      return true;
+    }
+    stateCallback(keyHandler_->buildInputtingState());
+    return false;
+  }
+
+  bool shouldUseShiftKey = associatedPhrasesPlain != nullptr;
 
   // Plain Bopomofo, Associated Phrases, and Number Input.
   if (shouldUseShiftKey || numberInput != nullptr) {
@@ -1227,9 +1246,6 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
 
     if (associatedPhrases != nullptr) {
-      if (associatedPhrases->useShiftKey) {
-        return false;
-      }
       auto* previous = associatedPhrases->previousState.get();
       auto* choosing = dynamic_cast<InputStates::ChoosingCandidate*>(previous);
       auto* inputting = dynamic_cast<InputStates::Inputting*>(previous);
@@ -1248,6 +1264,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       } else if (inputting != nullptr) {
         auto copy = std::make_unique<InputStates::Inputting>(*inputting);
         stateCallback(std::move(copy));
+      } else {
+        auto inputting = keyHandler_->buildInputtingState();
+        stateCallback(std::move(inputting));
       }
       return true;
     }
@@ -1291,12 +1310,6 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 
   // Space goes to next page or wraps to the first if at the end.
   if (key.check(FcitxKey_space)) {
-    if (associatedPhrases != nullptr) {
-      if (associatedPhrases->useShiftKey) {
-        return false;
-      }
-    }
-
     if (candidateList->hasNext()) {
       candidateList->next();
       candidateList->toCursorMovable()->nextCandidate();
@@ -1612,10 +1625,14 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
       dynamic_cast<InputStates::IrohaCandidate*>(state_.get());
 
   bool useShiftKey =
-      numberInput != nullptr || associatedPhrasesPlain != nullptr ||
-      (associatedPhrases != nullptr && associatedPhrases->useShiftKey);
+      numberInput != nullptr || associatedPhrasesPlain != nullptr;
 
-  if (useShiftKey) {
+  if ((associatedPhrases != nullptr && associatedPhrases->autoTriggered)) {
+    selectionKeys_ = fcitx::Key::keyListFromString("Shift+Return");
+    std::vector<std::string> labels = {"⇧⏎ "};
+    candidateList->setLabels(labels);
+    candidateList->setPageSize(1);
+  } else if (useShiftKey) {
     // This is for label appearance only. Shift+[1-9] keys can only be checked
     // via a raw key's key code, but Keys constructed with "Shift-" names does
     // not carry proper key codes.
@@ -1730,13 +1747,27 @@ void McBopomofoEngine::handleCandidatesState(fcitx::InputContext* context,
     std::vector<InputStates::ChoosingCandidate::Candidate> candidates =
         associatedPhrases->candidates;
 
-    for (const auto& c : candidates) {
-      std::unique_ptr<fcitx::CandidateWord> candidate =
-          std::make_unique<McBopomofoAssociatedPhraseCandidateWord>(
-              fcitx::Text(c.value), c, associatedPhrases->prefixReading,
-              associatedPhrases->prefixValue,
-              associatedPhrases->prefixCursorIndex, keyHandler_, callback);
-      candidateList->append(std::move(candidate));
+    if (associatedPhrases->autoTriggered) {
+      // If autoTriggered, show only the first candidate, and select it
+      // immediately when user press Enter/Return.
+      if (!candidates.empty()) {
+        const auto& c = candidates.front();
+        std::unique_ptr<fcitx::CandidateWord> candidate =
+            std::make_unique<McBopomofoAssociatedPhraseCandidateWord>(
+                fcitx::Text(c.value), c, associatedPhrases->prefixReading,
+                associatedPhrases->prefixValue,
+                associatedPhrases->prefixCursorIndex, keyHandler_, callback);
+        candidateList->append(std::move(candidate));
+      }
+    } else {
+      for (const auto& c : candidates) {
+        std::unique_ptr<fcitx::CandidateWord> candidate =
+            std::make_unique<McBopomofoAssociatedPhraseCandidateWord>(
+                fcitx::Text(c.value), c, associatedPhrases->prefixReading,
+                associatedPhrases->prefixValue,
+                associatedPhrases->prefixCursorIndex, keyHandler_, callback);
+        candidateList->append(std::move(candidate));
+      }
     }
   } else if (associatedPhrasesPlain != nullptr) {
     std::vector<InputStates::ChoosingCandidate::Candidate> candidates =
