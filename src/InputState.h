@@ -252,11 +252,11 @@ struct AssociatedPhrases : NotEmpty {
         candidates(std::move(cs)),
         autoTriggered(autoTriggered) {}
 
-  AssociatedPhrases(const AssociatedPhrases& other, bool autoTriggered = false)
+  AssociatedPhrases(AssociatedPhrases& other, bool autoTriggered = false)
       : NotEmpty(other.previousState->composingBuffer,
                  other.previousState->cursorIndex,
                  other.previousState->tooltip),
-        previousState(std::make_unique<NotEmpty>(*other.previousState)),
+        previousState(std::move(other.previousState)),
         prefixCursorIndex(other.prefixCursorIndex),
         prefixReading(other.prefixReading),
         prefixValue(other.prefixValue),

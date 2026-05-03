@@ -859,12 +859,6 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
           // TODO(unassigned): beep?
         });
 
-    InputStates::AssociatedPhrases* assocatedPheases =
-        dynamic_cast<InputStates::AssociatedPhrases*>(state_.get());
-    if (!handled && assocatedPheases != nullptr &&
-        assocatedPheases->autoTriggered) {
-      state_ = keyHandler_->buildInputtingState();
-    }
     if (dynamic_cast<InputStates::ChoosingCandidate*>(state_.get()) !=
             nullptr ||
         dynamic_cast<InputStates::SelectingDictionary*>(state_.get()) !=
@@ -918,8 +912,8 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 
   if (associatedPhrases != nullptr && associatedPhrases->autoTriggered) {
     if (key.check(FcitxKey_Tab)) {
-      auto expanded =
-          std::make_unique<InputStates::AssociatedPhrases>(*associatedPhrases);
+      auto expanded = std::make_unique<InputStates::AssociatedPhrases>(
+          *associatedPhrases, false);
       stateCallback(std::move(expanded));
       return true;
     }
@@ -932,6 +926,7 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       }
       return true;
     }
+    stateCallback(keyHandler_->buildInputtingState());
     return false;
   }
 
@@ -1251,9 +1246,6 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
     }
 
     if (associatedPhrases != nullptr) {
-      if (associatedPhrases->autoTriggered) {
-        return false;
-      }
       auto* previous = associatedPhrases->previousState.get();
       auto* choosing = dynamic_cast<InputStates::ChoosingCandidate*>(previous);
       auto* inputting = dynamic_cast<InputStates::Inputting*>(previous);
@@ -1272,6 +1264,9 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
       } else if (inputting != nullptr) {
         auto copy = std::make_unique<InputStates::Inputting>(*inputting);
         stateCallback(std::move(copy));
+      } else {
+        auto inputting = keyHandler_->buildInputtingState();
+        stateCallback(std::move(inputting));
       }
       return true;
     }
@@ -1315,12 +1310,6 @@ bool McBopomofoEngine::handleCandidateKeyEvent(
 
   // Space goes to next page or wraps to the first if at the end.
   if (key.check(FcitxKey_space)) {
-    // if (associatedPhrases != nullptr) {
-    //   if (associatedPhrases->autoTriggered) {
-    //     return false;
-    //   }
-    // }
-
     if (candidateList->hasNext()) {
       candidateList->next();
       candidateList->toCursorMovable()->nextCandidate();
