@@ -31,7 +31,8 @@
 ```bash
 sudo apt install \
     pkg-config fcitx5 libfcitx5core-dev libfcitx5config-dev libfcitx5utils-dev fcitx5-modules-dev \
-    cmake extra-cmake-modules gettext libfmt-dev libicu-dev libjson-c-dev
+    cmake extra-cmake-modules gettext libfmt-dev libicu-dev libjson-c-dev g++
+
 ```
 
 然後在本專案的 git 目錄下執行以下指令：
