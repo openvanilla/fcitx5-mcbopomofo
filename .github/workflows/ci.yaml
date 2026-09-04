@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install dependencies
         run: |
           export DEBIAN_FRONTEND=noninteractive
@@ -36,7 +36,7 @@ jobs:
           apt install -y build-essential
       - name: Build
         run: |
-          cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug 
+          cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug
           cmake --build build
       - name: Test
         run: |
@@ -48,7 +48,7 @@ jobs:
     container: archlinux:base-devel
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Update pacman mirror list
         run: |
           pacman -Syy
@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install dependencies
         run: |
           dnf -y install gcc g++
@@ -108,7 +108,7 @@ jobs:
     runs-on: ubuntu-latest
     container: manjarolinux/base:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install dependencies
         run: |
           pacman -Sy --noconfirm archlinux-keyring
