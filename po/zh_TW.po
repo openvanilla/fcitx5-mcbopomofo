@@ -406,6 +406,10 @@ msgstr "選字時"
 msgid "ESC key clears entire composing buffer"
 msgstr "ESC 按鍵清除輸入緩衝區的所有內容"
 
+#: src/McBopomofo.h:160
+msgid "Keep invalid syllable for further input"
+msgstr "組字失敗時保留注音，允許繼續輸入"
+
 #: src/McBopomofo.h:158
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 msgstr "在大寫鎖定時也能輸入中文（像微軟新注音）"

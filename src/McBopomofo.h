@@ -152,6 +152,12 @@ FCITX_CONFIGURATION(
         this, "EscKeyClearsEntireComposingBuffer",
         _("ESC key clears entire composing buffer"), false};
 
+    // Keep an uncomposable reading editable; a new Bopomofo component replaces
+    // its existing tone marker so the user can continue the reading.
+    fcitx::Option<bool> keepInvalidSyllableForFurtherInput{
+        this, "KeepInvalidSyllableForFurtherInput",
+        _("Keep invalid syllable for further input"), false};
+
     // Allow inputting Chinese when Caps Lock is on.
     fcitx::Option<bool> capsLockAllowChineseInput{
         this, "capsLockAllowChineseInput",

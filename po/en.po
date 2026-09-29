@@ -405,6 +405,10 @@ msgstr "When Choosing Candidates"
 msgid "ESC key clears entire composing buffer"
 msgstr "ESC key clears entire composing buffer"
 
+#: src/McBopomofo.h:160
+msgid "Keep invalid syllable for further input"
+msgstr "Keep invalid syllable for further input"
+
 #: src/McBopomofo.h:158
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 msgstr "Allow typing in Chinese while Caps Lock is on (like MS IME)"

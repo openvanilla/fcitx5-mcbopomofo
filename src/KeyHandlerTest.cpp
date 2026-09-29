@@ -361,6 +361,40 @@ TEST_F(KeyHandlerTest, ToneMarkOnlyRequiresExtraSpaceToCompose) {
   ASSERT_EQ(inputtingState->cursorIndex, strlen("ˊ"));
 }
 
+TEST_F(KeyHandlerTest, ToneMarkOnlyIsClearedByNewBopomofoWhenConfigured) {
+  keyHandler_->setKeepInvalidSyllableForFurtherInput(true);
+
+  // A standalone second tone followed by ㄓ should leave only ㄓ in the
+  // reading instead of composing ㄓˊ as 直.
+  auto endState = handleKeySequence(asciiKeys("65"));
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  EXPECT_EQ(inputtingState->composingBuffer, "ㄓ");
+  EXPECT_EQ(inputtingState->cursorIndex, strlen("ㄓ"));
+}
+
+TEST_F(KeyHandlerTest, ToneMarkOnlyIsPreservedByNewBopomofoByDefault) {
+  // Tone clearing is disabled by default, preserving the original behavior:
+  // the ㄓ is inserted before ˊ and ㄓˊ composes as 直.
+  auto endState = handleKeySequence(asciiKeys("65"));
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  EXPECT_EQ(inputtingState->composingBuffer, "直");
+  EXPECT_EQ(inputtingState->cursorIndex, strlen("直"));
+}
+
+TEST_F(KeyHandlerTest, ToneClearingDoesNotAffectStandaloneToneComposition) {
+  keyHandler_->setKeepInvalidSyllableForFurtherInput(true);
+
+  // Space must still compose the standalone tone. The following ㄓ starts a
+  // new reading, so the composed buffer contains the tone followed by ㄓ.
+  auto endState = handleKeySequence(asciiKeys("6 5"));
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  EXPECT_EQ(inputtingState->composingBuffer, "ˊㄓ");
+  EXPECT_EQ(inputtingState->cursorIndex, strlen("ˊㄓ"));
+}
+
 TEST_F(KeyHandlerTest,
        ToneMarkThenNonToneComponentResultingInCompositionCase1) {
   auto keys = asciiKeys("6u");
@@ -412,6 +446,44 @@ TEST_F(
                                     /*expectErrorCallbackAtEnd=*/true);
   auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
   ASSERT_TRUE(emptyState != nullptr);
+}
+
+TEST_F(KeyHandlerTest, NonViableCompositionKeepsReadingWhenConfigured) {
+  keyHandler_->setKeepInvalidSyllableForFurtherInput(true);
+
+  // ㄅˇ is not a viable composition, but should remain editable.
+  auto endState = handleKeySequence(asciiKeys("13"), /*expectHandled=*/true,
+                                    /*expectErrorCallbackAtEnd=*/true);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  EXPECT_EQ(inputtingState->composingBuffer, "ㄅˇ");
+  EXPECT_EQ(inputtingState->cursorIndex, strlen("ㄅˇ"));
+}
+
+TEST_F(KeyHandlerTest,
+       NonViableCompositionCanBeCorrectedWhenReadingIsKept) {
+  keyHandler_->setKeepInvalidSyllableForFurtherInput(true);
+
+  auto keys = asciiKeys("13");
+  keys.emplace_back(Key::asciiKey(Key::BACKSPACE));
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  EXPECT_EQ(inputtingState->composingBuffer, "ㄅ");
+  EXPECT_EQ(inputtingState->cursorIndex, strlen("ㄅ"));
+}
+
+TEST_F(KeyHandlerTest,
+       NewReadingKeyClearsToneAfterCompositionError) {
+  keyHandler_->setKeepInvalidSyllableForFurtherInput(true);
+
+  // ㄅˇ is not viable. Typing ㄚ next should first remove ˇ, matching the
+  // behavior of Microsoft Bopomofo.
+  auto endState = handleKeySequence(asciiKeys("138"));
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  EXPECT_EQ(inputtingState->composingBuffer, "ㄅㄚ");
+  EXPECT_EQ(inputtingState->cursorIndex, strlen("ㄅㄚ"));
 }
 
 TEST_F(
