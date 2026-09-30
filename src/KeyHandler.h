@@ -160,6 +160,10 @@ class KeyHandler {
   // Sets if the ESC key clears entire composing buffer.
   void setEscKeyClearsEntireComposingBuffer(bool flag);
 
+  // Keeps an invalid reading editable and clears its old tone when a new
+  // Bopomofo component is entered.
+  void setKeepInvalidSyllableForFurtherInput(bool flag);
+
   // Sets if the Shift + Enter key is enabled.
   void setShiftEnterEnabled(bool flag);
 
@@ -238,6 +242,8 @@ class KeyHandler {
 #pragma endregion Settings
 
  private:
+  void clearReading();
+
   bool handleBig5(Key key, McBopomofo::InputStates::Big5* state,
                   StateCallback stateCallback,
                   KeyHandler::ErrorCallback errorCallback);
@@ -320,6 +326,8 @@ class KeyHandler {
   bool moveCursorAfterSelection_ = false;
   bool putLowercaseLettersToComposingBuffer_ = false;
   bool escKeyClearsEntireComposingBuffer_ = false;
+  bool keepInvalidSyllableForFurtherInput_ = false;
+  bool readingCompositionFailed_ = false;
   bool shiftEnterEnabled_ = true;
   bool associatedPhrasesEnabled_ = false;
   bool halfWidthPunctuationEnabled_ = false;

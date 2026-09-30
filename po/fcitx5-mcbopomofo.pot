@@ -398,6 +398,10 @@ msgstr ""
 msgid "ESC key clears entire composing buffer"
 msgstr ""
 
+#: src/McBopomofo.h:160
+msgid "Keep invalid syllable for further input"
+msgstr ""
+
 #: src/McBopomofo.h:158
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 msgstr ""

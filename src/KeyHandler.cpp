@@ -147,6 +147,25 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
   // See if it's valid BPMF reading.
   bool keyConsumedByReading = false;
+  // A tone can remain in the reading either after a failed composition or
+  // when it was entered on its own. Apply the same configurable behavior in
+  // both cases when the next key is another valid Bopomofo component. Space
+  // is deliberately excluded because it composes a standalone tone marker.
+  if (keepInvalidSyllableForFurtherInput_ &&
+      (readingCompositionFailed_ || reading_.hasToneMarkerOnly()) &&
+      reading_.hasToneMarker()) {
+    auto readingWithoutTone = reading_;
+    readingWithoutTone.backspace();
+    auto readingWithNewKey = readingWithoutTone;
+    bool newKeyIsNonToneBopomofo =
+        readingWithNewKey.isValidKey(simpleAscii) &&
+        readingWithNewKey.combineKey(simpleAscii) &&
+        !readingWithNewKey.hasToneMarker();
+    if (newKeyIsNonToneBopomofo) {
+      readingCompositionFailed_ = false;
+      reading_ = readingWithoutTone;
+    }
+  }
   if (reading_.isValidKey(simpleAscii)) {
     reading_.combineKey(simpleAscii);
     keyConsumedByReading = true;
@@ -158,18 +177,26 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     }
   }
 
-  // Compose the reading if either there's a tone marker, or if the reading is
-  // not empty, and space is pressed.
+  // Compose the reading if the current key produces a tone marker, or if the
+  // reading is not empty and space is pressed.
   bool shouldComposeReading =
-      (reading_.hasToneMarker() && !reading_.hasToneMarkerOnly()) ||
+      (keyConsumedByReading && reading_.hasToneMarker() &&
+       !reading_.hasToneMarkerOnly()) ||
       (!reading_.isEmpty() && simpleAscii == Key::SPACE);
 
   if (shouldComposeReading) {
     std::string syllable = reading_.syllable().composedString();
-    reading_.clear();
 
     if (!lm_->hasUnigrams(syllable)) {
       errorCallback();
+
+      if (keepInvalidSyllableForFurtherInput_) {
+        readingCompositionFailed_ = true;
+        stateCallback(buildInputtingState());
+        return true;
+      }
+
+      clearReading();
       if (grid_.length() == 0) {
         stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
       } else {
@@ -178,6 +205,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       return true;
     }
 
+    clearReading();
     grid_.insertReading(syllable);
     walk();
 
@@ -289,7 +317,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     }
 
     if (!reading_.isEmpty()) {
-      reading_.clear();
+      clearReading();
       if (grid_.length() == 0) {
         stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
       } else {
@@ -728,9 +756,14 @@ void KeyHandler::excludePhrase(const std::string& reading,
 }
 
 void KeyHandler::reset() {
-  reading_.clear();
+  clearReading();
   grid_.clear();
   latestWalk_ = Formosa::Gramambular2::ReadingGrid::WalkResult();
+}
+
+void KeyHandler::clearReading() {
+  reading_.clear();
+  readingCompositionFailed_ = false;
 }
 
 #pragma region Settings
@@ -758,6 +791,10 @@ void KeyHandler::setPutLowercaseLettersToComposingBuffer(bool flag) {
 
 void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
   escKeyClearsEntireComposingBuffer_ = flag;
+}
+
+void KeyHandler::setKeepInvalidSyllableForFurtherInput(bool flag) {
+  keepInvalidSyllableForFurtherInput_ = flag;
 }
 
 void KeyHandler::setShiftEnterEnabled(bool flag) { shiftEnterEnabled_ = flag; }
@@ -911,7 +948,7 @@ bool KeyHandler::handleAssociatedPhrases(InputStates::Inputting* state,
 }
 
 void KeyHandler::handleForceCommitAndReset(StateCallback stateCallback) {
-  reading_.clear();
+  clearReading();
   auto inputtingState = buildInputtingState();
   auto committingState = std::make_unique<InputStates::Committing>(
       inputtingState->composingBuffer);
@@ -1065,7 +1102,7 @@ bool KeyHandler::handleDeleteKeys(Key key, McBopomofo::InputState* state,
   }
 
   if (reading_.hasToneMarkerOnly()) {
-    reading_.clear();
+    clearReading();
   } else if (reading_.isEmpty()) {
     bool isValidDelete = false;
 
@@ -1085,6 +1122,7 @@ bool KeyHandler::handleDeleteKeys(Key key, McBopomofo::InputState* state,
   } else {
     if (key.ascii == Key::BACKSPACE) {
       reading_.backspace();
+      readingCompositionFailed_ = false;
     } else {
       // Del not supported when bopomofo reading is active.
       errorCallback();
