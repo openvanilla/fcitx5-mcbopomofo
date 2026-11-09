@@ -24,6 +24,7 @@
 #include "RomanNumbers.h"
 
 #include <array>
+#include <charconv>
 #include <string>
 #include <string_view>
 
@@ -119,7 +120,8 @@ std::string RomanNumbers::ConvertFromString(const std::string& s,
       return {};
     }
   }
-  int value = std::atoi(s.c_str());
-  if (value <= 0 || value > 3999) return {};
+  int value = 0;
+  auto [ptr, ec] = std::from_chars(s.c_str(), s.c_str() + s.size(), value);
+  if (ec != std::errc() || value <= 0 || value > 3999) return {};
   return RomanNumbers::ConvertFromInt(value, style);
 }
