@@ -120,8 +120,8 @@ std::string RomanNumbers::ConvertFromString(const std::string& s,
       return {};
     }
   }
-  int value;
+  int value = 0;
   auto [ptr, ec] = std::from_chars(s.c_str(), s.c_str() + s.size(), value);
-  if (ec == std::errc() || value <= 0 || value > 3999) return {};
+  if (ec != std::errc() || value <= 0 || value > 3999) return {};
   return RomanNumbers::ConvertFromInt(value, style);
 }
